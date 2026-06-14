@@ -45,14 +45,40 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+import Colors from '@/constants/Colors';
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
+  const CustomDefaultTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: Colors.light.primary,
+      background: Colors.light.background,
+      card: Colors.light.card,
+      text: Colors.light.text,
+      border: Colors.light.border,
+    },
+  };
+
+  const CustomDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      primary: Colors.dark.primary,
+      background: Colors.dark.background,
+      card: Colors.dark.card,
+      text: Colors.dark.text,
+      border: Colors.dark.border,
+    },
+  };
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Información' }} />
       </Stack>
     </ThemeProvider>
   );

@@ -1,44 +1,63 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Pressable, Image } from 'react-native';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
+}
+
+function HeaderLogo() {
+  return (
+    <Image
+      source={require('@/assets/images/logo.png')}
+      style={{ width: 130, height: 32, resizeMode: 'contain' }}
+    />
+  );
 }
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const currentColors = Colors[colorScheme ?? 'light'];
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
+        tabBarActiveTintColor: currentColors.tint,
+        tabBarInactiveTintColor: currentColors.tabIconDefault,
+        tabBarStyle: {
+          backgroundColor: currentColors.card,
+          borderTopColor: currentColors.border,
+        },
+        headerStyle: {
+          backgroundColor: currentColors.card,
+          shadowColor: 'transparent',
+          elevation: 0,
+        },
+        headerTintColor: currentColors.text,
         headerShown: useClientOnlyValue(false, true),
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerTitle: () => <HeaderLogo />,
+          tabBarLabel: 'Negociaciones',
+          tabBarIcon: ({ color }) => <TabBarIcon name="handshake-o" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
                 {({ pressed }) => (
                   <FontAwesome
                     name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
+                    size={22}
+                    color={currentColors.text}
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
                   />
                 )}
@@ -48,10 +67,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="catalog"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Catálogo',
+          tabBarIcon: ({ color }) => <TabBarIcon name="tags" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="employability"
+        options={{
+          title: 'Postulación',
+          tabBarIcon: ({ color }) => <TabBarIcon name="file-text-o" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Mi Perfil',
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />
     </Tabs>
