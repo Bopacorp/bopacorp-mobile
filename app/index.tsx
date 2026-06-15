@@ -1,231 +1,159 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
   Pressable,
+  ScrollView,
   StyleSheet,
+  Text,
   TextInput,
-  useColorScheme,
+  View,
 } from "react-native";
-
-import { Text, View } from "@/components/Themed";
-import Colors from "@/constants/Colors";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
-  const colorScheme = useColorScheme();
-  const currentColors = Colors[colorScheme ?? "light"];
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { setRole } = useAuth();
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Por favor, ingrese sus credenciales.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-      router.replace("/(tabs)");
-    }, 1000);
+  const handleLogin = (selectedRole: "Asesor" | "Admin") => {
+    setRole(selectedRole);
   };
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: currentColors.background }]}
-    >
-      <View style={styles.content}>
-        <View style={styles.headerContainer}>
-          <View
-            style={[
-              styles.iconContainer,
-              {
-                backgroundColor: currentColors.card,
-                borderColor: currentColors.border,
-              },
-            ]}
-          >
-            <FontAwesome name="lock" size={40} color={currentColors.primary} />
-          </View>
-          <Text style={[styles.title, { color: currentColors.text }]}>
-            BOPACORP
-          </Text>
-          <Text
-            style={[styles.subtitle, { color: currentColors.mutedForeground }]}
-          >
-            Acceso al sistema CRM
-          </Text>
-        </View>
-
-        <View
-          style={[
-            styles.formContainer,
-            {
-              backgroundColor: currentColors.card,
-              borderColor: currentColors.border,
-            },
-          ]}
-        >
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: currentColors.text }]}>
-              Correo Electrónico
-            </Text>
-            <View
-              style={[
-                styles.inputWrapper,
-                {
-                  borderColor: currentColors.border,
-                  backgroundColor: currentColors.background,
-                },
-              ]}
-            >
-              <FontAwesome
-                name="envelope-o"
-                size={16}
-                color={currentColors.mutedForeground}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={[styles.input, { color: currentColors.text }]}
-                placeholder="asesor@bopacorp.com"
-                placeholderTextColor={currentColors.mutedForeground}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: currentColors.text }]}>
-              Contraseña
-            </Text>
-            <View
-              style={[
-                styles.inputWrapper,
-                {
-                  borderColor: currentColors.border,
-                  backgroundColor: currentColors.background,
-                },
-              ]}
-            >
-              <FontAwesome
-                name="key"
-                size={16}
-                color={currentColors.mutedForeground}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={[styles.input, { color: currentColors.text }]}
-                placeholder="••••••••"
-                placeholderTextColor={currentColors.mutedForeground}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-            </View>
-          </View>
-
-          <Pressable
-            style={[
-              styles.loginButton,
-              {
-                backgroundColor: currentColors.primary,
-                opacity: isLoading ? 0.7 : 1,
-              },
-            ]}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            <Text style={styles.loginButtonText}>
-              {isLoading ? "Verificando..." : "Iniciar Sesión"}
-            </Text>
-          </Pressable>
-        </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.header}>
+        <FontAwesome
+          name="building"
+          size={54}
+          color="#1E88E5"
+          style={styles.logo}
+        />
+        <Text style={styles.title}>BOPACORPSA</Text>
+        <Text style={styles.subtitle}>CRM Empresarial</Text>
       </View>
-    </View>
+
+      <View style={styles.formCard}>
+        <Text style={styles.label}>Correo electrónico</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="usuario@empresa.com"
+          placeholderTextColor="#B0B0B0"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+
+        <Text style={styles.label}>Contraseña</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Contraseña"
+          placeholderTextColor="#B0B0B0"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+
+        <Pressable
+          style={[styles.button, styles.btnAsesor]}
+          onPress={() => handleLogin("Asesor")}
+        >
+          <FontAwesome
+            name="user"
+            size={16}
+            color="white"
+            style={styles.btnIcon}
+          />
+          <Text style={styles.buttonText}>Ingresar como Asesor</Text>
+        </Pressable>
+
+        <Pressable
+          style={[styles.button, styles.btnAdmin]}
+          onPress={() => handleLogin("Admin")}
+        >
+          <FontAwesome
+            name="shield"
+            size={16}
+            color="white"
+            style={styles.btnIcon}
+          />
+          <Text style={styles.buttonText}>Ingresar como Admin</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
+    backgroundColor: "#F5F6F8",
+    alignItems: "center",
     justifyContent: "center",
+    padding: 20,
   },
-  content: {
-    padding: 24,
+  header: { alignItems: "center", marginBottom: 32 },
+  logo: { marginBottom: 12 },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#333333",
+    letterSpacing: 0.5,
+  },
+  subtitle: { fontSize: 16, color: "#F57C00", fontWeight: "600", marginTop: 2 },
+  formCard: {
+    backgroundColor: "#FFFFFF",
     width: "100%",
     maxWidth: 400,
-    alignSelf: "center",
-    backgroundColor: "transparent",
-  },
-  headerContainer: {
-    alignItems: "center",
-    marginBottom: 40,
-    backgroundColor: "transparent",
-  },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    letterSpacing: 2,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-  },
-  formContainer: {
+    borderRadius: 12,
     padding: 24,
-    borderRadius: 16,
     borderWidth: 1,
+    borderColor: "#E5E7EB",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
-  inputGroup: {
-    marginBottom: 20,
-    backgroundColor: "transparent",
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 48,
-  },
-  inputIcon: {
-    marginRight: 10,
-  },
+  label: { fontSize: 14, color: "#4B5563", marginBottom: 8, fontWeight: "500" },
   input: {
-    flex: 1,
-    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    height: 48,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    fontSize: 15,
+    color: "#333",
+    backgroundColor: "#FAFAFA",
   },
-  loginButton: {
+  button: {
+    flexDirection: "row",
     height: 48,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 10,
+    marginBottom: 12,
   },
-  loginButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
+  btnAsesor: { backgroundColor: "#2196F3" },
+  btnAdmin: { backgroundColor: "#F57C00" },
+  btnIcon: { marginRight: 10 },
+  buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "bold" },
+  testCard: {
+    backgroundColor: "#FFFFFF",
+    width: "100%",
+    maxWidth: 400,
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 24,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  testTitle: {
     fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 8,
+    fontSize: 14,
   },
+  testText: { color: "#6B7280", fontSize: 13, marginBottom: 4 },
 });

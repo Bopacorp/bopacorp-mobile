@@ -5,20 +5,16 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { AuthProvider } from "../context/AuthContext";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 
 export { ErrorBoundary } from "expo-router";
-
-export const unstable_settings = {
-  initialRouteName: "index",
-};
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,14 +29,10 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) return null;
 
   return (
     <AuthProvider>
@@ -51,6 +43,30 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const { role } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    const inTabsGroup = (segments as string[])[0] === "(tabs)";
+
+    const allowedOutsideTabs = ["new-client", "client-detail", "modal"];
+    const currentRoute = (segments as string[])[0];
+
+    if (!role && inTabsGroup) {
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      } else {
+        router.replace("/");
+      }
+    } else if (
+      role &&
+      !inTabsGroup &&
+      !allowedOutsideTabs.includes(currentRoute)
+    ) {
+      router.replace(role === "Admin" ? "/(tabs)/admin-dashboard" : "/(tabs)");
+    }
+  }, [role, segments]);
 
   const theme =
     colorScheme === "dark"
@@ -79,9 +95,9 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={theme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="modal"
           options={{ presentation: "modal", title: "Información" }}

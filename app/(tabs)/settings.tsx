@@ -3,50 +3,48 @@ import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 
-export default function ProfileScreen() {
+export default function SettingsScreen() {
   const { setRole } = useAuth();
 
   const handleLogout = () => {
     setRole(null);
   };
-
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
+      {/* 1. CABECERA DEL PERFIL */}
       <View style={styles.profileHeader}>
         <View style={styles.avatarContainer}>
           <FontAwesome name="user-circle" size={80} color="#1976D2" />
         </View>
-        <Text style={styles.nameText}>Alejandro Pérez</Text>
-        <Text style={styles.emailText}>alejandro.perez@bopacorpsa.com</Text>
+        <Text style={styles.nameText}>Admin Principal</Text>
+        <Text style={styles.emailText}>admin@bopacorpsa.com</Text>
         <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>Asesor</Text>
+          <Text style={styles.roleText}>Administrador</Text>
         </View>
-        <Text style={styles.agencyText}>📍 Quito - Shyris</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Mis Logros del Mes</Text>
+      {/* 2. ESTADÍSTICAS RÁPIDAS DEL USUARIO */}
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
-          <FontAwesome name="handshake-o" size={24} color="#2196F3" />
-          <Text style={styles.statNumber}>12</Text>
-          <Text style={styles.statLabel}>Ventas</Text>
+          <FontAwesome name="users" size={24} color="#2196F3" />
+          <Text style={styles.statNumber}>15</Text>
+          <Text style={styles.statLabel}>Usuarios</Text>
         </View>
         <View style={styles.statBox}>
-          <FontAwesome name="check-circle" size={24} color="#4CAF50" />
-          <Text style={styles.statNumber}>85%</Text>
-          <Text style={styles.statLabel}>Efectividad</Text>
+          <FontAwesome name="archive" size={24} color="#4CAF50" />
+          <Text style={styles.statNumber}>24</Text>
+          <Text style={styles.statLabel}>Servicios</Text>
         </View>
         <View style={styles.statBox}>
-          <FontAwesome name="dollar" size={24} color="#FF9800" />
-          <Text style={styles.statNumber}>$4,250</Text>
-          <Text style={styles.statLabel}>Facturación</Text>
+          <FontAwesome name="calendar" size={24} color="#FF9800" />
+          <Text style={styles.statNumber}>2026</Text>
+          <Text style={styles.statLabel}>Año</Text>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Opciones</Text>
       <View style={styles.menuContainer}>
         <Pressable style={styles.menuItem}>
           <View style={[styles.iconBox, { backgroundColor: "#E3F2FD" }]}>
@@ -64,22 +62,10 @@ export default function ProfileScreen() {
 
         <Pressable style={styles.menuItem}>
           <View style={[styles.iconBox, { backgroundColor: "#FFF3E0" }]}>
-            <FontAwesome name="bell-o" size={18} color="#FF9800" />
+            <FontAwesome name="lock" size={18} color="#FF9800" />
           </View>
           <View style={styles.menuTextContent}>
-            <Text style={styles.menuTitle}>Notificaciones</Text>
-            <Text style={styles.menuSubtitle}>Ajustes de alertas y avisos</Text>
-          </View>
-          <FontAwesome name="angle-right" size={20} color="#B0B0B0" />
-        </Pressable>
-        <View style={styles.divider} />
-
-        <Pressable style={styles.menuItem}>
-          <View style={[styles.iconBox, { backgroundColor: "#E8F5E9" }]}>
-            <FontAwesome name="shield" size={18} color="#4CAF50" />
-          </View>
-          <View style={styles.menuTextContent}>
-            <Text style={styles.menuTitle}>Seguridad y PIN</Text>
+            <Text style={styles.menuTitle}>Cambiar Contraseña</Text>
             <Text style={styles.menuSubtitle}>
               Actualizar credenciales de acceso
             </Text>
@@ -90,11 +76,13 @@ export default function ProfileScreen() {
 
         <Pressable style={styles.menuItem}>
           <View style={[styles.iconBox, { backgroundColor: "#F3E5F5" }]}>
-            <FontAwesome name="question-circle-o" size={18} color="#9C27B0" />
+            <FontAwesome name="cog" size={18} color="#9C27B0" />
           </View>
           <View style={styles.menuTextContent}>
-            <Text style={styles.menuTitle}>Soporte y Ayuda</Text>
-            <Text style={styles.menuSubtitle}>Centro de ayuda y contacto</Text>
+            <Text style={styles.menuTitle}>Preferencias Generales</Text>
+            <Text style={styles.menuSubtitle}>
+              Ajustes de notificaciones y tema
+            </Text>
           </View>
           <FontAwesome name="angle-right" size={20} color="#B0B0B0" />
         </Pressable>
@@ -108,7 +96,7 @@ export default function ProfileScreen() {
             color="#9E9E9E"
             style={styles.infoIcon}
           />
-          <Text style={styles.infoText}>BOPADIGITAL Móvil v1.0.0</Text>
+          <Text style={styles.infoText}>Versión 1.0.0</Text>
         </View>
         <View style={styles.infoRow}>
           <FontAwesome
@@ -179,22 +167,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
-    marginBottom: 8,
   },
   roleText: {
     color: "white",
     fontSize: 12,
     fontWeight: "bold",
-  },
-  agencyText: {
-    fontSize: 13,
-    color: "#757575",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 16,
   },
   statsRow: {
     flexDirection: "row",
@@ -217,7 +194,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   statNumber: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#333",
     marginTop: 8,

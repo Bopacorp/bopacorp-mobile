@@ -90,39 +90,39 @@ export default function NegotiationsScreen() {
     "Todos" | "Borrador" | "Enviado" | "Aprobado"
   >("Todos");
 
-  // NUEVO: Estado para guardar los clientes de tu API
   const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
 
-  // NUEVO: Ejecutar la carga de datos al iniciar la pantalla
   useEffect(() => {
     const loadData = async () => {
       try {
         const data = await getClients();
-        // Si la API devuelve datos, úsalos; de lo contrario, usa los de prueba
+        console.log("DATOS RECIBIDOS:", data);
         if (data && data.length > 0) {
           setNegotiations(data);
         } else {
           setNegotiations(MOCK_NEGOTIATIONS);
         }
       } catch (error) {
+        console.error("ERROR API:", error);
         setNegotiations(MOCK_NEGOTIATIONS);
       }
     };
     loadData();
   }, []);
 
-  // MODIFICADO: Ahora filtra sobre `negotiations` (tus datos) en lugar de MOCK_NEGOTIATIONS
   const filteredData = negotiations.filter((item) => {
     const matchesSearch =
       item.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.planName.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesFilter =
-      activeFilter === "Todos" || item.status === activeFilter;
+      activeFilter === "Todos" ||
+      item.status.toLowerCase() === activeFilter.toLowerCase();
+
     return matchesSearch && matchesFilter;
   });
 
   const renderItem = ({ item }: { item: Negotiation }) => {
-    // MODIFICADO: Agregamos un || STATUS_COLORS.Borrador por si llega un status desconocido desde la BD
     const statusStyle = STATUS_COLORS[item.status] || STATUS_COLORS.Borrador;
     const badgeBg =
       colorScheme === "dark" ? statusStyle.darkBg : statusStyle.bg;
