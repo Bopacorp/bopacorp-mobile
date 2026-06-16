@@ -28,10 +28,6 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
-
   if (!loaded) return null;
 
   return (
@@ -43,11 +39,20 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  const { role } = useAuth();
+  const { role, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
+    if (isLoading) return;
+
+    // Ocultar la pantalla de carga una vez que todo esté listo
+    SplashScreen.hideAsync();
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
     const inTabsGroup = (segments as string[])[0] === "(tabs)";
 
     const allowedOutsideTabs = ["new-client", "client-detail", "modal"];
@@ -66,7 +71,7 @@ function RootLayoutNav() {
     ) {
       router.replace(role === "Admin" ? "/(tabs)/admin-dashboard" : "/(tabs)");
     }
-  }, [role, segments]);
+  }, [role, segments, isLoading]);
 
   const theme =
     colorScheme === "dark"
