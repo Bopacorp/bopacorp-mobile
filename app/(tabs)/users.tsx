@@ -12,35 +12,7 @@ import {
 export default function UsersManagementScreen() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const users = [
-    {
-      id: 1,
-      name: "Juan Pérez",
-      email: "juan.perez@bopacorpsa.com",
-      role: "Asesor",
-      status: "Activo",
-      lastAccess: "15/01/2026 09:30",
-      activeClients: 45,
-    },
-    {
-      id: 2,
-      name: "María González",
-      email: "maria.gonzalez@bopacorpsa.com",
-      role: "Asesor",
-      status: "Activo",
-      lastAccess: "15/01/2026 08:15",
-      activeClients: 38,
-    },
-    {
-      id: 3,
-      name: "Carlos Rodríguez",
-      email: "carlos.rodriguez@bopacorpsa.com",
-      role: "Admin",
-      status: "Activo",
-      lastAccess: "15/01/2026 10:45",
-      activeClients: 0,
-    },
-  ];
+  const users: any[] = [];
 
   return (
     <ScrollView

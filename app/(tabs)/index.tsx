@@ -12,48 +12,7 @@ import { Text, View } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import { getClients, Negotiation } from "../../services/ClientServices";
 
-const MOCK_NEGOTIATIONS: Negotiation[] = [
-  {
-    id: "1",
-    clientName: "Corporación Favorita",
-    planName: "Movistar Pro Ilimitado Pyme",
-    amount: "$320.00/mes",
-    status: "Aprobado",
-    date: "Hace 2 horas",
-  },
-  {
-    id: "2",
-    clientName: "Importadora Tomati S.A.",
-    planName: "Movistar Control Fijo 50GB",
-    amount: "$150.00/mes",
-    status: "Enviado",
-    date: "Hace 5 horas",
-  },
-  {
-    id: "3",
-    clientName: "Distribuidora del Pacífico",
-    planName: "Plan Datos Compartidos 200GB",
-    amount: "$450.00/mes",
-    status: "Borrador",
-    date: "Ayer",
-  },
-  {
-    id: "4",
-    clientName: "Inmobiliaria Los Lagos",
-    planName: "Movistar Fibra Óptica 300MB",
-    amount: "$85.00/mes",
-    status: "Rechazado",
-    date: "Hace 3 días",
-  },
-  {
-    id: "5",
-    clientName: "Estudio Jurídico Noboa",
-    planName: "Línea Móvil Pyme Estándar",
-    amount: "$45.00/mes",
-    status: "Aprobado",
-    date: "Hace 5 días",
-  },
-];
+
 
 const STATUS_COLORS = {
   Borrador: {
@@ -100,11 +59,11 @@ export default function NegotiationsScreen() {
         if (data && data.length > 0) {
           setNegotiations(data);
         } else {
-          setNegotiations(MOCK_NEGOTIATIONS);
+          setNegotiations([]);
         }
       } catch (error) {
         console.error("ERROR API:", error);
-        setNegotiations(MOCK_NEGOTIATIONS);
+        setNegotiations([]);
       }
     };
     loadData();
@@ -140,8 +99,8 @@ export default function NegotiationsScreen() {
         ]}
       >
         <View style={styles.cardHeader}>
-          <View>
-            <Text style={[styles.clientName, { color: currentColors.text }]}>
+          <View style={{ flex: 1, marginRight: 8 }}>
+            <Text style={[styles.clientName, { color: currentColors.text }]} numberOfLines={1}>
               {item.clientName}
             </Text>
             <Text
@@ -150,7 +109,7 @@ export default function NegotiationsScreen() {
                 { color: currentColors.mutedForeground },
               ]}
             >
-              {item.planName}
+              Estado: {item.planName}
             </Text>
           </View>
           <View style={[styles.badge, { backgroundColor: badgeBg }]}>
@@ -163,7 +122,40 @@ export default function NegotiationsScreen() {
         <View
           style={[
             styles.cardDivider,
-            { backgroundColor: currentColors.border },
+            { backgroundColor: currentColors.border, marginVertical: 10 },
+          ]}
+        />
+
+        {/* Dynamic API Data: Advisor & Estimated Closing */}
+        <View style={styles.detailsRow}>
+          <View style={styles.detailItem}>
+            <FontAwesome
+              name="user"
+              size={12}
+              color={currentColors.mutedForeground}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={[styles.detailText, { color: currentColors.mutedForeground }]} numberOfLines={1}>
+              Asesor: {item.advisorName}
+            </Text>
+          </View>
+          <View style={styles.detailItem}>
+            <FontAwesome
+              name="calendar"
+              size={12}
+              color={currentColors.mutedForeground}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={[styles.detailText, { color: currentColors.mutedForeground }]}>
+              Cierre: {item.estimatedCloseDate}
+            </Text>
+          </View>
+        </View>
+
+        <View
+          style={[
+            styles.cardDivider,
+            { backgroundColor: currentColors.border, marginVertical: 10 },
           ]}
         />
 
@@ -184,7 +176,7 @@ export default function NegotiationsScreen() {
                 { color: currentColors.mutedForeground },
               ]}
             >
-              {item.date}
+              Inicio: {item.date}
             </Text>
           </View>
         </View>
@@ -367,6 +359,21 @@ const styles = StyleSheet.create({
   cardDivider: {
     height: 1,
     marginVertical: 12,
+  },
+  detailsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "transparent",
+  },
+  detailItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    flex: 1,
+  },
+  detailText: {
+    fontSize: 12,
   },
   cardFooter: {
     flexDirection: "row",

@@ -1,7 +1,8 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
+  Alert,
   FlatList,
   SafeAreaView,
   StyleSheet,
@@ -9,39 +10,45 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
+import { getBusinessClients, BusinessClient } from "../../services/ClientServices";
 
 export default function ClientsScreen() {
   const router = useRouter();
-  const [clients] = useState([
-    {
-      id: "1",
-      companyName: "Logística Costera (LogiCost)",
-      status: "Cliente lucrativo",
-      contactName: "Juan Vélez",
-      email: "jcvelez@logicost.ec",
-      phone: "+593 98 123 4567",
-      address: "Av. Principal 123",
-    },
-    {
-      id: "2",
-      companyName: "Andres Carros Inc.",
-      status: "Cliente lucrativo",
-      contactName: "Adalina Medina",
-      email: "portabilidadCAI@gmail.com",
-      phone: "+593 99 234 5678",
-      address: "Calle Secundaria 456",
-    },
-    {
-      id: "3",
-      companyName: "Sapitos Corp.",
-      status: "Cliente lucrativo",
-      contactName: "José B.",
-      email: "jose@sapitoscorp.com",
-      phone: "+593 97 345 6789",
-      address: "Calle Terciaria 789",
-    },
-  ]);
+  const [clients, setClients] = useState<BusinessClient[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<"Todos" | "Activos">("Todos");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadClients = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getBusinessClients();
+      setClients(data);
+    } catch (err) {
+      console.error("Failed to load clients:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadClients();
+  }, []);
+
+  const filteredClients = clients.filter((item) => {
+    const matchesSearch =
+      item.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.ruc.includes(searchQuery);
+
+    const matchesFilter =
+      activeFilter === "Todos" ||
+      (activeFilter === "Activos" && item.isActive);
+
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -54,7 +61,12 @@ export default function ClientsScreen() {
       </View>
 
       {/* Buscador */}
-      <TextInput style={styles.searchBar} placeholder="Buscar clientes..." />
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Buscar por empresa, contacto o RUC..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
 
       {/* Botón Nuevo Usuario */}
       <TouchableOpacity
@@ -62,55 +74,100 @@ export default function ClientsScreen() {
         onPress={() => router.push("/new-client")}
       >
         <MaterialIcons name="person-add" size={16} color="#4caf50" />
-        <Text style={styles.newBtnText}> Nuevo Usuario</Text>
+        <Text style={styles.newBtnText}> Nuevo Cliente</Text>
       </TouchableOpacity>
 
       {/* Filtros */}
       <View style={styles.filterContainer}>
-        <TouchableOpacity style={styles.filterActive}>
-          <Text style={styles.filterActiveText}>Todos</Text>
+        <TouchableOpacity
+          style={activeFilter === "Todos" ? styles.filterActive : styles.filterInactive}
+          onPress={() => setActiveFilter("Todos")}
+        >
+          <Text style={activeFilter === "Todos" ? styles.filterActiveText : styles.filterInactiveText}>Todos</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filterInactive}>
-          <Text style={styles.filterInactiveText}>Activos</Text>
+        <TouchableOpacity
+          style={activeFilter === "Activos" ? styles.filterActive : styles.filterInactive}
+          onPress={() => setActiveFilter("Activos")}
+        >
+          <Text style={activeFilter === "Activos" ? styles.filterActiveText : styles.filterInactiveText}>Activos</Text>
         </TouchableOpacity>
       </View>
 
       {/* Lista */}
-      <FlatList
-        data={clients}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              router.push({
-                pathname: "/client-detail",
-                params: { client: JSON.stringify(item) },
-              })
-            }
-          >
-            <View style={styles.cardHeader}>
-              <View>
-                <Text style={styles.cardTitle}>{item.companyName}</Text>
-                <Text style={styles.cardSubtitle}>{item.status}</Text>
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#1976d2" />
+          <Text style={styles.loadingText}>Cargando clientes...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredClients}
+          keyExtractor={(item) => item.id}
+          onRefresh={loadClients}
+          refreshing={isLoading}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() =>
+                router.push({
+                  pathname: "/client-detail",
+                  params: { client: JSON.stringify(item) },
+                })
+              }
+            >
+              <View style={styles.cardHeader}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={styles.cardTitle} numberOfLines={1}>
+                    {item.businessName}
+                  </Text>
+                  <View style={styles.statusBadge}>
+                    <View style={[styles.statusDot, { backgroundColor: item.isActive ? "#4caf50" : "#d32f2f" }]} />
+                    <Text style={styles.cardSubtitle}>
+                      {item.isActive ? "Activo" : "Inactivo"}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity
+                    style={styles.editBtn}
+                    onPress={() => Alert.alert("Editar", "Edición deshabilitada temporalmente")}
+                  >
+                    <Text style={styles.editBtnText}>✏️ Editar</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={styles.actionButtons}>
-                <TouchableOpacity style={styles.editBtn}>
-                  <Text style={styles.editBtnText}>✏️ Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.delBtn}>
-                  <Text style={styles.delBtnText}>🗑 Eliminar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
 
-            <Text style={styles.label}>Nombre de Contacto:</Text>
-            <Text style={styles.value}>{item.contactName}</Text>
-            <Text style={styles.label}>Correo:</Text>
-            <Text style={styles.value}>{item.email}</Text>
-          </TouchableOpacity>
-        )}
-      />
+              <View style={styles.infoGrid}>
+                <View style={styles.infoCol}>
+                  <Text style={styles.label}>Contacto:</Text>
+                  <Text style={styles.value} numberOfLines={1}>{item.contactName}</Text>
+                </View>
+                <View style={styles.infoCol}>
+                  <Text style={styles.label}>RUC:</Text>
+                  <Text style={styles.value}>{item.ruc}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoGrid}>
+                <View style={styles.infoCol}>
+                  <Text style={styles.label}>Correo:</Text>
+                  <Text style={styles.value} numberOfLines={1}>{item.contactEmail}</Text>
+                </View>
+                <View style={styles.infoCol}>
+                  <Text style={styles.label}>Teléfono:</Text>
+                  <Text style={styles.value}>{item.contactPhone}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <View style={styles.centerContainer}>
+              <MaterialIcons name="people-outline" size={48} color="#999" />
+              <Text style={styles.emptyText}>No se encontraron clientes</Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -121,6 +178,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 15,
+    paddingHorizontal: 5,
   },
   title: { fontSize: 22, fontWeight: "bold" },
   searchBar: {
@@ -130,6 +188,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#eee",
     marginBottom: 10,
+    fontSize: 15,
   },
   newBtn: {
     flexDirection: "row",
@@ -148,7 +207,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
   },
-  filterActiveText: { color: "#fff" },
+  filterActiveText: { color: "#fff", fontWeight: "bold" },
   filterInactive: {
     backgroundColor: "#f0f0f0",
     paddingHorizontal: 20,
@@ -158,25 +217,64 @@ const styles = StyleSheet.create({
   filterInactiveText: { color: "#999" },
   card: {
     backgroundColor: "#FFF",
-    padding: 20,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
     marginBottom: 15,
     borderWidth: 1,
     borderColor: "#eee",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  cardTitle: { fontSize: 16, fontWeight: "bold" },
-  cardSubtitle: { color: "#666", marginBottom: 5 },
+  cardTitle: { fontSize: 16, fontWeight: "bold", color: "#333" },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  cardSubtitle: { color: "#666", fontSize: 13 },
   actionButtons: { flexDirection: "row", gap: 5 },
-  editBtn: { backgroundColor: "#fff8e1", padding: 5, borderRadius: 4 },
+  editBtn: { backgroundColor: "#fff8e1", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
   editBtnText: { color: "#f57c00", fontSize: 12 },
-  delBtn: { backgroundColor: "#ffebee", padding: 5, borderRadius: 4 },
-  delBtnText: { color: "#d32f2f", fontSize: 12 },
-  label: { fontSize: 12, color: "#999", marginTop: 5 },
-  value: { fontSize: 14, fontWeight: "500" },
+  infoGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+    gap: 12,
+  },
+  infoCol: {
+    flex: 1,
+  },
+  label: { fontSize: 11, color: "#999", marginBottom: 2 },
+  value: { fontSize: 13, fontWeight: "500", color: "#333" },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 50,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: "#666",
+    fontSize: 14,
+  },
+  emptyText: {
+    marginTop: 10,
+    color: "#999",
+    fontSize: 15,
+  },
 });

@@ -58,38 +58,18 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* 2. CATÁLOGO */}
-      <Tabs.Screen
-        name="catalog"
-        options={{
-          href: role === "Admin" ? null : undefined,
-          title: "Catálogo",
-          tabBarIcon: ({ color }) => <TabBarIcon name="tags" color={color} />,
-        }}
-      />
-      {/* 3. POSTULACIÓN */}
-      <Tabs.Screen
-        name="employability"
-        options={{
-          href: role === "Admin" ? null : undefined,
-          title: "Postulación",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="file-text-o" color={color} />
-          ),
-        }}
-      />
-      {/* 4. MIS CLIENTES (NUEVO) */}
+      {/* 2. MIS CLIENTES */}
       <Tabs.Screen
         name="clients"
         options={{
           href: role === "Admin" ? null : undefined,
-          title: "Mis Clientes",
+          title: "Clientes",
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="building" color={color} />
           ),
         }}
       />
-      {/* 5. MIS ACTIVIDADES (NUEVO) */}
+      {/* 3. MIS ACTIVIDADES */}
       <Tabs.Screen
         name="activities"
         options={{
@@ -100,13 +80,33 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* 6. MI PERFIL */}
+      {/* 4. CATÁLOGO */}
+      <Tabs.Screen
+        name="catalog"
+        options={{
+          href: role === "Admin" ? null : undefined,
+          title: "Catálogo",
+          tabBarIcon: ({ color }) => <TabBarIcon name="tags" color={color} />,
+        }}
+      />
+      {/* 5. MI PERFIL */}
       <Tabs.Screen
         name="profile"
         options={{
           href: role === "Admin" ? null : undefined,
-          title: "Mi Perfil",
+          title: "Perfil",
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+        }}
+      />
+      {/* 6. POSTULACIÓN (Oculto de las pestañas principales, accedido vía link público) */}
+      <Tabs.Screen
+        name="employability"
+        options={{
+          href: null,
+          title: "Postulación",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="file-text-o" color={color} />
+          ),
         }}
       />
 

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, Pressable, ScrollView, Alert, ActivityIndicator, useColorScheme } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as DocumentPicker from 'expo-document-picker';
 
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
+import { apiClient } from '../../services/api';
 
 export default function EmployabilityScreen() {
   const colorScheme = useColorScheme();
@@ -16,6 +17,25 @@ export default function EmployabilityScreen() {
   const [phone, setPhone] = useState('');
   const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [vacancyId, setVacancyId] = useState<string | null>(null);
+  const [isLoadingVacancy, setIsLoadingVacancy] = useState(true);
+
+  // Fetch the first published vacancy on screen load to attach candidate to
+  useEffect(() => {
+    async function loadVacancy() {
+      try {
+        const response: any = await apiClient.get('/api/v1/employability/vacancies/published');
+        if (response && response.length > 0) {
+          setVacancyId(response[0].id);
+        }
+      } catch (err) {
+        console.warn("Could not fetch published vacancies:", err);
+      } finally {
+        setIsLoadingVacancy(false);
+      }
+    }
+    loadVacancy();
+  }, []);
 
   const handlePickDocument = async () => {
     try {
@@ -50,9 +70,41 @@ export default function EmployabilityScreen() {
 
     setIsSubmitting(true);
 
-    // Simulate upload delay
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Split full name into firstName and lastName for database schemas
+      const nameParts = fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || 'Sin Apellido';
+
+      // Construct multipart FormData payload
+      const formData = new FormData();
+      
+      // Candidate info object (parsed by backend parseMultipartJsonBody(['candidate']))
+      formData.append('candidate', JSON.stringify({
+        nationalId: nationalId.trim(),
+        firstName,
+        lastName,
+        email: email.trim(),
+        phone: phone.trim(),
+      }));
+
+      // Vacancy ID (fallback to dummy UUID if no vacancy published is loaded)
+      formData.append('vacancyId', vacancyId || '00000000-0000-0000-0000-000000000000');
+
+      // PDF Document attachment
+      formData.append('file', {
+        uri: selectedFile.uri,
+        name: selectedFile.name || 'cv.pdf',
+        type: selectedFile.mimeType || 'application/pdf',
+      } as any);
+
+      // Perform POST request with custom header configuration
+      await apiClient.post('/api/v1/employability/apply', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       Alert.alert(
         'Postulación Recibida',
         'Su información y hoja de vida han sido registradas exitosamente en el sistema de BOPACORP.',
@@ -69,7 +121,12 @@ export default function EmployabilityScreen() {
           },
         ]
       );
-    }, 2000);
+    } catch (err: any) {
+      const errorMsg = err.message || 'No se pudo registrar su postulación. Inténtelo de nuevo.';
+      Alert.alert('Error al Postular', errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -87,6 +144,7 @@ export default function EmployabilityScreen() {
           placeholder="Ej: 1712345678"
           placeholderTextColor={currentColors.mutedForeground}
           keyboardType="numeric"
+          editable={!isSubmitting}
           style={[styles.input, { color: currentColors.text, borderColor: currentColors.border, backgroundColor: currentColors.card }]}
         />
       </View>
@@ -98,6 +156,7 @@ export default function EmployabilityScreen() {
           onChangeText={setFullName}
           placeholder="Ej: Juan Pérez"
           placeholderTextColor={currentColors.mutedForeground}
+          editable={!isSubmitting}
           style={[styles.input, { color: currentColors.text, borderColor: currentColors.border, backgroundColor: currentColors.card }]}
         />
       </View>
@@ -111,6 +170,7 @@ export default function EmployabilityScreen() {
           placeholderTextColor={currentColors.mutedForeground}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!isSubmitting}
           style={[styles.input, { color: currentColors.text, borderColor: currentColors.border, backgroundColor: currentColors.card }]}
         />
       </View>
@@ -123,6 +183,7 @@ export default function EmployabilityScreen() {
           placeholder="Ej: 0987654321"
           placeholderTextColor={currentColors.mutedForeground}
           keyboardType="phone-pad"
+          editable={!isSubmitting}
           style={[styles.input, { color: currentColors.text, borderColor: currentColors.border, backgroundColor: currentColors.card }]}
         />
       </View>
@@ -143,13 +204,14 @@ export default function EmployabilityScreen() {
                 </Text>
               </View>
             </View>
-            <Pressable onPress={handleRemoveDocument} style={styles.removeButton}>
+            <Pressable onPress={handleRemoveDocument} style={styles.removeButton} disabled={isSubmitting}>
               <FontAwesome name="trash" size={18} color={currentColors.mutedForeground} />
             </Pressable>
           </View>
         ) : (
           <Pressable
             onPress={handlePickDocument}
+            disabled={isSubmitting}
             style={[styles.pickerButton, { borderColor: currentColors.primary, backgroundColor: currentColors.card }]}
           >
             <FontAwesome name="upload" size={18} color={currentColors.primary} style={{ marginRight: 8 }} />
@@ -160,14 +222,16 @@ export default function EmployabilityScreen() {
 
       {/* Submit Button */}
       <Pressable
-        disabled={isSubmitting}
+        disabled={isSubmitting || isLoadingVacancy}
         onPress={handleSubmit}
-        style={[styles.submitButton, { backgroundColor: currentColors.primary, opacity: isSubmitting ? 0.7 : 1 }]}
+        style={[styles.submitButton, { backgroundColor: currentColors.primary, opacity: (isSubmitting || isLoadingVacancy) ? 0.7 : 1 }]}
       >
         {isSubmitting ? (
           <ActivityIndicator size="small" color="#ffffff" />
         ) : (
-          <Text style={styles.submitButtonText}>Enviar Postulación</Text>
+          <Text style={styles.submitButtonText}>
+            {isLoadingVacancy ? 'Cargando convocatorias...' : 'Enviar Postulación'}
+          </Text>
         )}
       </Pressable>
     </ScrollView>

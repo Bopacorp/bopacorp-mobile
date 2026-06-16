@@ -13,43 +13,7 @@ interface CatalogItem {
   features: string[];
 }
 
-const MOCK_CATALOG: CatalogItem[] = [
-  {
-    id: '1',
-    name: 'Plan Pyme Ilimitado Pro',
-    category: 'Celular',
-    price: '$35.00/mes',
-    features: ['Gigas Ilimitados de navegación', 'Llamadas ilimitadas a todas las operadoras', '50 SMS internacionales', 'Roaming en América Latina incluido'],
-  },
-  {
-    id: '2',
-    name: 'Plan Pyme Controlado 40GB',
-    category: 'Celular',
-    price: '$20.00/mes',
-    features: ['40 Gigas de navegación', 'Llamadas ilimitadas a Movistar', '300 minutos a otras operadoras', 'WhatsApp y redes sociales ilimitadas'],
-  },
-  {
-    id: '3',
-    name: 'Fibra Óptica Pyme 400 Mbps',
-    category: 'Internet',
-    price: '$55.00/mes',
-    features: ['Velocidad de 400 Mbps simétrica', 'Instalación gratuita', 'Dirección IP pública fija opcional', 'Soporte técnico preferente 24/7'],
-  },
-  {
-    id: '4',
-    name: 'Fibra Óptica Pyme 600 Mbps',
-    category: 'Internet',
-    price: '$75.00/mes',
-    features: ['Velocidad de 600 Mbps simétrica', 'Router WiFi 6 de alta densidad', 'Garantía de disponibilidad del 99.8%', 'Soporte técnico preferente 24/7'],
-  },
-  {
-    id: '5',
-    name: 'Troncal SIP Pyme 10 Canales',
-    category: 'Telefonía',
-    price: '$120.00/mes',
-    features: ['10 canales de voz concurrentes', 'Numeración nacional única', 'Compatible con Asterisk/Grandstream', 'Tarifa plana local a Movistar'],
-  },
-];
+const MOCK_CATALOG: CatalogItem[] = [];
 
 const CATEGORY_ICONS = {
   Celular: 'mobile',

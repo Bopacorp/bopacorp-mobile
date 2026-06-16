@@ -7,44 +7,7 @@ export default function ServiceCatalogScreen() {
   const { role } = useAuth(); // Preguntamos quién está viendo la pantalla
 
   // Datos del catálogo basados en tu diseño
-  const services = [
-    {
-      id: 1,
-      title: "Consultoría Empresarial",
-      status: "Activo",
-      tag: "Consultoría",
-      tagBg: "#E3F2FD",
-      tagText: "#1976D2",
-      description: "Asesoría estratégica para optimización de procesos",
-      price: "$150.00",
-      duration: "4 horas",
-      durationIcon: "clock-o",
-    },
-    {
-      id: 2,
-      title: "Desarrollo de Software",
-      status: "Activo",
-      tag: "Tecnología",
-      tagBg: "#F3E5F5",
-      tagText: "#9C27B0",
-      description: "Creación de soluciones tecnológicas a medida",
-      price: "$2500.00",
-      duration: "Por proyecto",
-      durationIcon: "bullseye",
-    },
-    {
-      id: 3,
-      title: "Auditoría de Sistemas",
-      status: "Activo",
-      tag: "Auditoría",
-      tagBg: "#FFF3E0",
-      tagText: "#FF9800",
-      description: "Revisión completa de sistemas y procesos",
-      price: "$800.00",
-      duration: "2 días",
-      durationIcon: "calendar-o",
-    },
-  ];
+  const services: any[] = [];
 
   return (
     <ScrollView

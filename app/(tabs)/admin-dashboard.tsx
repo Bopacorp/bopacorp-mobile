@@ -15,10 +15,10 @@ export default function AdminDashboardScreen() {
   const { setRole } = useAuth(); // Para poder cerrar sesión o cambiar vista
 
   const [stats] = useState({
-    totalClients: 156,
-    activeProjects: 23,
-    monthlyRevenue: 125000,
-    pendingTasks: 12,
+    totalClients: 0,
+    activeProjects: 0,
+    monthlyRevenue: 0,
+    pendingTasks: 0,
   });
 
   const adminActions = [

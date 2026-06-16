@@ -4,10 +4,10 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 
 export default function ProfileScreen() {
-  const { setRole } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    setRole(null);
+    logout();
   };
 
   return (

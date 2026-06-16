@@ -1,6 +1,8 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useState } from "react";
 import {
+  Alert,
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,10 +15,40 @@ import { useAuth } from "../context/AuthContext";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { setRole } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { login } = useAuth();
 
-  const handleLogin = (selectedRole: "Asesor" | "Admin") => {
-    setRole(selectedRole);
+  const handleLogin = async (selectedRole?: "Asesor" | "Admin") => {
+    let finalEmail = email.trim();
+    let finalPassword = password;
+
+    // Autofill seeded credentials for developer convenience if fields are empty
+    if (selectedRole && !finalEmail && !finalPassword) {
+      if (selectedRole === "Asesor") {
+        finalEmail = "lreyes@bopacorp.com";
+        finalPassword = "Bopa2026!";
+      } else {
+        finalEmail = "cpauta@bopacorp.com";
+        finalPassword = "Bopa2026!";
+      }
+      setEmail(finalEmail);
+      setPassword(finalPassword);
+    }
+
+    if (!finalEmail || !finalPassword) {
+      Alert.alert("Campos incompletos", "Por favor ingresa tu correo y contraseña.");
+      return;
+    }
+
+    setIsLoggingIn(true);
+    try {
+      await login(finalEmail, finalPassword);
+    } catch (err: any) {
+      const errorMsg = err.message || "Credenciales incorrectas o problema de red.";
+      Alert.alert("Error de Autenticación", errorMsg);
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   return (
@@ -42,6 +74,7 @@ export default function LoginScreen() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          editable={!isLoggingIn}
         />
 
         <Text style={styles.label}>Contraseña</Text>
@@ -52,33 +85,43 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          editable={!isLoggingIn}
         />
 
-        <Pressable
-          style={[styles.button, styles.btnAsesor]}
-          onPress={() => handleLogin("Asesor")}
-        >
-          <FontAwesome
-            name="user"
-            size={16}
-            color="white"
-            style={styles.btnIcon}
-          />
-          <Text style={styles.buttonText}>Ingresar como Asesor</Text>
-        </Pressable>
+        {isLoggingIn ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#2196F3" />
+            <Text style={styles.loaderText}>Iniciando sesión...</Text>
+          </View>
+        ) : (
+          <>
+            <Pressable
+              style={[styles.button, styles.btnAsesor]}
+              onPress={() => handleLogin("Asesor")}
+            >
+              <FontAwesome
+                name="user"
+                size={16}
+                color="white"
+                style={styles.btnIcon}
+              />
+              <Text style={styles.buttonText}>Ingresar como Asesor</Text>
+            </Pressable>
 
-        <Pressable
-          style={[styles.button, styles.btnAdmin]}
-          onPress={() => handleLogin("Admin")}
-        >
-          <FontAwesome
-            name="shield"
-            size={16}
-            color="white"
-            style={styles.btnIcon}
-          />
-          <Text style={styles.buttonText}>Ingresar como Admin</Text>
-        </Pressable>
+            <Pressable
+              style={[styles.button, styles.btnAdmin]}
+              onPress={() => handleLogin("Admin")}
+            >
+              <FontAwesome
+                name="shield"
+                size={16}
+                color="white"
+                style={styles.btnIcon}
+              />
+              <Text style={styles.buttonText}>Ingresar como Admin</Text>
+            </Pressable>
+          </>
+        )}
       </View>
     </ScrollView>
   );
@@ -139,21 +182,15 @@ const styles = StyleSheet.create({
   btnAdmin: { backgroundColor: "#F57C00" },
   btnIcon: { marginRight: 10 },
   buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "bold" },
-  testCard: {
-    backgroundColor: "#FFFFFF",
-    width: "100%",
-    maxWidth: 400,
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 24,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+  loaderContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20,
   },
-  testTitle: {
-    fontWeight: "bold",
-    color: "#333333",
-    marginBottom: 8,
+  loaderText: {
+    marginTop: 10,
+    color: "#6B7280",
     fontSize: 14,
+    fontWeight: "500",
   },
-  testText: { color: "#6B7280", fontSize: 13, marginBottom: 4 },
 });

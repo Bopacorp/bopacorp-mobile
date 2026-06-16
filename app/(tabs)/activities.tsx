@@ -9,25 +9,7 @@ import {
     View,
 } from "react-native";
 
-// ESTRUCTURA REAL SEGÚN TUS DATOS
-const NEGOTIATIONS = [
-  {
-    id: "1",
-    client: "Corporación Favorita",
-    plan: "Movistar Pro Ilimitado Pyme",
-    amount: "$320.00/mes",
-    status: "Aprobado",
-    time: "2h",
-  },
-  {
-    id: "2",
-    client: "Importadora Tomati S.A.",
-    plan: "Movistar Control Fijo 50GB",
-    amount: "$150.00/mes",
-    status: "Enviado",
-    time: "5h",
-  },
-];
+const NEGOTIATIONS: any[] = [];
 
 export default function ActivitiesScreen() {
   const [activeTab, setActiveTab] = useState("Todos");
