@@ -28,12 +28,14 @@ export default function OverviewScreen() {
       contentContainerStyle={{ padding: 20 }}
       showsVerticalScrollIndicator={false}
     >
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="Buscar en dashboard..."
-        colorScheme={colorScheme ?? "light"}
-      />
+      <View style={styles.searchContainer}>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Buscar en dashboard..."
+          colorScheme={colorScheme ?? "light"}
+        />
+      </View>
 
       <View
         style={[
@@ -80,6 +82,10 @@ export default function OverviewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  searchContainer: {
+    marginBottom: 20,
+    backgroundColor: "transparent",
   },
   card: {
     padding: 24,

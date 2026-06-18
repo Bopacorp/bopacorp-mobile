@@ -1,15 +1,25 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useState } from "react";
-import { StyleSheet, ScrollView } from "react-native";
-import { Text, View } from "@/components/Themed";
+import { StyleSheet, ScrollView, Pressable, Alert, View } from "react-native";
+import * as DocumentPicker from "expo-document-picker";
+import { Text } from "@/components/Themed";
 import Colors from "../../constants/Colors";
 import { useColorScheme } from "../../components/useColorScheme";
 import SearchBar from "../../components/SearchBar";
+import FilterButton from "../../components/FilterButton";
 
 export default function DocumentationScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+
+  const filterOptions = [
+    { value: "all", label: "Todos" },
+    { value: "PENDING_APPROVAL", label: "Pendientes" },
+    { value: "ACCEPTED", label: "Aceptados" },
+    { value: "REJECTED", label: "Rechazados" },
+  ];
 
   const items = [
     "Barra de búsqueda de archivos y filtrado por estado de aprobación (Pendiente, Aceptado, Rechazado)",
@@ -18,6 +28,32 @@ export default function DocumentationScreen() {
     "Acción rápida para descargar o previsualizar archivos de forma segura",
     "Flujo de aprobación/rechazo de documentos con observaciones para coordinadores",
   ];
+
+  const handleUploadFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "image/*"],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        console.log("User canceled file selection");
+        return;
+      }
+
+      const file = result.assets[0];
+      console.log("Selected file:", file.name, file.uri, file.size);
+      
+      const sizeText = file.size ? `${(file.size / 1024).toFixed(1)} KB` : "Desconocido";
+      Alert.alert(
+        "Archivo Seleccionado",
+        `Nombre: ${file.name}\nTamaño: ${sizeText}`
+      );
+    } catch (error) {
+      console.error("Error picking document:", error);
+      Alert.alert("Error", "No se pudo seleccionar el archivo.");
+    }
+  };
 
   const filteredItems = items.filter((item) =>
     item.toLowerCase().includes(searchQuery.toLowerCase())
@@ -29,12 +65,37 @@ export default function DocumentationScreen() {
       contentContainerStyle={{ padding: 20 }}
       showsVerticalScrollIndicator={false}
     >
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="Buscar documentos..."
-        colorScheme={colorScheme ?? "light"}
-      />
+      <View style={styles.searchRow}>
+        <View style={{ flex: 1 }}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Buscar documentos..."
+            colorScheme={colorScheme ?? "light"}
+          />
+        </View>
+        <FilterButton
+          options={filterOptions}
+          selectedValue={activeFilter}
+          onSelect={setActiveFilter}
+          colorScheme={colorScheme ?? "light"}
+          title="Estado del Documento"
+        />
+      </View>
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.uploadButton,
+          {
+            backgroundColor: currentColors.primary,
+            opacity: pressed ? 0.8 : 1,
+          },
+        ]}
+        onPress={handleUploadFile}
+      >
+        <FontAwesome name="upload" size={16} color="white" style={styles.uploadIcon} />
+        <Text style={styles.uploadButtonText}>Subir Documento</Text>
+      </Pressable>
 
       <View
         style={[
@@ -81,6 +142,34 @@ export default function DocumentationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 20,
+    backgroundColor: "transparent",
+  },
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 44,
+    borderRadius: 8,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  uploadIcon: {
+    marginRight: 8,
+  },
+  uploadButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "bold",
   },
   card: {
     padding: 24,

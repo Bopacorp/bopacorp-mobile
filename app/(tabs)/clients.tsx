@@ -5,11 +5,19 @@ import { Text, View } from "@/components/Themed";
 import Colors from "../../constants/Colors";
 import { useColorScheme } from "../../components/useColorScheme";
 import SearchBar from "../../components/SearchBar";
+import FilterButton from "../../components/FilterButton";
 
 export default function ClientsScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+
+  const filterOptions = [
+    { value: "all", label: "Todos" },
+    { value: "active", label: "Activos" },
+    { value: "inactive", label: "Inactivos" },
+  ];
 
   const items = [
     "Barra de búsqueda y filtrado de clientes corporativos por estado (Activo/Inactivo)",
@@ -29,12 +37,23 @@ export default function ClientsScreen() {
       contentContainerStyle={{ padding: 20 }}
       showsVerticalScrollIndicator={false}
     >
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="Buscar clientes..."
-        colorScheme={colorScheme ?? "light"}
-      />
+      <View style={styles.searchRow}>
+        <View style={{ flex: 1 }}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Buscar clientes..."
+            colorScheme={colorScheme ?? "light"}
+          />
+        </View>
+        <FilterButton
+          options={filterOptions}
+          selectedValue={activeFilter}
+          onSelect={setActiveFilter}
+          colorScheme={colorScheme ?? "light"}
+          title="Filtrar Clientes"
+        />
+      </View>
 
       <View
         style={[
@@ -81,6 +100,13 @@ export default function ClientsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 20,
+    backgroundColor: "transparent",
   },
   card: {
     padding: 24,

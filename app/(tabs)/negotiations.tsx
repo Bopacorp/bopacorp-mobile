@@ -5,11 +5,21 @@ import { Text, View } from "@/components/Themed";
 import Colors from "../../constants/Colors";
 import { useColorScheme } from "../../components/useColorScheme";
 import SearchBar from "../../components/SearchBar";
+import FilterButton from "../../components/FilterButton";
 
 export default function NegotiationsScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("Todos");
+
+  const filterOptions = [
+    { value: "Todos", label: "Todos" },
+    { value: "Borrador", label: "Borrador" },
+    { value: "Enviado", label: "Enviado" },
+    { value: "Aprobado", label: "Aprobado" },
+    { value: "Rechazado", label: "Rechazado" },
+  ];
 
   const items = [
     "Barra de filtros (por etapa del deal) y cuadro de búsqueda de negociaciones",
@@ -29,12 +39,23 @@ export default function NegotiationsScreen() {
       contentContainerStyle={{ padding: 20 }}
       showsVerticalScrollIndicator={false}
     >
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="Buscar negociaciones..."
-        colorScheme={colorScheme ?? "light"}
-      />
+      <View style={styles.searchRow}>
+        <View style={{ flex: 1 }}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Buscar negociaciones..."
+            colorScheme={colorScheme ?? "light"}
+          />
+        </View>
+        <FilterButton
+          options={filterOptions}
+          selectedValue={activeFilter}
+          onSelect={setActiveFilter}
+          colorScheme={colorScheme ?? "light"}
+          title="Etapa de Negociación"
+        />
+      </View>
 
       <View
         style={[
@@ -81,6 +102,13 @@ export default function NegotiationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 20,
+    backgroundColor: "transparent",
   },
   card: {
     padding: 24,
