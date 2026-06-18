@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { getStorageItem, setStorageItem, removeStorageItem } from "../services/storage";
 import { apiClient, setAccessToken, setOnLogout } from "../services/api";
 
-export type Role = "Admin" | "Asesor" | null;
+export type Role = "Asesor" | "Admin" | null;
 
 export interface UserProfile {
   id: string;
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Expose setRole for backward compatibility (used for view switching and simple logouts)
+  // Expose setRole for backward compatibility (used for simple logouts)
   const setRole = async (r: Role) => {
     if (r === null) {
       setAccessToken(null);
@@ -83,23 +83,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response;
         setAccessToken(newAccessToken);
-        await setStorageItem("refreshToken", newRefreshToken);
 
         // Fetch user info using token
         const userProfile: any = await apiClient.get("/api/v1/auth/me");
         const userRoles = userProfile.roles || [];
         
-        let mappedRole: Role = null;
-        if (userRoles.includes("admin") || userRoles.includes("supervisor")) {
-          mappedRole = "Admin";
-        } else if (userRoles.includes("advisor")) {
-          mappedRole = "Asesor";
+        // Enforce only advisor role is permitted on this app
+        if (!userRoles.includes("advisor")) {
+          throw new Error("Stale credentials are not for a sales advisor.");
         }
 
+        await setStorageItem("refreshToken", newRefreshToken);
         setUser(userProfile);
-        setRoleState(mappedRole);
+        setRoleState("Asesor");
       } catch (error) {
-        console.warn("Could not silently recover session:", error);
+        console.warn("Could not silently recover advisor session:", error);
         // Clear stale credentials
         setAccessToken(null);
         await removeStorageItem("refreshToken");
@@ -121,20 +119,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const { user: userProfile, tokens } = response;
+      const userRoles = userProfile.roles || [];
+
+      // Block non-advisors from accessing the mobile app
+      if (!userRoles.includes("advisor")) {
+        throw new Error("Acceso denegado: Esta aplicación móvil es de uso exclusivo para Asesores Comerciales.");
+      }
 
       setAccessToken(tokens.accessToken);
       await setStorageItem("refreshToken", tokens.refreshToken);
 
-      const userRoles = userProfile.roles || [];
-      let mappedRole: Role = null;
-      if (userRoles.includes("admin") || userRoles.includes("supervisor")) {
-        mappedRole = "Admin";
-      } else if (userRoles.includes("advisor")) {
-        mappedRole = "Asesor";
-      }
-
       setUser(userProfile);
-      setRoleState(mappedRole);
+      setRoleState("Asesor");
     } catch (error) {
       console.error("Login request failed:", error);
       throw error;
@@ -152,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.warn("Logout API call failed on backend:", error);
     } finally {
-      // Always clear local session even if backend logout fails (e.g. offline)
+      // Always clear local session even if backend logout fails
       setAccessToken(null);
       await removeStorageItem("refreshToken");
       setUser(null);

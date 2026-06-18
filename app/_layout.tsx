@@ -64,7 +64,7 @@ function RootLayoutNav() {
     const currentRoute = (segments as string[])[0];
 
     if (!role && inTabsGroup) {
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && window.location) {
         window.location.href = "/";
       } else {
         router.replace("/");
@@ -74,7 +74,7 @@ function RootLayoutNav() {
       !inTabsGroup &&
       !allowedOutsideTabs.includes(currentRoute)
     ) {
-      router.replace(role === "Admin" ? "/(tabs)/admin-dashboard" : "/(tabs)");
+      router.replace("/(tabs)");
     }
   }, [role, segments, isLoading]);
 

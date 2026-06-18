@@ -18,19 +18,14 @@ export default function LoginScreen() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { login } = useAuth();
 
-  const handleLogin = async (selectedRole?: "Asesor" | "Admin") => {
+  const handleLogin = async () => {
     let finalEmail = email.trim();
     let finalPassword = password;
 
-    // Autofill seeded credentials for developer convenience if fields are empty
-    if (selectedRole && !finalEmail && !finalPassword) {
-      if (selectedRole === "Asesor") {
-        finalEmail = "lreyes@bopacorp.com";
-        finalPassword = "Bopa2026!";
-      } else {
-        finalEmail = "cpauta@bopacorp.com";
-        finalPassword = "Bopa2026!";
-      }
+    // Autofill seeded Advisor credentials for developer convenience if fields are empty
+    if (!finalEmail && !finalPassword) {
+      finalEmail = "lreyes@bopacorp.com";
+      finalPassword = "Bopa2026!";
       setEmail(finalEmail);
       setPassword(finalPassword);
     }
@@ -61,7 +56,7 @@ export default function LoginScreen() {
           style={styles.logo}
         />
         <Text style={styles.title}>BOPACORPSA</Text>
-        <Text style={styles.subtitle}>CRM Empresarial</Text>
+        <Text style={styles.subtitle}>CRM Movil - Asesores</Text>
       </View>
 
       <View style={styles.formCard}>
@@ -94,33 +89,18 @@ export default function LoginScreen() {
             <Text style={styles.loaderText}>Iniciando sesión...</Text>
           </View>
         ) : (
-          <>
-            <Pressable
-              style={[styles.button, styles.btnAsesor]}
-              onPress={() => handleLogin("Asesor")}
-            >
-              <FontAwesome
-                name="user"
-                size={16}
-                color="white"
-                style={styles.btnIcon}
-              />
-              <Text style={styles.buttonText}>Ingresar como Asesor</Text>
-            </Pressable>
-
-            <Pressable
-              style={[styles.button, styles.btnAdmin]}
-              onPress={() => handleLogin("Admin")}
-            >
-              <FontAwesome
-                name="shield"
-                size={16}
-                color="white"
-                style={styles.btnIcon}
-              />
-              <Text style={styles.buttonText}>Ingresar como Admin</Text>
-            </Pressable>
-          </>
+          <Pressable
+            style={[styles.button, styles.btnLogin]}
+            onPress={handleLogin}
+          >
+            <FontAwesome
+              name="sign-in"
+              size={16}
+              color="white"
+              style={styles.btnIcon}
+            />
+            <Text style={styles.buttonText}>Ingresar</Text>
+          </Pressable>
         )}
       </View>
     </ScrollView>
@@ -176,10 +156,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
   },
-  btnAsesor: { backgroundColor: "#2196F3" },
-  btnAdmin: { backgroundColor: "#F57C00" },
+  btnLogin: { backgroundColor: "#2196F3" },
   btnIcon: { marginRight: 10 },
   buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "bold" },
   loaderContainer: {

@@ -6,7 +6,6 @@ import { Image } from "react-native";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { useAuth } from "../../context/AuthContext";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
@@ -23,8 +22,8 @@ function HeaderLogo() {
     />
   );
 }
+
 export default function TabLayout() {
-  const { role } = useAuth();
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
 
@@ -46,11 +45,10 @@ export default function TabLayout() {
         headerShown: useClientOnlyValue(false, true),
       }}
     >
-      {/* 1. NEGOCIACIONES */}
+      {/* 1. NEGOCIACIONES (Advisor Dashboard) */}
       <Tabs.Screen
         name="index"
         options={{
-          href: role === "Admin" ? null : undefined,
           headerTitle: () => <HeaderLogo />,
           tabBarLabel: "Negociaciones",
           tabBarIcon: ({ color }) => (
@@ -58,47 +56,48 @@ export default function TabLayout() {
           ),
         }}
       />
+      
       {/* 2. MIS CLIENTES */}
       <Tabs.Screen
         name="clients"
         options={{
-          href: role === "Admin" ? null : undefined,
           title: "Clientes",
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="building" color={color} />
           ),
         }}
       />
+      
       {/* 3. MIS ACTIVIDADES */}
       <Tabs.Screen
         name="activities"
         options={{
-          href: role === "Admin" ? null : undefined,
           title: "Actividades",
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="calendar" color={color} />
           ),
         }}
       />
+      
       {/* 4. CATÁLOGO */}
       <Tabs.Screen
         name="catalog"
         options={{
-          href: role === "Admin" ? null : undefined,
           title: "Catálogo",
           tabBarIcon: ({ color }) => <TabBarIcon name="tags" color={color} />,
         }}
       />
+      
       {/* 5. MI PERFIL */}
       <Tabs.Screen
         name="profile"
         options={{
-          href: role === "Admin" ? null : undefined,
           title: "Perfil",
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />
-      {/* 6. POSTULACIÓN (Oculto de las pestañas principales, accedido vía link público) */}
+      
+      {/* 6. POSTULACIÓN (Hidden from main tabs, accessed via direct links) */}
       <Tabs.Screen
         name="employability"
         options={{
@@ -110,43 +109,11 @@ export default function TabLayout() {
         }}
       />
 
-      {/* --- MUNDO ADMIN (SE MANTIENE IGUAL) --- */}
-      <Tabs.Screen
-        name="admin-dashboard"
-        options={{
-          href: role === "Admin" ? undefined : null,
-          title: "Admin",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="th-large" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="users"
-        options={{
-          href: role === "Admin" ? undefined : null,
-          title: "Usuarios",
-          tabBarIcon: ({ color }) => <TabBarIcon name="users" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="admin-catalog"
-        options={{
-          href: role === "Admin" ? undefined : null,
-          title: "Catálogo",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="archive" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          href: role === "Admin" ? undefined : null,
-          title: "Config",
-          tabBarIcon: ({ color }) => <TabBarIcon name="cog" color={color} />,
-        }}
-      />
+      {/* Exclude admin-dashboard, users, admin-catalog, and settings screens from tab menu */}
+      <Tabs.Screen name="admin-dashboard" options={{ href: null }} />
+      <Tabs.Screen name="users" options={{ href: null }} />
+      <Tabs.Screen name="admin-catalog" options={{ href: null }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );
 }
