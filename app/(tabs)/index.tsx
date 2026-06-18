@@ -1,94 +1,40 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  useColorScheme,
-} from "react-native";
-
+import React, { useState } from "react";
+import { StyleSheet, ScrollView } from "react-native";
 import { Text, View } from "@/components/Themed";
-import Colors from "@/constants/Colors";
-import { getClients, Negotiation } from "../../services/ClientServices";
+import Colors from "../../constants/Colors";
+import { useColorScheme } from "../../components/useColorScheme";
+import SearchBar from "../../components/SearchBar";
 
-
-
-const STATUS_COLORS = {
-  Borrador: {
-    bg: "#e5e5e5",
-    text: "#555555",
-    darkBg: "#333333",
-    darkText: "#cccccc",
-  },
-  Enviado: {
-    bg: "#e5f3ff",
-    text: "#006cb8",
-    darkBg: "rgba(0,108,184,0.2)",
-    darkText: "#3b9be0",
-  },
-  Aprobado: {
-    bg: "#e6fcf5",
-    text: "#0ca678",
-    darkBg: "rgba(12,166,120,0.2)",
-    darkText: "#20c997",
-  },
-  Rechazado: {
-    bg: "#fff0f6",
-    text: "#d6336c",
-    darkBg: "rgba(214,51,108,0.2)",
-    darkText: "#f783ac",
-  },
-};
-
-export default function NegotiationsScreen() {
+export default function OverviewScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<
-    "Todos" | "Borrador" | "Enviado" | "Aprobado"
-  >("Todos");
 
-  const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
+  const items = [
+    "KpiCard: Cuentas activas (Total de cuentas en operación)",
+    "KpiCard: Visitas hoy (Programadas y completadas para el asesor)",
+    "KpiCard: Top performers (Clasificación de asesores destacados)",
+    "Panel de Resumen operativo diario y métricas de rendimiento comercial",
+  ];
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await getClients();
-        console.log("DATOS RECIBIDOS:", data);
-        if (data && data.length > 0) {
-          setNegotiations(data);
-        } else {
-          setNegotiations([]);
-        }
-      } catch (error) {
-        console.error("ERROR API:", error);
-        setNegotiations([]);
-      }
-    };
-    loadData();
-  }, []);
+  const filteredItems = items.filter((item) =>
+    item.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const filteredData = negotiations.filter((item) => {
-    const matchesSearch =
-      item.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.planName.toLowerCase().includes(searchQuery.toLowerCase());
+  return (
+    <ScrollView
+      style={[styles.container, { backgroundColor: currentColors.background }]}
+      contentContainerStyle={{ padding: 20 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Buscar en dashboard..."
+        colorScheme={colorScheme ?? "light"}
+      />
 
-    const matchesFilter =
-      activeFilter === "Todos" ||
-      item.status.toLowerCase() === activeFilter.toLowerCase();
-
-    return matchesSearch && matchesFilter;
-  });
-
-  const renderItem = ({ item }: { item: Negotiation }) => {
-    const statusStyle = STATUS_COLORS[item.status] || STATUS_COLORS.Borrador;
-    const badgeBg =
-      colorScheme === "dark" ? statusStyle.darkBg : statusStyle.bg;
-    const badgeText =
-      colorScheme === "dark" ? statusStyle.darkText : statusStyle.text;
-
-    return (
       <View
         style={[
           styles.card,
@@ -98,325 +44,100 @@ export default function NegotiationsScreen() {
           },
         ]}
       >
-        <View style={styles.cardHeader}>
-          <View style={{ flex: 1, marginRight: 8 }}>
-            <Text style={[styles.clientName, { color: currentColors.text }]} numberOfLines={1}>
-              {item.clientName}
-            </Text>
-            <Text
-              style={[
-                styles.planName,
-                { color: currentColors.mutedForeground },
-              ]}
-            >
-              Estado: {item.planName}
-            </Text>
-          </View>
-          <View style={[styles.badge, { backgroundColor: badgeBg }]}>
-            <Text style={[styles.badgeText, { color: badgeText }]}>
-              {item.status}
-            </Text>
-          </View>
+        <View style={styles.titleRow}>
+          <FontAwesome name="home" size={24} color={currentColors.primary} />
+          <Text style={[styles.title, { color: currentColors.text }]}>Overview</Text>
         </View>
+        
+        <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>
+          Resumen operativo y métricas clave de negocio.
+        </Text>
 
-        <View
-          style={[
-            styles.cardDivider,
-            { backgroundColor: currentColors.border, marginVertical: 10 },
-          ]}
-        />
+        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
 
-        {/* Dynamic API Data: Advisor & Estimated Closing */}
-        <View style={styles.detailsRow}>
-          <View style={styles.detailItem}>
-            <FontAwesome
-              name="user"
-              size={12}
-              color={currentColors.mutedForeground}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={[styles.detailText, { color: currentColors.mutedForeground }]} numberOfLines={1}>
-              Asesor: {item.advisorName}
+        <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
+          Componentes que se ubicarán aquí:
+        </Text>
+
+        <View style={styles.listContainer}>
+          {filteredItems.map((item, index) => (
+            <View key={index} style={styles.listItem}>
+              <FontAwesome name="circle" size={8} color={currentColors.primary} style={styles.listBullet} />
+              <Text style={[styles.listText, { color: currentColors.text }]}>{item}</Text>
+            </View>
+          ))}
+          {filteredItems.length === 0 && (
+            <Text style={[styles.noResultsText, { color: currentColors.mutedForeground }]}>
+              Sin resultados para "{searchQuery}"
             </Text>
-          </View>
-          <View style={styles.detailItem}>
-            <FontAwesome
-              name="calendar"
-              size={12}
-              color={currentColors.mutedForeground}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={[styles.detailText, { color: currentColors.mutedForeground }]}>
-              Cierre: {item.estimatedCloseDate}
-            </Text>
-          </View>
-        </View>
-
-        <View
-          style={[
-            styles.cardDivider,
-            { backgroundColor: currentColors.border, marginVertical: 10 },
-          ]}
-        />
-
-        <View style={styles.cardFooter}>
-          <Text style={[styles.amountText, { color: currentColors.primary }]}>
-            {item.amount}
-          </Text>
-          <View style={styles.dateContainer}>
-            <FontAwesome
-              name="clock-o"
-              size={12}
-              color={currentColors.mutedForeground}
-              style={{ marginRight: 4 }}
-            />
-            <Text
-              style={[
-                styles.dateText,
-                { color: currentColors.mutedForeground },
-              ]}
-            >
-              Inicio: {item.date}
-            </Text>
-          </View>
+          )}
         </View>
       </View>
-    );
-  };
-
-  return (
-    <View
-      style={[styles.container, { backgroundColor: currentColors.background }]}
-    >
-      {/* Search Input */}
-      <View
-        style={[
-          styles.searchContainer,
-          {
-            backgroundColor: currentColors.card,
-            borderColor: currentColors.border,
-          },
-        ]}
-      >
-        <FontAwesome
-          name="search"
-          size={16}
-          color={currentColors.mutedForeground}
-          style={{ marginRight: 10 }}
-        />
-        <TextInput
-          placeholder="Buscar cliente o plan..."
-          placeholderTextColor={currentColors.mutedForeground}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={[styles.searchInput, { color: currentColors.text }]}
-        />
-        {searchQuery.length > 0 && (
-          <Pressable onPress={() => setSearchQuery("")}>
-            <FontAwesome
-              name="times-circle"
-              size={16}
-              color={currentColors.mutedForeground}
-            />
-          </Pressable>
-        )}
-      </View>
-
-      {/* Filter Tabs */}
-      <View style={styles.filtersWrapper}>
-        {(["Todos", "Borrador", "Enviado", "Aprobado"] as const).map(
-          (filter) => {
-            const isActive = activeFilter === filter;
-            return (
-              <Pressable
-                key={filter}
-                onPress={() => setActiveFilter(filter)}
-                style={[
-                  styles.filterTab,
-                  {
-                    backgroundColor: isActive
-                      ? currentColors.primary
-                      : currentColors.card,
-                    borderColor: currentColors.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterTabText,
-                    {
-                      color: isActive ? "#ffffff" : currentColors.text,
-                      fontWeight: isActive ? "bold" : "normal",
-                    },
-                  ]}
-                >
-                  {filter}
-                </Text>
-              </Pressable>
-            );
-          },
-        )}
-      </View>
-
-      {/* Negotiations List */}
-      <FlatList
-        data={filteredData}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <FontAwesome
-              name="folder-open-o"
-              size={48}
-              color={currentColors.mutedForeground}
-              style={{ marginBottom: 12 }}
-            />
-            <Text
-              style={[
-                styles.emptyText,
-                { color: currentColors.mutedForeground },
-              ]}
-            >
-              No hay negociaciones encontradas
-            </Text>
-          </View>
-        }
-      />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 15,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 16,
-    paddingHorizontal: 12,
-    height: 44,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    paddingVertical: 8,
-  },
-  filtersWrapper: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    gap: 8,
-  },
-  filterTab: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  filterTabText: {
-    fontSize: 13,
-  },
-  listContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
   },
   card: {
-    borderRadius: 12,
+    padding: 24,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 16,
-    marginBottom: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
-  cardHeader: {
+  titleRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
+    marginBottom: 8,
     backgroundColor: "transparent",
   },
-  clientName: {
-    fontSize: 16,
+  title: {
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 4,
+    marginLeft: 12,
   },
-  planName: {
+  subtitle: {
     fontSize: 14,
+    marginBottom: 20,
+    backgroundColor: "transparent",
   },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: "bold",
-  },
-  cardDivider: {
+  divider: {
     height: 1,
-    marginVertical: 12,
+    marginBottom: 20,
   },
-  detailsRow: {
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 16,
+    backgroundColor: "transparent",
+  },
+  listContainer: {
+    gap: 12,
+    backgroundColor: "transparent",
+  },
+  listItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "transparent",
   },
-  detailItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "transparent",
+  listBullet: {
+    marginRight: 12,
+  },
+  listText: {
+    fontSize: 14,
+    lineHeight: 20,
     flex: 1,
   },
-  detailText: {
-    fontSize: 12,
-  },
-  cardFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "transparent",
-  },
-  amountText: {
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-  dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "transparent",
-  },
-  dateText: {
-    fontSize: 12,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-    backgroundColor: "transparent",
-  },
-  emptyText: {
-    fontSize: 15,
+  noResultsText: {
+    fontSize: 14,
+    fontStyle: "italic",
     textAlign: "center",
-  },
-
-  fab: {
-    position: "absolute",
-    right: 20,
-    bottom: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    marginTop: 10,
   },
 });

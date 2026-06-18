@@ -21,6 +21,8 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+import { ThemeProvider as AppThemeProvider } from "../context/ThemeContext";
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -35,9 +37,11 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
+      <AppThemeProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </AppThemeProvider>
     </QueryClientProvider>
   );
 }
@@ -60,7 +64,7 @@ function RootLayoutNav() {
 
     const inTabsGroup = (segments as string[])[0] === "(tabs)";
 
-    const allowedOutsideTabs = ["new-client", "client-detail", "modal"];
+    const allowedOutsideTabs = ["modal"];
     const currentRoute = (segments as string[])[0];
 
     if (!role && inTabsGroup) {

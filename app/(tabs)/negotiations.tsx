@@ -6,17 +6,17 @@ import Colors from "../../constants/Colors";
 import { useColorScheme } from "../../components/useColorScheme";
 import SearchBar from "../../components/SearchBar";
 
-export default function ClientsScreen() {
+export default function NegotiationsScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
 
   const items = [
-    "Barra de búsqueda y filtrado de clientes corporativos por estado (Activo/Inactivo)",
-    "Filtro por asesor comercial asignado (para perfiles administrativos)",
-    "Tabla o listado móvil de clientes corporativos (Nombre comercial, RUC, Teléfono, Razón social)",
-    "Botón y formulario flotante para la creación de 'Nuevo Cliente Corporativo'",
-    "Ficha detallada con datos del cliente y sus acuerdos o negociaciones asociadas",
+    "Barra de filtros (por etapa del deal) y cuadro de búsqueda de negociaciones",
+    "Toggle de visualización: Modo Lista (Tabla) y Modo Kanban de oportunidades",
+    "Listado de negociaciones activas (Empresa, plan contratado, monto cotizado, estado de aprobación)",
+    "Botón flotante o disparador para 'Crear Nueva Negociación' / Oportunidad de venta",
+    "Flujo de aprobación interno y envío automático al backend API",
   ];
 
   const filteredItems = items.filter((item) =>
@@ -32,7 +32,7 @@ export default function ClientsScreen() {
       <SearchBar
         value={searchQuery}
         onChangeText={setSearchQuery}
-        placeholder="Buscar clientes..."
+        placeholder="Buscar negociaciones..."
         colorScheme={colorScheme ?? "light"}
       />
 
@@ -46,12 +46,12 @@ export default function ClientsScreen() {
         ]}
       >
         <View style={styles.titleRow}>
-          <FontAwesome name="building" size={24} color={currentColors.primary} />
-          <Text style={[styles.title, { color: currentColors.text }]}>Clientes</Text>
+          <FontAwesome name="handshake-o" size={24} color={currentColors.primary} />
+          <Text style={[styles.title, { color: currentColors.text }]}>Negociaciones</Text>
         </View>
         
         <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>
-          Listado de clientes corporativos y gestión de cuentas.
+          Acuerdos comerciales y seguimiento de ventas.
         </Text>
 
         <View style={[styles.divider, { backgroundColor: currentColors.border }]} />

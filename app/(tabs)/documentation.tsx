@@ -6,17 +6,17 @@ import Colors from "../../constants/Colors";
 import { useColorScheme } from "../../components/useColorScheme";
 import SearchBar from "../../components/SearchBar";
 
-export default function ClientsScreen() {
+export default function DocumentationScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
 
   const items = [
-    "Barra de búsqueda y filtrado de clientes corporativos por estado (Activo/Inactivo)",
-    "Filtro por asesor comercial asignado (para perfiles administrativos)",
-    "Tabla o listado móvil de clientes corporativos (Nombre comercial, RUC, Teléfono, Razón social)",
-    "Botón y formulario flotante para la creación de 'Nuevo Cliente Corporativo'",
-    "Ficha detallada con datos del cliente y sus acuerdos o negociaciones asociadas",
+    "Barra de búsqueda de archivos y filtrado por estado de aprobación (Pendiente, Aceptado, Rechazado)",
+    "Listado de documentos subidos por negociación (Empresa cliente, tipo de documento, nombre de archivo, fecha de subida)",
+    "Botón de carga de nuevos documentos por negociación (Selector local de archivos PDF o imágenes)",
+    "Acción rápida para descargar o previsualizar archivos de forma segura",
+    "Flujo de aprobación/rechazo de documentos con observaciones para coordinadores",
   ];
 
   const filteredItems = items.filter((item) =>
@@ -32,7 +32,7 @@ export default function ClientsScreen() {
       <SearchBar
         value={searchQuery}
         onChangeText={setSearchQuery}
-        placeholder="Buscar clientes..."
+        placeholder="Buscar documentos..."
         colorScheme={colorScheme ?? "light"}
       />
 
@@ -46,12 +46,12 @@ export default function ClientsScreen() {
         ]}
       >
         <View style={styles.titleRow}>
-          <FontAwesome name="building" size={24} color={currentColors.primary} />
-          <Text style={[styles.title, { color: currentColors.text }]}>Clientes</Text>
+          <FontAwesome name="file-text-o" size={24} color={currentColors.primary} />
+          <Text style={[styles.title, { color: currentColors.text }]}>Documentación</Text>
         </View>
         
         <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>
-          Listado de clientes corporativos y gestión de cuentas.
+          Gestión de archivos contractuales y aprobaciones de carpetas.
         </Text>
 
         <View style={[styles.divider, { backgroundColor: currentColors.border }]} />

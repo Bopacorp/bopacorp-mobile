@@ -1,129 +1,165 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Switch } from "react-native";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
+import { Text, View } from "@/components/Themed";
+import Colors from "../../constants/Colors";
 
 export default function SettingsScreen() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const { colorScheme, toggleColorScheme } = useTheme();
+  const currentColors = Colors[colorScheme ?? "light"];
 
   const handleLogout = () => {
     logout();
   };
+
+  const getInitials = () => {
+    if (user?.profile) {
+      const first = user.profile.firstName?.[0] || "";
+      const last = user.profile.lastName?.[0] || "";
+      return (first + last).toUpperCase();
+    }
+    return user?.username?.slice(0, 2).toUpperCase() || "AS";
+  };
+
+  const getFullName = () => {
+    if (user?.profile) {
+      return `${user.profile.firstName} ${user.profile.lastName}`;
+    }
+    return user?.username || "Asesor Comercial";
+  };
+
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: 40 }}
+      style={[styles.container, { backgroundColor: currentColors.background }]}
+      contentContainerStyle={{ padding: 20 }}
+      showsVerticalScrollIndicator={false}
     >
-      {/* 1. CABECERA DEL PERFIL */}
-      <View style={styles.profileHeader}>
-        <View style={styles.avatarContainer}>
-          <FontAwesome name="user-circle" size={80} color="#1976D2" />
+      {/* 1. PROFILE CARD */}
+      <View
+        style={[
+          styles.profileHeader,
+          {
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+          },
+        ]}
+      >
+        <View style={[styles.avatarContainer, { backgroundColor: currentColors.secondary }]}>
+          <Text style={[styles.avatarText, { color: currentColors.text }]}>
+            {getInitials()}
+          </Text>
         </View>
-        <Text style={styles.nameText}>Admin Principal</Text>
-        <Text style={styles.emailText}>admin@bopacorpsa.com</Text>
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>Administrador</Text>
-        </View>
-      </View>
-
-      {/* 2. ESTADÍSTICAS RÁPIDAS DEL USUARIO */}
-      <View style={styles.statsRow}>
-        <View style={styles.statBox}>
-          <FontAwesome name="users" size={24} color="#2196F3" />
-          <Text style={styles.statNumber}>15</Text>
-          <Text style={styles.statLabel}>Usuarios</Text>
-        </View>
-        <View style={styles.statBox}>
-          <FontAwesome name="archive" size={24} color="#4CAF50" />
-          <Text style={styles.statNumber}>24</Text>
-          <Text style={styles.statLabel}>Servicios</Text>
-        </View>
-        <View style={styles.statBox}>
-          <FontAwesome name="calendar" size={24} color="#FF9800" />
-          <Text style={styles.statNumber}>2026</Text>
-          <Text style={styles.statLabel}>Año</Text>
+        <Text style={[styles.nameText, { color: currentColors.text }]}>
+          {getFullName()}
+        </Text>
+        <Text style={[styles.emailText, { color: currentColors.mutedForeground }]}>
+          {user?.email || "asesor@bopacorp.com"}
+        </Text>
+        <View style={[styles.roleBadge, { backgroundColor: currentColors.primary }]}>
+          <Text style={styles.roleText}>Asesor Comercial</Text>
         </View>
       </View>
 
-      <View style={styles.menuContainer}>
-        <Pressable style={styles.menuItem}>
-          <View style={[styles.iconBox, { backgroundColor: "#E3F2FD" }]}>
-            <FontAwesome name="pencil" size={18} color="#1976D2" />
+      {/* 2. THEME SETTINGS SECTION */}
+      <Text style={[styles.sectionTitle, { color: currentColors.mutedForeground }]}>
+        Preferencias
+      </Text>
+      
+      <View
+        style={[
+          styles.menuContainer,
+          {
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+          },
+        ]}
+      >
+        <View style={styles.menuItem}>
+          <View style={[styles.iconBox, { backgroundColor: colorScheme === "dark" ? "rgba(0, 127, 206, 0.15)" : "#E3F2FD" }]}>
+            <FontAwesome
+              name={colorScheme === "dark" ? "moon-o" : "sun-o"}
+              size={18}
+              color={currentColors.primary}
+            />
           </View>
           <View style={styles.menuTextContent}>
-            <Text style={styles.menuTitle}>Editar Perfil</Text>
-            <Text style={styles.menuSubtitle}>
-              Actualizar información personal
+            <Text style={[styles.menuTitle, { color: currentColors.text }]}>Modo Oscuro</Text>
+            <Text style={[styles.menuSubtitle, { color: currentColors.mutedForeground }]}>
+              Cambiar apariencia de la aplicación
             </Text>
           </View>
-          <FontAwesome name="angle-right" size={20} color="#B0B0B0" />
-        </Pressable>
-        <View style={styles.divider} />
-
-        <Pressable style={styles.menuItem}>
-          <View style={[styles.iconBox, { backgroundColor: "#FFF3E0" }]}>
-            <FontAwesome name="lock" size={18} color="#FF9800" />
-          </View>
-          <View style={styles.menuTextContent}>
-            <Text style={styles.menuTitle}>Cambiar Contraseña</Text>
-            <Text style={styles.menuSubtitle}>
-              Actualizar credenciales de acceso
-            </Text>
-          </View>
-          <FontAwesome name="angle-right" size={20} color="#B0B0B0" />
-        </Pressable>
-        <View style={styles.divider} />
-
-        <Pressable style={styles.menuItem}>
-          <View style={[styles.iconBox, { backgroundColor: "#F3E5F5" }]}>
-            <FontAwesome name="cog" size={18} color="#9C27B0" />
-          </View>
-          <View style={styles.menuTextContent}>
-            <Text style={styles.menuTitle}>Preferencias Generales</Text>
-            <Text style={styles.menuSubtitle}>
-              Ajustes de notificaciones y tema
-            </Text>
-          </View>
-          <FontAwesome name="angle-right" size={20} color="#B0B0B0" />
-        </Pressable>
+          <Switch
+            value={colorScheme === "dark"}
+            onValueChange={toggleColorScheme}
+            trackColor={{ false: "#ccc", true: currentColors.primary }}
+            thumbColor={colorScheme === "dark" ? "#ffffff" : "#f4f3f4"}
+          />
+        </View>
       </View>
 
-      <View style={styles.infoContainer}>
+      {/* 3. APPLICATION INFORMATION */}
+      <Text style={[styles.sectionTitle, { color: currentColors.mutedForeground }]}>
+        Información
+      </Text>
+      
+      <View
+        style={[
+          styles.menuContainer,
+          {
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+          },
+        ]}
+      >
         <View style={styles.infoRow}>
           <FontAwesome
             name="info-circle"
             size={16}
-            color="#9E9E9E"
+            color={currentColors.tabIconDefault}
             style={styles.infoIcon}
           />
-          <Text style={styles.infoText}>Versión 1.0.0</Text>
+          <Text style={[styles.infoText, { color: currentColors.text }]}>
+            Versión 1.1.0
+          </Text>
         </View>
+        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+        
         <View style={styles.infoRow}>
           <FontAwesome
             name="building-o"
             size={16}
-            color="#9E9E9E"
+            color={currentColors.tabIconDefault}
             style={styles.infoIcon}
           />
-          <Text style={styles.infoText}>BOPACORPSA CRM</Text>
+          <Text style={[styles.infoText, { color: currentColors.text }]}>
+            BOPACORPSA CRM Móvil
+          </Text>
         </View>
+        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+
         <View style={styles.infoRow}>
           <FontAwesome
-            name="calendar-check-o"
-            size={16}
-            color="#9E9E9E"
+            name="server"
+            size={14}
+            color={currentColors.tabIconDefault}
             style={styles.infoIcon}
           />
-          <Text style={styles.infoText}>Miembro desde 15/01/2026</Text>
+          <Text style={[styles.infoText, { color: currentColors.text }]}>
+            Servidor: {process.env.EXPO_PUBLIC_API_URL || "Local Dev"}
+          </Text>
         </View>
       </View>
 
+      {/* 4. ACTIONS */}
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <FontAwesome
           name="sign-out"
           size={18}
           color="#F44336"
-          style={{ marginRight: 8 }}
+          style={{ marginRight: 10 }}
         />
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </Pressable>
@@ -134,36 +170,42 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
     padding: 20,
   },
   profileHeader: {
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 30,
+    paddingVertical: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 24,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   avatarContainer: {
-    marginBottom: 12,
-    backgroundColor: "white",
-    borderRadius: 50,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  avatarText: {
+    fontSize: 28,
+    fontWeight: "bold",
   },
   nameText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
+    marginBottom: 4,
   },
   emailText: {
     fontSize: 14,
-    color: "#757575",
-    marginBottom: 8,
+    marginBottom: 16,
   },
   roleBadge: {
-    backgroundColor: "#1976D2",
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
@@ -173,43 +215,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-  },
-  statBox: {
-    backgroundColor: "white",
-    flex: 1,
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    marginHorizontal: 4,
-    borderWidth: 1,
-    borderColor: "#EAEAEA",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 8,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "#757575",
-    marginTop: 4,
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   menuContainer: {
-    backgroundColor: "white",
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#EAEAEA",
-    marginBottom: 30,
+    marginBottom: 24,
     overflow: "hidden",
   },
   menuItem: {
@@ -218,9 +235,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -231,51 +248,43 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 15,
     fontWeight: "bold",
-    color: "#333",
   },
   menuSubtitle: {
     fontSize: 12,
-    color: "#757575",
     marginTop: 2,
   },
   divider: {
     height: 1,
-    backgroundColor: "#F0F0F0",
-    marginLeft: 72,
-  },
-  infoContainer: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#EAEAEA",
-    marginBottom: 30,
+    marginLeft: 52,
   },
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
+    padding: 16,
   },
   infoIcon: {
     width: 24,
+    textAlign: "center",
+    marginRight: 12,
   },
   infoText: {
     fontSize: 14,
-    color: "#666",
+    fontWeight: "500",
   },
   logoutButton: {
     flexDirection: "row",
-    backgroundColor: "#FFEBEE",
+    backgroundColor: "rgba(244, 67, 54, 0.08)",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#FFCDD2",
+    borderColor: "rgba(244, 67, 54, 0.2)",
+    marginTop: 8,
   },
   logoutText: {
     color: "#F44336",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "bold",
   },
 });
