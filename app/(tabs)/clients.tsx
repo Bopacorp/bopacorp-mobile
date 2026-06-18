@@ -1,36 +1,78 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useState } from "react";
-import { StyleSheet, ScrollView } from "react-native";
 import { Text, View } from "@/components/Themed";
-import Colors from "../../constants/Colors";
-import { useColorScheme } from "../../components/useColorScheme";
-import SearchBar from "../../components/SearchBar";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import FilterButton from "../../components/FilterButton";
+import SearchBar from "../../components/SearchBar";
+import { useColorScheme } from "../../components/useColorScheme";
+import Colors from "../../constants/Colors";
+import {
+  BusinessClient,
+  getBusinessClients,
+} from "../../services/ClientServices";
 
 export default function ClientsScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-
+  const [clients, setClients] = useState<BusinessClient[]>([]);
+  const [loading, setLoading] = useState(true);
   const filterOptions = [
     { value: "all", label: "Todos" },
     { value: "active", label: "Activos" },
     { value: "inactive", label: "Inactivos" },
   ];
 
-  const items = [
-    "Barra de búsqueda y filtrado de clientes corporativos por estado (Activo/Inactivo)",
-    "Filtro por asesor comercial asignado (para perfiles administrativos)",
-    "Tabla o listado móvil de clientes corporativos (Nombre comercial, RUC, Teléfono, Razón social)",
-    "Botón y formulario flotante para la creación de 'Nuevo Cliente Corporativo'",
-    "Ficha detallada con datos del cliente y sus acuerdos o negociaciones asociadas",
-  ];
+  useEffect(() => {
+    loadClients();
+  }, []);
 
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  async function loadClients() {
+    try {
+      const data = await getBusinessClients();
+      setClients(data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
+  const filteredClients = clients.filter((client) => {
+    const query = searchQuery.toLowerCase();
+
+    const matchSearch =
+      client.businessName.toLowerCase().includes(query) ||
+      client.contactName.toLowerCase().includes(query) ||
+      client.advisorName.toLowerCase().includes(query) ||
+      client.ruc.includes(searchQuery);
+
+    const matchFilter =
+      activeFilter === "all" ||
+      (activeFilter === "active" && client.isActive) ||
+      (activeFilter === "inactive" && !client.isActive);
+
+    return matchSearch && matchFilter;
+  });
+
+  <Text
+    style={{
+      color: currentColors.mutedForeground,
+      marginBottom: 12,
+      fontSize: 14,
+    }}
+  >
+    Total clientes: {filteredClients.length}
+  </Text>;
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Cargando clientes...</Text>
+      </View>
+    );
+  }
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: currentColors.background }]}
@@ -65,32 +107,109 @@ export default function ClientsScreen() {
         ]}
       >
         <View style={styles.titleRow}>
-          <FontAwesome name="building" size={24} color={currentColors.primary} />
-          <Text style={[styles.title, { color: currentColors.text }]}>Clientes</Text>
+          <FontAwesome
+            name="building"
+            size={24}
+            color={currentColors.primary}
+          />
+          <Text style={[styles.title, { color: currentColors.text }]}>
+            Clientes
+          </Text>
         </View>
-        
-        <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>
+
+        <Text
+          style={[styles.subtitle, { color: currentColors.mutedForeground }]}
+        >
           Listado de clientes corporativos y gestión de cuentas.
         </Text>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
-
-        <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-          Componentes que se ubicarán aquí:
-        </Text>
+        <View
+          style={[styles.divider, { backgroundColor: currentColors.border }]}
+        />
 
         <View style={styles.listContainer}>
-          {filteredItems.map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <FontAwesome name="circle" size={8} color={currentColors.primary} style={styles.listBullet} />
-              <Text style={[styles.listText, { color: currentColors.text }]}>{item}</Text>
-            </View>
+          {filteredClients.map((client) => (
+            <TouchableOpacity
+              key={client.id}
+              style={[
+                styles.clientCard,
+                {
+                  borderColor: currentColors.border,
+                  backgroundColor: currentColors.card,
+                },
+              ]}
+              activeOpacity={0.8}
+              onPress={() => {
+                console.log(client);
+              }}
+            >
+              <View style={styles.clientHeader}>
+                <Text
+                  style={[styles.clientName, { color: currentColors.text }]}
+                >
+                  {client.businessName}
+                </Text>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    {
+                      backgroundColor: client.isActive ? "#DCFCE7" : "#FEE2E2",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: client.isActive ? "#166534" : "#991B1B",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {client.isActive ? "Activo" : "Inactivo"}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <FontAwesome name="id-card" size={14} color="#6B7280" />
+                <Text style={styles.clientInfo}>{client.ruc}</Text>
+              </View>
+
+              <Text style={styles.clientInfo}>
+                Contacto: {client.contactName}
+              </Text>
+
+              <View style={styles.infoRow}>
+                <FontAwesome name="phone" size={14} color="#6B7280" />
+                <Text style={styles.clientInfo}>{client.contactPhone}</Text>
+              </View>
+
+              <Text style={styles.clientInfo}>
+                Asesor: {client.advisorName}
+              </Text>
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: "#E5E7EB",
+                  marginVertical: 12,
+                }}
+              />
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{
+                    color: currentColors.primary,
+                    fontWeight: "600",
+                  }}
+                >
+                  Ver detalle →
+                </Text>
+              </View>
+            </TouchableOpacity>
           ))}
-          {filteredItems.length === 0 && (
-            <Text style={[styles.noResultsText, { color: currentColors.mutedForeground }]}>
-              Sin resultados para "{searchQuery}"
-            </Text>
-          )}
         </View>
       </View>
     </ScrollView>
@@ -166,5 +285,54 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign: "center",
     marginTop: 10,
+  },
+
+  clientCard: {
+    padding: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 14,
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+
+    elevation: 3,
+  },
+
+  clientHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  clientName: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "700",
+    marginRight: 10,
+  },
+
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+
+  clientInfo: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    gap: 8,
   },
 });

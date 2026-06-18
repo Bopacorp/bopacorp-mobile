@@ -1,26 +1,15 @@
+import { Text, View } from "@/components/Themed";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useState } from "react";
-import { StyleSheet, ScrollView } from "react-native";
-import { Text, View } from "@/components/Themed";
-import Colors from "../../constants/Colors";
-import { useColorScheme } from "../../components/useColorScheme";
+import { ScrollView, StyleSheet } from "react-native";
 import SearchBar from "../../components/SearchBar";
+import { useColorScheme } from "../../components/useColorScheme";
+import Colors from "../../constants/Colors";
 
 export default function OverviewScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
-
-  const items = [
-    "KpiCard: Cuentas activas (Total de cuentas en operación)",
-    "KpiCard: Visitas hoy (Programadas y completadas para el asesor)",
-    "KpiCard: Top performers (Clasificación de asesores destacados)",
-    "Panel de Resumen operativo diario y métricas de rendimiento comercial",
-  ];
-
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <ScrollView
@@ -48,31 +37,43 @@ export default function OverviewScreen() {
       >
         <View style={styles.titleRow}>
           <FontAwesome name="home" size={24} color={currentColors.primary} />
-          <Text style={[styles.title, { color: currentColors.text }]}>Overview</Text>
+          <Text style={[styles.title, { color: currentColors.text }]}>
+            Overview
+          </Text>
         </View>
-        
-        <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>
+
+        <Text
+          style={[styles.subtitle, { color: currentColors.mutedForeground }]}
+        >
           Resumen operativo y métricas clave de negocio.
         </Text>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+        <View
+          style={[styles.divider, { backgroundColor: currentColors.border }]}
+        />
 
-        <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-          Componentes que se ubicarán aquí:
-        </Text>
+        <View style={styles.kpiContainer}>
+          <View style={styles.kpiCard}>
+            <Text style={styles.kpiTitle}>Visitas hoy</Text>
 
-        <View style={styles.listContainer}>
-          {filteredItems.map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <FontAwesome name="circle" size={8} color={currentColors.primary} style={styles.listBullet} />
-              <Text style={[styles.listText, { color: currentColors.text }]}>{item}</Text>
-            </View>
-          ))}
-          {filteredItems.length === 0 && (
-            <Text style={[styles.noResultsText, { color: currentColors.mutedForeground }]}>
-              Sin resultados para "{searchQuery}"
-            </Text>
-          )}
+            <Text style={styles.kpiNumber}>3</Text>
+
+            <Text style={styles.kpiSubtitle}>Programadas y completadas</Text>
+          </View>
+        </View>
+        <View style={styles.kpiCard}>
+          <Text style={styles.kpiTitle}>Visitas hoy</Text>
+
+          <Text style={styles.kpiNumber}>3</Text>
+
+          <Text style={styles.kpiSubtitle}>Programadas y completadas</Text>
+        </View>
+        <View style={styles.kpiCard}>
+          <Text style={styles.kpiTitle}>Top performers</Text>
+
+          <Text style={styles.kpiNumber}>1</Text>
+
+          <Text style={styles.kpiSubtitle}>Asesores destacados</Text>
         </View>
       </View>
     </ScrollView>
@@ -145,5 +146,40 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign: "center",
     marginTop: 10,
+  },
+  kpiContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+    backgroundColor: "transparent",
+  },
+
+  kpiCard: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 4,
+    alignItems: "center",
+    backgroundColor: "white",
+  },
+
+  kpiTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+
+  kpiNumber: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+
+  kpiSubtitle: {
+    fontSize: 12,
+    textAlign: "center",
+    color: "#6B7280",
   },
 });

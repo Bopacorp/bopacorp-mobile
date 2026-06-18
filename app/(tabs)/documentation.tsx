@@ -1,12 +1,12 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useState } from "react";
-import { StyleSheet, ScrollView, Pressable, Alert, View } from "react-native";
-import * as DocumentPicker from "expo-document-picker";
 import { Text } from "@/components/Themed";
-import Colors from "../../constants/Colors";
-import { useColorScheme } from "../../components/useColorScheme";
-import SearchBar from "../../components/SearchBar";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import * as DocumentPicker from "expo-document-picker";
+import React, { useState } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import FilterButton from "../../components/FilterButton";
+import SearchBar from "../../components/SearchBar";
+import { useColorScheme } from "../../components/useColorScheme";
+import Colors from "../../constants/Colors";
 
 export default function DocumentationScreen() {
   const colorScheme = useColorScheme();
@@ -21,12 +21,28 @@ export default function DocumentationScreen() {
     { value: "REJECTED", label: "Rechazados" },
   ];
 
-  const items = [
-    "Barra de búsqueda de archivos y filtrado por estado de aprobación (Pendiente, Aceptado, Rechazado)",
-    "Listado de documentos subidos por negociación (Empresa cliente, tipo de documento, nombre de archivo, fecha de subida)",
-    "Botón de carga de nuevos documentos por negociación (Selector local de archivos PDF o imágenes)",
-    "Acción rápida para descargar o previsualizar archivos de forma segura",
-    "Flujo de aprobación/rechazo de documentos con observaciones para coordinadores",
+  const documents = [
+    {
+      id: "1",
+      company: "Importadora Costa Azul",
+      fileName: "Contrato_Movistar.pdf",
+      status: "ACCEPTED",
+      date: "18/06/2026",
+    },
+    {
+      id: "2",
+      company: "Clinica Dental Sonrisa",
+      fileName: "Cedula_Representante.pdf",
+      status: "PENDING_APPROVAL",
+      date: "17/06/2026",
+    },
+    {
+      id: "3",
+      company: "Papeleria Galaxia",
+      fileName: "RUC.pdf",
+      status: "REJECTED",
+      date: "16/06/2026",
+    },
   ];
 
   const handleUploadFile = async () => {
@@ -43,11 +59,13 @@ export default function DocumentationScreen() {
 
       const file = result.assets[0];
       console.log("Selected file:", file.name, file.uri, file.size);
-      
-      const sizeText = file.size ? `${(file.size / 1024).toFixed(1)} KB` : "Desconocido";
+
+      const sizeText = file.size
+        ? `${(file.size / 1024).toFixed(1)} KB`
+        : "Desconocido";
       Alert.alert(
         "Archivo Seleccionado",
-        `Nombre: ${file.name}\nTamaño: ${sizeText}`
+        `Nombre: ${file.name}\nTamaño: ${sizeText}`,
       );
     } catch (error) {
       console.error("Error picking document:", error);
@@ -55,10 +73,15 @@ export default function DocumentationScreen() {
     }
   };
 
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDocuments = documents.filter((doc) => {
+    const matchSearch =
+      doc.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.fileName.toLowerCase().includes(searchQuery.toLowerCase());
 
+    const matchFilter = activeFilter === "all" || doc.status === activeFilter;
+
+    return matchSearch && matchFilter;
+  });
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: currentColors.background }]}
@@ -93,7 +116,12 @@ export default function DocumentationScreen() {
         ]}
         onPress={handleUploadFile}
       >
-        <FontAwesome name="upload" size={16} color="white" style={styles.uploadIcon} />
+        <FontAwesome
+          name="upload"
+          size={16}
+          color="white"
+          style={styles.uploadIcon}
+        />
         <Text style={styles.uploadButtonText}>Subir Documento</Text>
       </Pressable>
 
@@ -107,32 +135,56 @@ export default function DocumentationScreen() {
         ]}
       >
         <View style={styles.titleRow}>
-          <FontAwesome name="file-text-o" size={24} color={currentColors.primary} />
-          <Text style={[styles.title, { color: currentColors.text }]}>Documentación</Text>
+          <FontAwesome
+            name="file-text-o"
+            size={24}
+            color={currentColors.primary}
+          />
+          <Text style={[styles.title, { color: currentColors.text }]}>
+            Documentación
+          </Text>
         </View>
-        
-        <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>
+
+        <Text
+          style={[styles.subtitle, { color: currentColors.mutedForeground }]}
+        >
           Gestión de archivos contractuales y aprobaciones de carpetas.
         </Text>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+        <View
+          style={[styles.divider, { backgroundColor: currentColors.border }]}
+        />
 
         <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-          Componentes que se ubicarán aquí:
+          Total documentos: {filteredDocuments.length}
         </Text>
 
         <View style={styles.listContainer}>
-          {filteredItems.map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <FontAwesome name="circle" size={8} color={currentColors.primary} style={styles.listBullet} />
-              <Text style={[styles.listText, { color: currentColors.text }]}>{item}</Text>
+          {filteredDocuments.map((doc) => (
+            <View key={doc.id} style={styles.documentCard}>
+              <Text style={styles.documentTitle}>{doc.fileName}</Text>
+
+              <Text>Empresa: {doc.company}</Text>
+
+              <Text>Fecha: {doc.date}</Text>
+
+              <View
+                style={[
+                  styles.statusBadge,
+                  {
+                    backgroundColor:
+                      doc.status === "ACCEPTED"
+                        ? "#DCFCE7"
+                        : doc.status === "REJECTED"
+                          ? "#FEE2E2"
+                          : "#FEF3C7",
+                  },
+                ]}
+              >
+                <Text>{doc.status}</Text>
+              </View>
             </View>
           ))}
-          {filteredItems.length === 0 && (
-            <Text style={[styles.noResultsText, { color: currentColors.mutedForeground }]}>
-              Sin resultados para "{searchQuery}"
-            </Text>
-          )}
         </View>
       </View>
     </ScrollView>
@@ -229,5 +281,26 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign: "center",
     marginTop: 10,
+  },
+  documentCard: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+
+  documentTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+
+  statusBadge: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
   },
 });
