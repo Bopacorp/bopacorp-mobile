@@ -31,7 +31,7 @@ export default function NegotiationCard({
       onPress={onPress}
     >
       <View style={globalStyles.clientHeader}>
-        <Text style={[globalStyles.clientName, { color: currentColors.text }]}>
+        <Text style={globalStyles.clientName}>
           {negotiation.clientName}
         </Text>
 
@@ -77,32 +77,45 @@ export default function NegotiationCard({
         </View>
       </View>
 
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
+      <Text style={globalStyles.clientInfo}>
         Etapa: {negotiation.planName}
       </Text>
 
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
+      <Text style={globalStyles.clientInfo}>
         Asesor: {negotiation.advisorName}
       </Text>
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
+      <Text style={globalStyles.clientInfo}>
         Monto: {negotiation.amount}
       </Text>
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
+      <Text style={globalStyles.clientInfo}>
         Inicio: {negotiation.date}
       </Text>
 
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
+      <Text style={globalStyles.clientInfo}>
         Cierre: {negotiation.estimatedCloseDate}
       </Text>
-      <Text
-        style={{
-          color: currentColors.primary,
-          fontWeight: "600",
-          marginTop: 8,
-        }}
-      >
-        Ver detalle →
-      </Text>
+
+      <View
+        style={[
+          globalStyles.cardDivider,
+          {
+            backgroundColor: currentColors.border,
+          },
+        ]}
+      />
+
+      <View style={globalStyles.cardFooter}>
+        <Text
+          style={[
+            globalStyles.cardActionText,
+            {
+              color: currentColors.primary,
+            },
+          ]}
+        >
+          Ver detalle →
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 }

@@ -55,7 +55,6 @@ function RootLayoutNav() {
   useEffect(() => {
     if (isLoading) return;
 
-    // Ocultar la pantalla de carga una vez que todo esté listo
     SplashScreen.hideAsync();
   }, [isLoading]);
 
@@ -66,7 +65,7 @@ function RootLayoutNav() {
 
     const allowedOutsideTabs = ["modal"];
     const currentRoute = (segments as string[])[0];
-    
+
     if (!role && inTabsGroup) {
       router.replace("/");
     } else if (
@@ -74,7 +73,7 @@ function RootLayoutNav() {
       !inTabsGroup &&
       !allowedOutsideTabs.includes(currentRoute)
     ) {
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/overview" as any);
     }
   }, [role, segments, isLoading]);
 

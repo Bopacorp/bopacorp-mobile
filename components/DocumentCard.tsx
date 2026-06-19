@@ -33,15 +33,15 @@ export default function DocumentCard({
         },
       ]}
     >
-      <Text style={[globalStyles.clientName, { color: currentColors.text }]}>
+      <Text style={globalStyles.clientName}>
         {document.fileName}
       </Text>
 
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text, marginBottom: 4 }]}>
+      <Text style={globalStyles.clientInfo}>
         Empresa: {document.company}
       </Text>
 
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text, marginBottom: 4 }]}>
+      <Text style={globalStyles.clientInfo}>
         Fecha: {document.date}
       </Text>
 

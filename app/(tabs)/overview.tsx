@@ -15,7 +15,7 @@ export default function OverviewScreen() {
   return (
     <ScrollView
       style={[globalStyles.container, { backgroundColor: currentColors.background }]}
-      contentContainerStyle={{ padding: 20 }}
+      contentContainerStyle={globalStyles.scrollPadding}
       showsVerticalScrollIndicator={false}
     >
       <View style={globalStyles.searchContainer}>
@@ -37,10 +37,7 @@ export default function OverviewScreen() {
         ]}
       >
         <View style={globalStyles.titleRow}>
-          <FontAwesome name="home" size={24} color={currentColors.primary} />
-          <Text style={[globalStyles.title, { color: currentColors.text }]}>
-            Overview
-          </Text>
+          <Text style={globalStyles.title}>Overview</Text>
         </View>
 
         <Text
@@ -63,9 +60,7 @@ export default function OverviewScreen() {
               },
             ]}
           >
-            <Text style={[globalStyles.kpiTitle, { color: currentColors.text }]}>
-              Visitas hoy
-            </Text>
+            <Text style={globalStyles.kpiTitle}>Visitas hoy</Text>
             <Text style={[globalStyles.kpiNumber, { color: currentColors.primary }]}>
               3
             </Text>
@@ -88,9 +83,7 @@ export default function OverviewScreen() {
               },
             ]}
           >
-            <Text style={[globalStyles.kpiTitle, { color: currentColors.text }]}>
-              Completadas
-            </Text>
+            <Text style={globalStyles.kpiTitle}>Completadas</Text>
             <Text style={[globalStyles.kpiNumber, { color: "#10B981" }]}>
               2
             </Text>
@@ -113,9 +106,7 @@ export default function OverviewScreen() {
               },
             ]}
           >
-            <Text style={[globalStyles.kpiTitle, { color: currentColors.text }]}>
-              Rendimiento
-            </Text>
+            <Text style={globalStyles.kpiTitle}>Rendimiento</Text>
             <Text style={[globalStyles.kpiNumber, { color: "#F59E0B" }]}>
               1º
             </Text>

@@ -22,7 +22,6 @@ export default function LoginScreen() {
     let finalEmail = email.trim();
     let finalPassword = password;
 
-    // Autofill seeded Advisor credentials for developer convenience if fields are empty
     if (!finalEmail && !finalPassword) {
       finalEmail = "lreyes@bopacorp.com";
       finalPassword = "Bopa2026!";

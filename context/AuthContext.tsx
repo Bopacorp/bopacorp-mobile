@@ -46,7 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Expose setRole for backward compatibility (used for simple logouts)
   const setRole = async (r: Role) => {
     if (r === null) {
       setAccessToken(null);
@@ -56,7 +55,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRoleState(r);
   };
 
-  // Hook interceptor failure to trigger automatic logout in React state
   useEffect(() => {
     setOnLogout(() => {
       setAccessToken(null);
@@ -67,7 +65,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Silent Session Bootstrap on startup
     async function loadSession() {
       try {
         const refreshToken = await getStorageItem("refreshToken");
@@ -76,7 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // Call refresh directly using api client
         const response: any = await apiClient.post("/api/v1/auth/refresh", {
           refreshToken,
         });
@@ -84,11 +80,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response;
         setAccessToken(newAccessToken);
 
-        // Fetch user info using token
         const userProfile: any = await apiClient.get("/api/v1/auth/me");
         const userRoles = userProfile.roles || [];
-        
-        // Enforce only advisor role is permitted on this app
+
         if (!userRoles.includes("advisor")) {
           throw new Error("Stale credentials are not for a sales advisor.");
         }
@@ -98,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRoleState("Asesor");
       } catch (error) {
         console.warn("Could not silently recover advisor session:", error);
-        // Clear stale credentials
         setAccessToken(null);
         await removeStorageItem("refreshToken");
         setUser(null);
@@ -107,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
       }
     }
-    
+
     loadSession();
   }, []);
 
@@ -121,7 +114,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { user: userProfile, tokens } = response;
       const userRoles = userProfile.roles || [];
 
-      // Block non-advisors from accessing the mobile app
       if (!userRoles.includes("advisor")) {
         throw new Error("Acceso denegado: Esta aplicación móvil es de uso exclusivo para Asesores Comerciales.");
       }
@@ -148,7 +140,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.warn("Logout API call failed on backend:", error);
     } finally {
-      // Always clear local session even if backend logout fails
       setAccessToken(null);
       await removeStorageItem("refreshToken");
       setUser(null);

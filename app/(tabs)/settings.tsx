@@ -1,6 +1,7 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, Switch } from "react-native";
+import { useNavigation } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { Text, View } from "@/components/Themed";
@@ -8,11 +9,20 @@ import Colors from "../../constants/Colors";
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
+  const navigation = useNavigation();
   const { colorScheme, toggleColorScheme } = useTheme();
   const currentColors = Colors[colorScheme ?? "light"];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigation.getParent()?.reset({
+        index: 0,
+        routes: [{ name: "index" }],
+      });
+    } catch (e) {
+      console.error("Logout failed:", e);
+    }
   };
 
   const getInitials = () => {
@@ -37,7 +47,7 @@ export default function SettingsScreen() {
       contentContainerStyle={{ padding: 20 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* 1. PROFILE CARD */}
+      {}
       <View
         style={[
           styles.profileHeader,
@@ -63,11 +73,11 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      {/* 2. THEME SETTINGS SECTION */}
+      {}
       <Text style={[styles.sectionTitle, { color: currentColors.mutedForeground }]}>
         Preferencias
       </Text>
-      
+
       <View
         style={[
           styles.menuContainer,
@@ -100,11 +110,11 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      {/* 3. APPLICATION INFORMATION */}
+      {}
       <Text style={[styles.sectionTitle, { color: currentColors.mutedForeground }]}>
         Información
       </Text>
-      
+
       <View
         style={[
           styles.menuContainer,
@@ -126,7 +136,7 @@ export default function SettingsScreen() {
           </Text>
         </View>
         <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
-        
+
         <View style={styles.infoRow}>
           <FontAwesome
             name="building-o"
@@ -153,7 +163,7 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      {/* 4. ACTIONS */}
+      {}
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <FontAwesome
           name="sign-out"

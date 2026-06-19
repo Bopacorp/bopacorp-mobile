@@ -7,7 +7,7 @@ import {
   Animated,
   ScrollView,
 } from "react-native";
-import { usePathname, useRouter } from "expo-router";
+import { usePathname, useRouter, useNavigation } from "expo-router";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/AuthContext";
@@ -23,6 +23,7 @@ interface SidebarProps {
 
 export default function Sidebar({ slideAnim }: SidebarProps) {
   const router = useRouter();
+  const navigation = useNavigation();
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const colorScheme = useColorScheme();
@@ -31,7 +32,6 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
 
   const { isOpen, setIsOpen } = useSidebarContext();
 
-  // Interpolate backdrop opacity dynamically based on sidebar position
   const backdropOpacity = slideAnim.interpolate({
     inputRange: [-DRAWER_WIDTH, 0],
     outputRange: [0, 0.4],
@@ -80,6 +80,10 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
     try {
       setIsOpen(false);
       await logout();
+      navigation.getParent()?.reset({
+        index: 0,
+        routes: [{ name: "login" }],
+      });
     } catch (e) {
       console.error("Logout failed:", e);
     }
@@ -96,7 +100,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
 
   return (
     <>
-      {/* Backdrop overlay - wraps the screen to capture outside taps and block interactions */}
+      {}
       <Pressable
         pointerEvents={isOpen ? "auto" : "none"}
         style={StyleSheet.absoluteFillObject}
@@ -112,7 +116,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
         />
       </Pressable>
 
-      {/* Floating Animated Drawer container */}
+      {}
       <Animated.View
         style={[
           styles.sidebar,
@@ -126,7 +130,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
           },
         ]}
       >
-        {/* Header section */}
+        {}
         <View style={styles.header}>
           <View style={styles.expandedHeader}>
             <View style={styles.headerRow}>
@@ -145,7 +149,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
           </View>
         </View>
 
-        {/* Navigation Items */}
+        {}
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -172,7 +176,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                     pressed && { opacity: 0.7 },
                   ]}
                 >
-                  {/* Active left indicator bar */}
+                  {}
                   {isActive && (
                     <View
                       style={[
@@ -210,9 +214,9 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
           </View>
         </ScrollView>
 
-        {/* Footer info & Logout */}
+        {}
         <View style={styles.footer}>
-          {/* Profile card */}
+          {}
           <View style={[styles.profileContainer, { borderTopColor: currentColors.border }]}>
             <View style={[styles.avatar, { backgroundColor: currentColors.secondary }]}>
               <Text style={[styles.avatarText, { color: currentColors.text }]}>
@@ -231,7 +235,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
             </View>
           </View>
 
-          {/* Close Action */}
+          {}
           <Pressable
             onPress={() => setIsOpen(false)}
             style={({ pressed }) => [
@@ -247,7 +251,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
             </Text>
           </Pressable>
 
-          {/* Logout Action */}
+          {}
           <Pressable
             onPress={handleLogoutPress}
             style={({ pressed }) => [

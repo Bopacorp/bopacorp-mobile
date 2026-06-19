@@ -1,7 +1,7 @@
 import { Text, View } from "@/components/Themed";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useEffect, useState } from "react";
-import { ScrollView, TouchableOpacity } from "react-native";
+import { ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import FilterButton from "@/components/FilterButton";
 import NegotiationCard from "@/components/NegotiationCard";
 import SearchBar from "@/components/SearchBar";
@@ -53,19 +53,22 @@ export default function NegotiationsScreen() {
   });
   if (loading) {
     return (
-      <View style={globalStyles.container}>
-        <Text style={{ textAlign: "center", marginTop: 40 }}>Cargando negociaciones...</Text>
+      <View style={[globalStyles.loadingContainer, { backgroundColor: currentColors.background }]}>
+        <ActivityIndicator size="large" color={currentColors.primary} />
+        <Text style={[globalStyles.loadingText, { color: currentColors.mutedForeground }]}>
+          Cargando negociaciones...
+        </Text>
       </View>
     );
   }
   return (
     <ScrollView
       style={[globalStyles.container, { backgroundColor: currentColors.background }]}
-      contentContainerStyle={{ padding: 20 }}
+      contentContainerStyle={globalStyles.scrollPadding}
       showsVerticalScrollIndicator={false}
     >
       <View style={globalStyles.searchRow}>
-        <View style={{ flex: 1 }}>
+        <View style={globalStyles.flex1}>
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -85,7 +88,8 @@ export default function NegotiationsScreen() {
         style={[globalStyles.actionButton, { backgroundColor: currentColors.primary }]}
         activeOpacity={0.8}
       >
-          <Text style={globalStyles.actionButtonText}>Nueva negociación</Text>
+        <FontAwesome name="plus" size={14} color="white" style={globalStyles.actionIcon} />
+        <Text style={globalStyles.actionButtonText}>Nueva negociación</Text>
       </TouchableOpacity>
       <View
         style={[
@@ -97,9 +101,7 @@ export default function NegotiationsScreen() {
         ]}
       >
         <View style={globalStyles.titleRow}>
-          <Text style={[globalStyles.title, { color: currentColors.text, marginLeft: 0 }]}>
-            Negociaciones
-          </Text>
+          <Text style={globalStyles.title}>Negociaciones</Text>
         </View>
 
         <Text
@@ -111,7 +113,9 @@ export default function NegotiationsScreen() {
         <View
           style={[globalStyles.divider, { backgroundColor: currentColors.border }]}
         />
-        <Text style={[globalStyles.sectionTitle, { color: currentColors.text }]}>
+        <Text
+          style={[globalStyles.totalCountText, { color: currentColors.mutedForeground }]}
+        >
           Total negociaciones: {filteredNegotiations.length}
         </Text>
 

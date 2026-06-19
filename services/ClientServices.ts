@@ -26,12 +26,11 @@ export interface BusinessClient {
 export const getNegotiations = async (): Promise<Negotiation[]> => {
   try {
     const data: any = await apiClient.get("/api/v1/crm/negotiations");
-    
+
     return data.map((item: any) => {
-      // Map backend negotiation states to UI statuses: "Borrador" | "Enviado" | "Aprobado" | "Rechazado"
       let status: "Borrador" | "Enviado" | "Aprobado" | "Rechazado" = "Borrador";
       const code = item.state?.code || "";
-      
+
       if (code === "prospecting") {
         status = "Borrador";
       } else if (code === "initial_contact" || code === "negotiation") {
@@ -42,7 +41,6 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
         status = "Aprobado";
       }
 
-      // Format date from backend
       let date = "N/A";
       const dateSource = item.startDate || item.createdAt;
       if (dateSource) {
@@ -62,7 +60,6 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
         estimatedCloseDate = `${day}/${month}/${year}`;
       }
 
-      // Format Advisor Name
       const advProfile = item.advisor?.profile;
       const advisorName = advProfile
         ? `${advProfile.firstName} ${advProfile.lastName}`
@@ -72,7 +69,7 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
         id: item.id,
         clientName: item.client?.businessName || "Cliente Sin Nombre",
         planName: item.state?.name || "Sin Estado",
-        amount: "$350.00", // Default placeholder for display
+        amount: "$350.00",
         status,
         date,
         advisorName,
@@ -88,10 +85,10 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
 export const getBusinessClients = async (): Promise<BusinessClient[]> => {
   try {
     const data: any = await apiClient.get("/api/v1/crm/business-clients");
-    
+
     return data.map((item: any) => {
       const advProfile = item.advisor?.profile;
-      const advisorName = advProfile 
+      const advisorName = advProfile
         ? `${advProfile.firstName} ${advProfile.lastName}`
         : item.advisor?.username || "Sin Asignar";
 

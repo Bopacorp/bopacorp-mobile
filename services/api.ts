@@ -15,7 +15,6 @@ export const setOnLogout = (callback: () => void) => {
   onLogoutCallback = callback;
 };
 
-// Create axios instance
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -23,7 +22,6 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor: Attach memory-stored Access Token
 apiClient.interceptors.request.use(
   (config) => {
     if (accessTokenInMemory) {
@@ -34,7 +32,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Queue system for concurrent requests during refresh
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (token: string) => void;
@@ -52,15 +49,12 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Response interceptor: Unwrap standard Bopacorp envelope & handle 401s
 apiClient.interceptors.response.use(
   (response) => {
-    // Backend responses format is { success: boolean, data: ... }
     if (response.data && response.data.success !== undefined) {
       if (response.data.success) {
         return response.data.data;
       } else {
-        // Handle successful HTTP request but backend returned business logic error
         const backendError = response.data.error || {
           code: "UNKNOWN_ERROR",
           message: "Ocurrió un error inesperado.",
@@ -73,7 +67,6 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if error is 401 and we haven't already retried this request
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -96,7 +89,6 @@ apiClient.interceptors.response.use(
             throw new Error("No refresh token stored.");
           }
 
-          // Use a clean axios instance to avoid loops
           const response = await axios.post(`${API_URL}/api/v1/auth/refresh`, {
             refreshToken,
           });
@@ -125,7 +117,6 @@ apiClient.interceptors.response.use(
       });
     }
 
-    // Standardize HTTP errors to match Bopacorp error shape
     if (error.response && error.response.data && error.response.data.error) {
       return Promise.reject(error.response.data.error);
     }

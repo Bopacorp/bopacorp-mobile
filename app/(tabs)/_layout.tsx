@@ -35,7 +35,6 @@ function TabLayoutContent() {
 
   const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
 
-  // React to open/close state toggles programmatically (like tapping the header menu button)
   useEffect(() => {
     Animated.timing(slideAnim, {
       toValue: isOpen ? 0 : -DRAWER_WIDTH,
@@ -44,11 +43,9 @@ function TabLayoutContent() {
     }).start();
   }, [isOpen]);
 
-  // PanResponder to track interactive drag swipes (opening and closing)
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => {
-        // Return false to let child clicks (e.g. backdrop close click, menu buttons) pass through
         return false;
       },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -56,30 +53,24 @@ function TabLayoutContent() {
         const isSwipeRight = gestureState.dx > 10;
 
         if (!isOpen) {
-          // Trigger when closed only if swiping right from the edge
           return evt.nativeEvent.pageX < 45 && isSwipeRight;
         }
-        // Trigger when open if swiping left to close
         return isSwipeLeft;
       },
       onPanResponderGrant: () => {
-        // Stop any running animations to allow direct finger tracking
         slideAnim.stopAnimation();
       },
       onPanResponderMove: (evt, gestureState) => {
         if (!isOpen) {
-          // Dragging drawer open from the left edge
           const newValue = Math.min(0, -DRAWER_WIDTH + gestureState.dx);
           slideAnim.setValue(newValue);
         } else {
-          // Dragging drawer close to the left
           const newValue = Math.min(0, gestureState.dx);
           slideAnim.setValue(newValue);
         }
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (!isOpen) {
-          // Snapping logic when opening
           if (gestureState.dx > DRAWER_WIDTH / 3 || gestureState.vx > 0.5) {
             setIsOpen(true);
           } else {
@@ -90,7 +81,6 @@ function TabLayoutContent() {
             }).start();
           }
         } else {
-          // Snapping logic when closing
           if (gestureState.dx < -DRAWER_WIDTH / 3 || gestureState.vx < -0.5) {
             setIsOpen(false);
           } else {
@@ -105,7 +95,6 @@ function TabLayoutContent() {
     })
   ).current;
 
-  // Interpolate the background content opacity based on the sidebar slider position
   const contentOpacity = slideAnim.interpolate({
     inputRange: [-DRAWER_WIDTH, 0],
     outputRange: [1, 0.5],
@@ -123,7 +112,7 @@ function TabLayoutContent() {
             tabBarActiveTintColor: currentColors.primary,
             tabBarInactiveTintColor: currentColors.tabIconDefault,
             tabBarStyle: {
-              display: "none", // Hide bottom tab bar
+              display: "none",
             },
             headerStyle: {
               backgroundColor: currentColors.card,
@@ -145,7 +134,7 @@ function TabLayoutContent() {
             ),
           }}
         >
-          {/* 1. OVERVIEW (Default Landing Dashboard) */}
+          {}
           <Tabs.Screen
             name="overview"
             options={{
@@ -153,7 +142,7 @@ function TabLayoutContent() {
             }}
           />
 
-          {/* 2. CLIENTES */}
+          {}
           <Tabs.Screen
             name="clients"
             options={{
@@ -161,7 +150,7 @@ function TabLayoutContent() {
             }}
           />
 
-          {/* 3. NEGOCIACIONES */}
+          {}
           <Tabs.Screen
             name="negotiations"
             options={{
@@ -169,7 +158,7 @@ function TabLayoutContent() {
             }}
           />
 
-          {/* 4. DOCUMENTACION */}
+          {}
           <Tabs.Screen
             name="documentation"
             options={{
@@ -177,7 +166,7 @@ function TabLayoutContent() {
             }}
           />
 
-          {/* 5. CONFIGURACION (Settings - hidden from direct tab links) */}
+          {}
           <Tabs.Screen
             name="settings"
             options={{

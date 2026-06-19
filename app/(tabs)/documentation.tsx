@@ -87,11 +87,11 @@ export default function DocumentationScreen() {
   return (
     <ScrollView
       style={[globalStyles.container, { backgroundColor: currentColors.background }]}
-      contentContainerStyle={{ padding: 20 }}
+      contentContainerStyle={globalStyles.scrollPadding}
       showsVerticalScrollIndicator={false}
     >
       <View style={globalStyles.searchRow}>
-        <View style={{ flex: 1 }}>
+        <View style={globalStyles.flex1}>
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -137,9 +137,7 @@ export default function DocumentationScreen() {
         ]}
       >
         <View style={globalStyles.titleRow}>
-          <Text style={[globalStyles.title, { color: currentColors.text, marginLeft: 0 }]}>
-            Documentación
-          </Text>
+          <Text style={globalStyles.title}>Documentación</Text>
         </View>
 
         <Text
@@ -152,7 +150,7 @@ export default function DocumentationScreen() {
           style={[globalStyles.divider, { backgroundColor: currentColors.border }]}
         />
 
-        <Text style={[globalStyles.sectionTitle, { color: currentColors.text }]}>
+        <Text style={[globalStyles.totalCountText, { color: currentColors.mutedForeground }]}>
           Total documentos: {filteredDocuments.length}
         </Text>
 

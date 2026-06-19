@@ -1,6 +1,6 @@
 import { Text, View } from "@/components/Themed";
 import React, { useEffect, useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, ActivityIndicator } from "react-native";
 import ClientCard from "@/components/ClientCard";
 import FilterButton from "@/components/FilterButton";
 import SearchBar from "@/components/SearchBar";
@@ -56,19 +56,22 @@ export default function ClientsScreen() {
 
   if (loading) {
     return (
-      <View style={globalStyles.container}>
-        <Text style={{ textAlign: "center", marginTop: 40 }}>Cargando clientes...</Text>
+      <View style={[globalStyles.loadingContainer, { backgroundColor: currentColors.background }]}>
+        <ActivityIndicator size="large" color={currentColors.primary} />
+        <Text style={[globalStyles.loadingText, { color: currentColors.mutedForeground }]}>
+          Cargando clientes...
+        </Text>
       </View>
     );
   }
   return (
     <ScrollView
       style={[globalStyles.container, { backgroundColor: currentColors.background }]}
-      contentContainerStyle={{ padding: 20 }}
+      contentContainerStyle={globalStyles.scrollPadding}
       showsVerticalScrollIndicator={false}
     >
       <View style={globalStyles.searchRow}>
-        <View style={{ flex: 1 }}>
+        <View style={globalStyles.flex1}>
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -95,9 +98,7 @@ export default function ClientsScreen() {
         ]}
       >
         <View style={globalStyles.titleRow}>
-          <Text style={[globalStyles.title, { color: currentColors.text, marginLeft: 0 }]}>
-            Clientes
-          </Text>
+          <Text style={globalStyles.title}>Clientes</Text>
         </View>
 
         <Text
@@ -111,12 +112,7 @@ export default function ClientsScreen() {
         />
 
         <Text
-          style={{
-            color: currentColors.mutedForeground,
-            marginBottom: 16,
-            fontSize: 14,
-            fontWeight: "600",
-          }}
+          style={[globalStyles.totalCountText, { color: currentColors.mutedForeground }]}
         >
           Total clientes: {filteredClients.length}
         </Text>

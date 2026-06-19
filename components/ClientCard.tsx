@@ -28,7 +28,7 @@ export default function ClientCard({ client, colorScheme, onPress }: ClientCardP
       onPress={onPress}
     >
       <View style={globalStyles.clientHeader}>
-        <Text style={[globalStyles.clientName, { color: currentColors.text }]}>
+        <Text style={globalStyles.clientName}>
           {client.businessName}
         </Text>
         <View
@@ -53,45 +53,39 @@ export default function ClientCard({ client, colorScheme, onPress }: ClientCardP
 
       <View style={globalStyles.infoRow}>
         <FontAwesome name="id-card" size={14} color="#6B7280" />
-        <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
-          {client.ruc}
-        </Text>
+        <Text style={globalStyles.clientInfo}>{client.ruc}</Text>
       </View>
 
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
+      <Text style={globalStyles.clientInfo}>
         Contacto: {client.contactName}
       </Text>
 
       <View style={globalStyles.infoRow}>
         <FontAwesome name="phone" size={14} color="#6B7280" />
-        <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
-          {client.contactPhone}
-        </Text>
+        <Text style={globalStyles.clientInfo}>{client.contactPhone}</Text>
       </View>
 
-      <Text style={[globalStyles.clientInfo, { color: currentColors.text }]}>
+      <Text style={globalStyles.clientInfo}>
         Asesor: {client.advisorName}
       </Text>
 
       <View
-        style={{
-          height: 1,
-          backgroundColor: currentColors.border,
-          marginVertical: 12,
-        }}
+        style={[
+          globalStyles.cardDivider,
+          {
+            backgroundColor: currentColors.border,
+          },
+        ]}
       />
 
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
+      <View style={globalStyles.cardFooter}>
         <Text
-          style={{
-            color: currentColors.primary,
-            fontWeight: "600",
-          }}
+          style={[
+            globalStyles.cardActionText,
+            {
+              color: currentColors.primary,
+            },
+          ]}
         >
           Ver detalle →
         </Text>

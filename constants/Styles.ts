@@ -4,6 +4,27 @@ export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 16,
+  },
+  scrollPadding: {
+    padding: 20,
+  },
+  flex1: {
+    flex: 1,
+  },
+  totalCountText: {
+    marginBottom: 16,
+    fontSize: 14,
+    fontWeight: "600",
+  },
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -34,7 +55,6 @@ export const globalStyles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    marginLeft: 12,
   },
   subtitle: {
     fontSize: 14,
@@ -99,6 +119,17 @@ export const globalStyles = StyleSheet.create({
     marginBottom: 8,
     gap: 8,
   },
+  cardDivider: {
+    height: 1,
+    marginVertical: 12,
+  },
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  cardActionText: {
+    fontWeight: "600",
+  },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -120,7 +151,6 @@ export const globalStyles = StyleSheet.create({
   actionIcon: {
     marginRight: 8,
   },
-  // KPI Dashboard styles (from overview.tsx)
   kpiContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
