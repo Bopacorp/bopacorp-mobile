@@ -42,8 +42,8 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
     {
       name: "Overview",
       icon: "home" as const,
-      path: "/",
-      target: "/(tabs)" as const,
+      path: "/overview",
+      target: "/(tabs)/overview" as const,
     },
     {
       name: "Clientes",
@@ -80,7 +80,6 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
     try {
       setIsOpen(false);
       await logout();
-      router.replace("/");
     } catch (e) {
       console.error("Logout failed:", e);
     }

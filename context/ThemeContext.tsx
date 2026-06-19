@@ -17,8 +17,7 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = nativeUseColorScheme() || "light";
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(systemScheme);
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>("light");
 
   useEffect(() => {
     async function loadTheme() {
@@ -27,15 +26,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (savedTheme === "light" || savedTheme === "dark") {
           setColorSchemeState(savedTheme);
         } else {
-          setColorSchemeState(systemScheme);
+          setColorSchemeState("light");
         }
       } catch (e) {
-        console.warn("Error loading saved theme, fallback to system:", e);
-        setColorSchemeState(systemScheme);
+        console.warn("Error loading saved theme, fallback to light:", e);
+        setColorSchemeState("light");
       }
     }
     loadTheme();
-  }, [systemScheme]);
+  }, []);
 
   const toggleColorScheme = async () => {
     const nextTheme = colorScheme === "light" ? "dark" : "light";

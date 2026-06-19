@@ -23,7 +23,7 @@ export interface BusinessClient {
   advisorName: string;
 }
 
-export const getClients = async (): Promise<Negotiation[]> => {
+export const getNegotiations = async (): Promise<Negotiation[]> => {
   try {
     const data: any = await apiClient.get("/api/v1/crm/negotiations");
     

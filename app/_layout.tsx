@@ -66,13 +66,9 @@ function RootLayoutNav() {
 
     const allowedOutsideTabs = ["modal"];
     const currentRoute = (segments as string[])[0];
-
+    
     if (!role && inTabsGroup) {
-      if (typeof window !== "undefined" && window.location) {
-        window.location.href = "/";
-      } else {
-        router.replace("/");
-      }
+      router.replace("/");
     } else if (
       role &&
       !inTabsGroup &&

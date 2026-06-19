@@ -147,7 +147,7 @@ function TabLayoutContent() {
         >
           {/* 1. OVERVIEW (Default Landing Dashboard) */}
           <Tabs.Screen
-            name="index"
+            name="overview"
             options={{
               title: "Overview",
             }}

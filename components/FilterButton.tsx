@@ -60,7 +60,7 @@ export default function FilterButton({
       </Pressable>
 
       <Modal
-        animationType="slide"
+        animationType="none"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}

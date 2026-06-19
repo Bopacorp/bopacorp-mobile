@@ -1,17 +1,22 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useState } from "react";
-import { StyleSheet, ScrollView } from "react-native";
 import { Text, View } from "@/components/Themed";
-import Colors from "../../constants/Colors";
-import { useColorScheme } from "../../components/useColorScheme";
-import SearchBar from "../../components/SearchBar";
-import FilterButton from "../../components/FilterButton";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import React, { useEffect, useState } from "react";
+import { ScrollView, TouchableOpacity } from "react-native";
+import FilterButton from "@/components/FilterButton";
+import NegotiationCard from "@/components/NegotiationCard";
+import SearchBar from "@/components/SearchBar";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { globalStyles } from "@/constants/Styles";
+import { Negotiation, getNegotiations } from "@/services/ClientServices";
 
 export default function NegotiationsScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Todos");
+  const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const filterOptions = [
     { value: "Todos", label: "Todos" },
@@ -20,26 +25,46 @@ export default function NegotiationsScreen() {
     { value: "Aprobado", label: "Aprobado" },
     { value: "Rechazado", label: "Rechazado" },
   ];
+  useEffect(() => {
+    loadNegotiations();
+  }, []);
 
-  const items = [
-    "Barra de filtros (por etapa del deal) y cuadro de búsqueda de negociaciones",
-    "Toggle de visualización: Modo Lista (Tabla) y Modo Kanban de oportunidades",
-    "Listado de negociaciones activas (Empresa, plan contratado, monto cotizado, estado de aprobación)",
-    "Botón flotante o disparador para 'Crear Nueva Negociación' / Oportunidad de venta",
-    "Flujo de aprobación interno y envío automático al backend API",
-  ];
+  async function loadNegotiations() {
+    try {
+      const data = await getNegotiations();
+      setNegotiations(data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+  const filteredNegotiations = negotiations.filter((negotiation) => {
+    const query = searchQuery.toLowerCase();
+    const matchSearch =
+      (negotiation.clientName || "").toLowerCase().includes(query) ||
+      (negotiation.planName || "").toLowerCase().includes(query) ||
+      (negotiation.advisorName || "").toLowerCase().includes(query);
 
-  const filteredItems = items.filter((item) =>
-    item.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    const matchFilter =
+      activeFilter === "Todos" || negotiation.status === activeFilter;
 
+    return matchSearch && matchFilter;
+  });
+  if (loading) {
+    return (
+      <View style={globalStyles.container}>
+        <Text style={{ textAlign: "center", marginTop: 40 }}>Cargando negociaciones...</Text>
+      </View>
+    );
+  }
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: currentColors.background }]}
+      style={[globalStyles.container, { backgroundColor: currentColors.background }]}
       contentContainerStyle={{ padding: 20 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.searchRow}>
+      <View style={globalStyles.searchRow}>
         <View style={{ flex: 1 }}>
           <SearchBar
             value={searchQuery}
@@ -56,117 +81,57 @@ export default function NegotiationsScreen() {
           title="Etapa de Negociación"
         />
       </View>
-
+      <TouchableOpacity
+        style={[globalStyles.actionButton, { backgroundColor: currentColors.primary }]}
+        activeOpacity={0.8}
+      >
+          <Text style={globalStyles.actionButtonText}>Nueva negociación</Text>
+      </TouchableOpacity>
       <View
         style={[
-          styles.card,
+          globalStyles.card,
           {
             backgroundColor: currentColors.card,
             borderColor: currentColors.border,
           },
         ]}
       >
-        <View style={styles.titleRow}>
-          <FontAwesome name="handshake-o" size={24} color={currentColors.primary} />
-          <Text style={[styles.title, { color: currentColors.text }]}>Negociaciones</Text>
+        <View style={globalStyles.titleRow}>
+          <Text style={[globalStyles.title, { color: currentColors.text, marginLeft: 0 }]}>
+            Negociaciones
+          </Text>
         </View>
-        
-        <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>
+
+        <Text
+          style={[globalStyles.subtitle, { color: currentColors.mutedForeground }]}
+        >
           Acuerdos comerciales y seguimiento de ventas.
         </Text>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
-
-        <Text style={[styles.sectionTitle, { color: currentColors.text }]}>
-          Componentes que se ubicarán aquí:
+        <View
+          style={[globalStyles.divider, { backgroundColor: currentColors.border }]}
+        />
+        <Text style={[globalStyles.sectionTitle, { color: currentColors.text }]}>
+          Total negociaciones: {filteredNegotiations.length}
         </Text>
 
-        <View style={styles.listContainer}>
-          {filteredItems.map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <FontAwesome name="circle" size={8} color={currentColors.primary} style={styles.listBullet} />
-              <Text style={[styles.listText, { color: currentColors.text }]}>{item}</Text>
-            </View>
-          ))}
-          {filteredItems.length === 0 && (
-            <Text style={[styles.noResultsText, { color: currentColors.mutedForeground }]}>
-              Sin resultados para "{searchQuery}"
+        <View style={globalStyles.listContainer}>
+          {filteredNegotiations.length === 0 ? (
+            <Text style={[globalStyles.noResultsText, { color: currentColors.mutedForeground }]}>
+              No se encontraron negociaciones para "{searchQuery}"
             </Text>
+          ) : (
+            filteredNegotiations.map((item) => (
+              <NegotiationCard
+                key={item.id}
+                negotiation={item}
+                colorScheme={colorScheme ?? "light"}
+                onPress={() => console.log(item)}
+              />
+            ))
           )}
         </View>
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
-    backgroundColor: "transparent",
-  },
-  card: {
-    padding: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-    backgroundColor: "transparent",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginLeft: 12,
-  },
-  subtitle: {
-    fontSize: 14,
-    marginBottom: 20,
-    backgroundColor: "transparent",
-  },
-  divider: {
-    height: 1,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 16,
-    backgroundColor: "transparent",
-  },
-  listContainer: {
-    gap: 12,
-    backgroundColor: "transparent",
-  },
-  listItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "transparent",
-  },
-  listBullet: {
-    marginRight: 12,
-  },
-  listText: {
-    fontSize: 14,
-    lineHeight: 20,
-    flex: 1,
-  },
-  noResultsText: {
-    fontSize: 14,
-    fontStyle: "italic",
-    textAlign: "center",
-    marginTop: 10,
-  },
-});
