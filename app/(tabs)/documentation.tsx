@@ -1,20 +1,23 @@
 import { Text } from "@/components/Themed";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as DocumentPicker from "expo-document-picker";
-import React, { useState } from "react";
-import { Alert, Pressable, ScrollView, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Alert, Pressable, ScrollView, View, ActivityIndicator } from "react-native";
 import DocumentCard from "@/components/DocumentCard";
 import FilterButton from "@/components/FilterButton";
 import SearchBar from "@/components/SearchBar";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
+import { getNegotiationDocuments, DocumentItem } from "@/services/ClientServices";
 
 export default function DocumentationScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const filterOptions = [
     { value: "all", label: "Todos" },
@@ -23,29 +26,19 @@ export default function DocumentationScreen() {
     { value: "REJECTED", label: "Rechazados" },
   ];
 
-  const documents = [
-    {
-      id: "1",
-      company: "Importadora Costa Azul",
-      fileName: "Contrato_Movistar.pdf",
-      status: "ACCEPTED",
-      date: "18/06/2026",
-    },
-    {
-      id: "2",
-      company: "Clinica Dental Sonrisa",
-      fileName: "Cedula_Representante.pdf",
-      status: "PENDING_APPROVAL",
-      date: "17/06/2026",
-    },
-    {
-      id: "3",
-      company: "Papeleria Galaxia",
-      fileName: "RUC.pdf",
-      status: "REJECTED",
-      date: "16/06/2026",
-    },
-  ];
+  useEffect(() => {
+    async function loadDocs() {
+      try {
+        const data = await getNegotiationDocuments();
+        setDocuments(data);
+      } catch (err) {
+        console.error("Failed to load documents:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDocs();
+  }, []);
 
   const handleUploadFile = async () => {
     try {
@@ -84,6 +77,17 @@ export default function DocumentationScreen() {
 
     return matchSearch && matchFilter;
   });
+
+  if (loading) {
+    return (
+      <View style={[globalStyles.loadingContainer, { backgroundColor: currentColors.background }]}>
+        <ActivityIndicator size="large" color={currentColors.primary} />
+        <Text style={[globalStyles.loadingText, { color: currentColors.mutedForeground }]}>
+          Cargando documentos...
+        </Text>
+      </View>
+    );
+  }
   return (
     <ScrollView
       style={[globalStyles.container, { backgroundColor: currentColors.background }]}

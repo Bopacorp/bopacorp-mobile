@@ -1,16 +1,51 @@
-import { Text, View } from "@/components/Themed";
+import { Text } from "@/components/Themed";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { ScrollView, View, ActivityIndicator } from "react-native";
 import SearchBar from "@/components/SearchBar";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
+import { getAdvisorMetrics, AdvisorMetrics } from "@/services/ClientServices";
+import { useAuth } from "@/context/AuthContext";
 
 export default function OverviewScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [metrics, setMetrics] = useState<AdvisorMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadMetrics() {
+      try {
+        const data = await getAdvisorMetrics();
+        if (user) {
+          const myMetrics = data.find((m) => m.advisor.id === user.id);
+          if (myMetrics) {
+            setMetrics(myMetrics);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load advisor metrics:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadMetrics();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <View style={[globalStyles.loadingContainer, { backgroundColor: currentColors.background }]}>
+        <ActivityIndicator size="large" color={currentColors.primary} />
+        <Text style={[globalStyles.loadingText, { color: currentColors.mutedForeground }]}>
+          Cargando resumen...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -60,9 +95,9 @@ export default function OverviewScreen() {
               },
             ]}
           >
-            <Text style={globalStyles.kpiTitle}>Visitas hoy</Text>
+            <Text style={globalStyles.kpiTitle}>Visitas</Text>
             <Text style={[globalStyles.kpiNumber, { color: currentColors.primary }]}>
-              3
+              {metrics?.clientsVisited ?? 0}
             </Text>
             <Text
               style={[
@@ -70,7 +105,7 @@ export default function OverviewScreen() {
                 { color: currentColors.mutedForeground },
               ]}
             >
-              Programadas
+              Clientes visitados
             </Text>
           </View>
 
@@ -83,9 +118,9 @@ export default function OverviewScreen() {
               },
             ]}
           >
-            <Text style={globalStyles.kpiTitle}>Completadas</Text>
+            <Text style={globalStyles.kpiTitle}>Negociaciones</Text>
             <Text style={[globalStyles.kpiNumber, { color: "#10B981" }]}>
-              2
+              {metrics?.clientsInNegotiation ?? 0}
             </Text>
             <Text
               style={[
@@ -93,7 +128,7 @@ export default function OverviewScreen() {
                 { color: currentColors.mutedForeground },
               ]}
             >
-              Visitas del día
+              Casos activos
             </Text>
           </View>
 
@@ -106,9 +141,9 @@ export default function OverviewScreen() {
               },
             ]}
           >
-            <Text style={globalStyles.kpiTitle}>Rendimiento</Text>
-            <Text style={[globalStyles.kpiNumber, { color: "#F59E0B" }]}>
-              1º
+            <Text style={globalStyles.kpiTitle}>Facturación</Text>
+            <Text style={[globalStyles.kpiNumber, { color: "#F59E0B", fontSize: 18 }]}>
+              ${metrics?.totalBilledAmount ?? 0}
             </Text>
             <Text
               style={[
@@ -116,7 +151,7 @@ export default function OverviewScreen() {
                 { color: currentColors.mutedForeground },
               ]}
             >
-              Top performer
+              Monto total
             </Text>
           </View>
         </View>

@@ -109,3 +109,55 @@ export const getBusinessClients = async (): Promise<BusinessClient[]> => {
     return [];
   }
 };
+
+export interface DocumentItem {
+  id: string;
+  company: string;
+  fileName: string;
+  status: string;
+  date: string;
+}
+
+export const getNegotiationDocuments = async (): Promise<DocumentItem[]> => {
+  try {
+    const data: any = await apiClient.get("/api/v1/documents");
+    return data.map((doc: any) => ({
+      id: doc.id,
+      company: doc.negotiation?.client?.businessName || "Cliente Sin Nombre",
+      fileName: doc.filename,
+      status: doc.state,
+      date: doc.uploadedAt || doc.createdAt || "N/A",
+    }));
+  } catch (error) {
+    console.warn("Could not load negotiation documents:", error);
+    return [];
+  }
+};
+
+export interface AdvisorMetrics {
+  advisor: {
+    id: string;
+    username: string;
+    profile: {
+      firstName: string;
+      lastName: string;
+    } | null;
+  };
+  clientsContacted: number;
+  clientsInNegotiation: number;
+  clientsClosed: number;
+  clientsPostSale: number;
+  clientsVisited: number;
+  totalBilledAmount: number;
+  averageBillingPerService: number;
+}
+
+export const getAdvisorMetrics = async (): Promise<AdvisorMetrics[]> => {
+  try {
+    const data: any = await apiClient.get("/api/v1/reports/advisor-metrics");
+    return data;
+  } catch (error) {
+    console.warn("Could not load advisor metrics:", error);
+    return [];
+  }
+};
