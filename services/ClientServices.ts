@@ -28,7 +28,8 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
     const data: any = await apiClient.get("/api/v1/crm/negotiations");
 
     return data.map((item: any) => {
-      let status: "Borrador" | "Enviado" | "Aprobado" | "Rechazado" = "Borrador";
+      let status: "Borrador" | "Enviado" | "Aprobado" | "Rechazado" =
+        "Borrador";
       const code = item.state?.code || "";
 
       if (code === "prospecting") {
@@ -45,8 +46,8 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
       const dateSource = item.startDate || item.createdAt;
       if (dateSource) {
         const d = new Date(dateSource);
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
         const year = d.getFullYear();
         date = `${day}/${month}/${year}`;
       }
@@ -54,8 +55,8 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
       let estimatedCloseDate = "N/A";
       if (item.estimatedCloseDate) {
         const d = new Date(item.estimatedCloseDate);
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
         const year = d.getFullYear();
         estimatedCloseDate = `${day}/${month}/${year}`;
       }
@@ -181,7 +182,7 @@ export const getDocumentTypes = async (): Promise<DocumentTypeItem[]> => {
 export const uploadDocumentFile = async (
   fileUri: string,
   fileName: string,
-  mimeType: string
+  mimeType: string,
 ): Promise<any> => {
   const formData = new FormData();
   formData.append("file", {

@@ -4,12 +4,12 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -63,7 +63,12 @@ function RootLayoutNav() {
 
     const inTabsGroup = (segments as string[])[0] === "(tabs)";
 
-    const allowedOutsideTabs = ["modal"];
+    const allowedOutsideTabs = [
+      "modal",
+      "client-detail",
+      "edit-client",
+      "create-client",
+    ];
     const currentRoute = (segments as string[])[0];
 
     if (!role && inTabsGroup) {

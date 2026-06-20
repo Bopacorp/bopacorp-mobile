@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getStorageItem, setStorageItem, removeStorageItem } from "../services/storage";
 import { apiClient, setAccessToken, setOnLogout } from "../services/api";
+import {
+  getStorageItem,
+  removeStorageItem,
+  setStorageItem,
+} from "../services/storage";
 
 export type Role = "Asesor" | "Admin" | null;
 
@@ -77,7 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           refreshToken,
         });
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response;
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+          response;
         setAccessToken(newAccessToken);
 
         const userProfile: any = await apiClient.get("/api/v1/auth/me");
@@ -115,7 +120,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userRoles = userProfile.roles || [];
 
       if (!userRoles.includes("advisor")) {
-        throw new Error("Acceso denegado: Esta aplicación móvil es de uso exclusivo para Asesores Comerciales.");
+        throw new Error(
+          "Acceso denegado: Esta aplicación móvil es de uso exclusivo para Asesores Comerciales.",
+        );
       }
 
       setAccessToken(tokens.accessToken);
@@ -148,7 +155,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ role, setRole, user, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ role, setRole, user, isLoading, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

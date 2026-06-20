@@ -1,13 +1,15 @@
-import { Text, View } from "@/components/Themed";
-import React, { useEffect, useState } from "react";
-import { ScrollView, ActivityIndicator } from "react-native";
 import ClientCard from "@/components/ClientCard";
 import FilterButton from "@/components/FilterButton";
 import SearchBar from "@/components/SearchBar";
+import { Text, View } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
 import { BusinessClient, getBusinessClients } from "@/services/ClientServices";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
 
 export default function ClientsScreen() {
   const colorScheme = useColorScheme();
@@ -56,9 +58,19 @@ export default function ClientsScreen() {
 
   if (loading) {
     return (
-      <View style={[globalStyles.loadingContainer, { backgroundColor: currentColors.background }]}>
+      <View
+        style={[
+          globalStyles.loadingContainer,
+          { backgroundColor: currentColors.background },
+        ]}
+      >
         <ActivityIndicator size="large" color={currentColors.primary} />
-        <Text style={[globalStyles.loadingText, { color: currentColors.mutedForeground }]}>
+        <Text
+          style={[
+            globalStyles.loadingText,
+            { color: currentColors.mutedForeground },
+          ]}
+        >
           Cargando clientes...
         </Text>
       </View>
@@ -66,7 +78,10 @@ export default function ClientsScreen() {
   }
   return (
     <ScrollView
-      style={[globalStyles.container, { backgroundColor: currentColors.background }]}
+      style={[
+        globalStyles.container,
+        { backgroundColor: currentColors.background },
+      ]}
       contentContainerStyle={globalStyles.scrollPadding}
       showsVerticalScrollIndicator={false}
     >
@@ -88,6 +103,23 @@ export default function ClientsScreen() {
         />
       </View>
 
+      <TouchableOpacity
+        style={[
+          globalStyles.actionButton,
+          { backgroundColor: currentColors.primary },
+        ]}
+        onPress={() => router.push("/create-client")}
+      >
+        <FontAwesome
+          name="plus"
+          size={14}
+          color="white"
+          style={globalStyles.actionIcon}
+        />
+
+        <Text style={globalStyles.actionButtonText}>Nuevo cliente</Text>
+      </TouchableOpacity>
+
       <View
         style={[
           globalStyles.card,
@@ -102,24 +134,38 @@ export default function ClientsScreen() {
         </View>
 
         <Text
-          style={[globalStyles.subtitle, { color: currentColors.mutedForeground }]}
+          style={[
+            globalStyles.subtitle,
+            { color: currentColors.mutedForeground },
+          ]}
         >
           Listado de clientes corporativos y gestión de cuentas.
         </Text>
 
         <View
-          style={[globalStyles.divider, { backgroundColor: currentColors.border }]}
+          style={[
+            globalStyles.divider,
+            { backgroundColor: currentColors.border },
+          ]}
         />
 
         <Text
-          style={[globalStyles.totalCountText, { color: currentColors.mutedForeground }]}
+          style={[
+            globalStyles.totalCountText,
+            { color: currentColors.mutedForeground },
+          ]}
         >
           Total clientes: {filteredClients.length}
         </Text>
 
         <View style={globalStyles.listContainer}>
           {filteredClients.length === 0 ? (
-            <Text style={[globalStyles.noResultsText, { color: currentColors.mutedForeground }]}>
+            <Text
+              style={[
+                globalStyles.noResultsText,
+                { color: currentColors.mutedForeground },
+              ]}
+            >
               No se encontraron clientes para "{searchQuery}"
             </Text>
           ) : (
@@ -128,7 +174,21 @@ export default function ClientsScreen() {
                 key={client.id}
                 client={client}
                 colorScheme={colorScheme ?? "light"}
-                onPress={() => console.log(client)}
+                onPress={() =>
+                  router.push({
+                    pathname: "/client-detail" as any,
+                    params: {
+                      businessName: client.businessName,
+                      ruc: client.ruc,
+                      contactName: client.contactName,
+                      contactPhone: client.contactPhone,
+                      contactEmail: client.contactEmail,
+                      address: client.address,
+                      advisorName: client.advisorName,
+                      isActive: String(client.isActive),
+                    },
+                  })
+                }
               />
             ))
           )}
