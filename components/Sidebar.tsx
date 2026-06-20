@@ -1,18 +1,18 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useNavigation, usePathname, useRouter } from "expo-router";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
   Animated,
+  Pressable,
   ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import { usePathname, useRouter, useNavigation } from "expo-router";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Colors from "../constants/Colors";
 import { useAuth } from "../context/AuthContext";
 import { useSidebarContext } from "../context/SidebarContext";
-import Colors from "../constants/Colors";
 import { useColorScheme } from "./useColorScheme";
 
 const DRAWER_WIDTH = 260;
@@ -134,14 +134,24 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
         <View style={styles.header}>
           <View style={styles.expandedHeader}>
             <View style={styles.headerRow}>
-              <View style={[styles.logoIconBg, { backgroundColor: currentColors.primary }]}>
+              <View
+                style={[
+                  styles.logoIconBg,
+                  { backgroundColor: currentColors.primary },
+                ]}
+              >
                 <Text style={styles.logoIconText}>B</Text>
               </View>
               <View style={styles.headerTitles}>
                 <Text style={[styles.brandText, { color: currentColors.text }]}>
                   BOPACORP
                 </Text>
-                <Text style={[styles.subBrandText, { color: currentColors.primary }]}>
+                <Text
+                  style={[
+                    styles.subBrandText,
+                    { color: currentColors.primary },
+                  ]}
+                >
                   Partner Movistar
                 </Text>
               </View>
@@ -191,7 +201,9 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                       name={item.icon}
                       size={20}
                       color={
-                        isActive ? currentColors.primary : currentColors.tabIconDefault
+                        isActive
+                          ? currentColors.primary
+                          : currentColors.tabIconDefault
                       }
                     />
                   </View>
@@ -201,7 +213,9 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                     style={[
                       styles.menuText,
                       {
-                        color: isActive ? currentColors.text : currentColors.mutedForeground,
+                        color: isActive
+                          ? currentColors.text
+                          : currentColors.mutedForeground,
                         fontWeight: isActive ? "700" : "500",
                       },
                     ]}
@@ -217,14 +231,27 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
         {}
         <View style={styles.footer}>
           {}
-          <View style={[styles.profileContainer, { borderTopColor: currentColors.border }]}>
-            <View style={[styles.avatar, { backgroundColor: currentColors.secondary }]}>
+          <View
+            style={[
+              styles.profileContainer,
+              { borderTopColor: currentColors.border },
+            ]}
+          >
+            <View
+              style={[
+                styles.avatar,
+                { backgroundColor: currentColors.secondary },
+              ]}
+            >
               <Text style={[styles.avatarText, { color: currentColors.text }]}>
                 {getInitials()}
               </Text>
             </View>
             <View style={styles.profileDetails}>
-              <Text numberOfLines={1} style={[styles.profileName, { color: currentColors.text }]}>
+              <Text
+                numberOfLines={1}
+                style={[styles.profileName, { color: currentColors.text }]}
+              >
                 {user?.profile
                   ? `${user.profile.firstName} ${user.profile.lastName}`
                   : user?.username || "Asesor"}
@@ -244,9 +271,18 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
             ]}
           >
             <View style={styles.iconContainer}>
-              <FontAwesome name="times" size={16} color={currentColors.tabIconDefault} />
+              <FontAwesome
+                name="times"
+                size={16}
+                color={currentColors.tabIconDefault}
+              />
             </View>
-            <Text style={[styles.footerText, { color: currentColors.mutedForeground }]}>
+            <Text
+              style={[
+                styles.footerText,
+                { color: currentColors.mutedForeground },
+              ]}
+            >
               Cerrar Menú
             </Text>
           </Pressable>
@@ -263,7 +299,12 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
             <View style={styles.iconContainer}>
               <FontAwesome name="sign-out" size={18} color="#f44336" />
             </View>
-            <Text style={[styles.footerText, { color: "#f44336", fontWeight: "600" }]}>
+            <Text
+              style={[
+                styles.footerText,
+                { color: "#f44336", fontWeight: "600" },
+              ]}
+            >
               Cerrar Sesión
             </Text>
           </Pressable>

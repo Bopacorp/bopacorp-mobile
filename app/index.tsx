@@ -1,8 +1,8 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React, { useState } from "react";
 import {
-  Alert,
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,15 +22,11 @@ export default function LoginScreen() {
     let finalEmail = email.trim();
     let finalPassword = password;
 
-    if (!finalEmail && !finalPassword) {
-      finalEmail = "lreyes@bopacorp.com";
-      finalPassword = "Bopa2026!";
-      setEmail(finalEmail);
-      setPassword(finalPassword);
-    }
-
     if (!finalEmail || !finalPassword) {
-      Alert.alert("Campos incompletos", "Por favor ingresa tu correo y contraseña.");
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor ingresa tu correo y contraseña.",
+      );
       return;
     }
 
@@ -38,7 +34,8 @@ export default function LoginScreen() {
     try {
       await login(finalEmail, finalPassword);
     } catch (err: any) {
-      const errorMsg = err.message || "Credenciales incorrectas o problema de red.";
+      const errorMsg =
+        err.message || "Credenciales incorrectas o problema de red.";
       Alert.alert("Error de Autenticación", errorMsg);
     } finally {
       setIsLoggingIn(false);
