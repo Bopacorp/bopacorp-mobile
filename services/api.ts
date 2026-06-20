@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getStorageItem, setStorageItem, removeStorageItem } from "./storage";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 let accessTokenInMemory: string | null = null;
 let onLogoutCallback: (() => void) | null = null;

@@ -161,3 +161,55 @@ export const getAdvisorMetrics = async (): Promise<AdvisorMetrics[]> => {
     return [];
   }
 };
+
+export interface DocumentTypeItem {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export const getDocumentTypes = async (): Promise<DocumentTypeItem[]> => {
+  try {
+    const data: any = await apiClient.get("/api/v1/documents/types");
+    return data;
+  } catch (error) {
+    console.warn("Could not load document types:", error);
+    return [];
+  }
+};
+
+export const uploadDocumentFile = async (
+  fileUri: string,
+  fileName: string,
+  mimeType: string
+): Promise<any> => {
+  const formData = new FormData();
+  formData.append("file", {
+    uri: fileUri,
+    name: fileName,
+    type: mimeType,
+  } as any);
+
+  return apiClient.post("/api/v1/document-uploads", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const createNegotiationDocument = async (data: {
+  negotiationId: string;
+  documentTypeId: string;
+  filename: string;
+  fileExtension: string;
+  fileSizeMb: number;
+  storagePath: string;
+  mimeType: string;
+  encryptionMetadata: any;
+}): Promise<any> => {
+  return apiClient.post("/api/v1/documents", data);
+};
+
+export const deleteNegotiationDocument = async (id: string): Promise<any> => {
+  return apiClient.delete(`/api/v1/documents/${id}`);
+};
