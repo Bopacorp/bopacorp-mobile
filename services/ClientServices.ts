@@ -214,3 +214,45 @@ export const createNegotiationDocument = async (data: {
 export const deleteNegotiationDocument = async (id: string): Promise<any> => {
   return apiClient.delete(`/api/v1/documents/${id}`);
 };
+
+export const updateNegotiation = async (
+  id: string,
+  data: {
+    stateId?: string;
+    startDate?: string;
+    estimatedCloseDate?: string;
+    observations?: string;
+    isActive?: boolean;
+  },
+): Promise<any> => {
+  return apiClient.patch(`/api/v1/crm/negotiations/${id}`, data);
+};
+
+export interface NegotiationState {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export const getNegotiationStates = async (): Promise<NegotiationState[]> => {
+  try {
+    const data: any = await apiClient.get("/api/v1/crm/negotiation-states");
+
+    return data;
+  } catch (error) {
+    console.warn(error);
+    return [];
+  }
+};
+
+export const createNegotiation = async (data: {
+  clientId: string;
+  advisorId: string;
+  stateId: string;
+  startDate?: string;
+  estimatedCloseDate?: string;
+  observations?: string;
+  isActive?: boolean;
+}): Promise<any> => {
+  return apiClient.post("/api/v1/crm/negotiations", data);
+};

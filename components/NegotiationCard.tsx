@@ -1,9 +1,8 @@
-import React from "react";
-import { TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/Themed";
 import Colors from "@/constants/Colors";
-import { globalStyles } from "@/constants/Styles";
 import { Negotiation } from "@/services/ClientServices";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface NegotiationCardProps {
   negotiation: Negotiation;
@@ -11,111 +10,105 @@ interface NegotiationCardProps {
   onPress?: () => void;
 }
 
+const STATUS_STYLE: Record<
+  string,
+  { bg: string; text: string; filled?: boolean }
+> = {
+  Negociación: { bg: "#13a3ec", text: "#fff", filled: true },
+  Cierre: { bg: "#13a3ec", text: "#fff", filled: true },
+  "Post-venta": { bg: "#F3F4F6", text: "#374151" },
+  "Contacto Inicial": { bg: "#F3F4F6", text: "#374151" },
+  Prospección: { bg: "#F3F4F6", text: "#374151" },
+  Aprobado: { bg: "#D1FAE5", text: "#065F46" },
+  Enviado: { bg: "#DBEAFE", text: "#1E40AF" },
+  Borrador: { bg: "#F3F4F6", text: "#374151" },
+  Rechazado: { bg: "#FEE2E2", text: "#991B1B" },
+};
+
 export default function NegotiationCard({
   negotiation,
   colorScheme,
   onPress,
 }: NegotiationCardProps) {
   const currentColors = Colors[colorScheme ?? "light"];
+  const s = STATUS_STYLE[negotiation.status ?? ""] ?? {
+    bg: "#F3F4F6",
+    text: "#374151",
+  };
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.7}
       style={[
-        globalStyles.clientCard,
-        {
-          borderColor: currentColors.border,
-          backgroundColor: currentColors.card,
-        },
+        styles.row,
+        { borderBottomColor: currentColors.border ?? "#F3F4F6" },
       ]}
       onPress={onPress}
     >
-      <View style={globalStyles.clientHeader}>
-        <Text style={globalStyles.clientName}>
-          {negotiation.clientName}
-        </Text>
-
-        <View
+      {/* Empresa */}
+      <View style={styles.colEmpresa}>
+        <Text
           style={[
-            globalStyles.statusBadge,
-            {
-              backgroundColor:
-                negotiation.status === "Aprobado"
-                  ? colorScheme === "dark"
-                    ? "rgba(34, 197, 94, 0.2)"
-                    : "#DCFCE7"
-                  : negotiation.status === "Enviado"
-                    ? colorScheme === "dark"
-                      ? "rgba(59, 130, 246, 0.2)"
-                      : "#DBEAFE"
-                    : colorScheme === "dark"
-                      ? "rgba(107, 114, 128, 0.2)"
-                      : "#F3F4F6",
-            },
+            styles.empresa,
+            { color: currentColors.primary ?? "#13a3ec" },
           ]}
         >
-          <Text
-            style={{
-              color:
-                negotiation.status === "Aprobado"
-                  ? colorScheme === "dark"
-                    ? "#4ADE80"
-                    : "#166534"
-                  : negotiation.status === "Enviado"
-                    ? colorScheme === "dark"
-                      ? "#60A5FA"
-                      : "#1E40AF"
-                    : colorScheme === "dark"
-                      ? "#9CA3AF"
-                      : "#4B5563",
-              fontWeight: "600",
-              fontSize: 12,
-            }}
-          >
+          {negotiation.clientName}
+        </Text>
+      </View>
+
+      {/* Estado badge */}
+      <View style={styles.colEstado}>
+        <View style={[styles.badge, { backgroundColor: s.bg }]}>
+          <Text style={[styles.badgeText, { color: s.text }]}>
             {negotiation.status}
           </Text>
         </View>
       </View>
 
-      <Text style={globalStyles.clientInfo}>
-        Etapa: {negotiation.planName}
-      </Text>
+      {/* Fecha inicio */}
+      <View style={styles.colFecha}>
+        <Text style={styles.cell}>{negotiation.date ?? "—"}</Text>
+      </View>
 
-      <Text style={globalStyles.clientInfo}>
-        Asesor: {negotiation.advisorName}
-      </Text>
-      <Text style={globalStyles.clientInfo}>
-        Monto: {negotiation.amount}
-      </Text>
-      <Text style={globalStyles.clientInfo}>
-        Inicio: {negotiation.date}
-      </Text>
-
-      <Text style={globalStyles.clientInfo}>
-        Cierre: {negotiation.estimatedCloseDate}
-      </Text>
-
-      <View
-        style={[
-          globalStyles.cardDivider,
-          {
-            backgroundColor: currentColors.border,
-          },
-        ]}
-      />
-
-      <View style={globalStyles.cardFooter}>
-        <Text
-          style={[
-            globalStyles.cardActionText,
-            {
-              color: currentColors.primary,
-            },
-          ]}
-        >
-          Ver detalle →
-        </Text>
+      {/* Cierre estimado */}
+      <View style={styles.colCierre}>
+        <Text style={styles.cell}>{negotiation.estimatedCloseDate ?? "—"}</Text>
       </View>
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+  },
+  colEmpresa: { flex: 2.2 },
+  colEstado: { flex: 1.4 },
+  colAsesor: { flex: 1.4 },
+  colFecha: { flex: 1.1 },
+  colCierre: { flex: 1.1 },
+
+  empresa: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  cell: {
+    fontSize: 12,
+    color: "#374151",
+  },
+  badge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: "600",
+  },
+});

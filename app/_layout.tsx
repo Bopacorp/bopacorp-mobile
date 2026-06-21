@@ -62,12 +62,14 @@ function RootLayoutNav() {
     if (isLoading) return;
 
     const inTabsGroup = (segments as string[])[0] === "(tabs)";
-
     const allowedOutsideTabs = [
       "modal",
       "client-detail",
       "edit-client",
       "create-client",
+      "negotiation-detail",
+      "edit-negotiation",
+      "create-negotiation",
     ];
     const currentRoute = (segments as string[])[0];
 
