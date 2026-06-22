@@ -20,8 +20,8 @@ import {
 const TABLE_HEADERS = [
   { label: "Empresa", flex: 2.2 },
   { label: "Estado", flex: 1.4 },
-  { label: "Fecha inicio", flex: 1.1 },
-  { label: "Cierre estimado", flex: 1.1 },
+  { label: "Inicio", flex: 1.1 },
+  { label: "Fin", flex: 1.1 },
 ];
 
 export default function NegotiationsScreen() {
@@ -38,9 +38,9 @@ export default function NegotiationsScreen() {
 
   const filterOptions = [
     { value: "Todos", label: "Todos" },
-    { value: "Prospección", label: "Prospección" },
+    { value: "Prospeccion", label: "Prospección" },
     { value: "Contacto Inicial", label: "Contacto Inicial" },
-    { value: "Negociación", label: "Negociación" },
+    { value: "Negociacion", label: "Negociación" },
     { value: "Cierre", label: "Cierre" },
     { value: "Post-venta", label: "Post-venta" },
   ];
@@ -137,33 +137,9 @@ export default function NegotiationsScreen() {
       contentContainerStyle={globalStyles.scrollPadding}
       showsVerticalScrollIndicator={false}
     >
-      {/* ── Page header ── */}
-      <RNView style={styles.pageHeader}>
-        <RNView>
-          <Text style={styles.pageTitle}>Negociaciones</Text>
-          <Text style={styles.pageSubtitle}>
-            Gestión de cuentas, contratos y visitas comerciales
-          </Text>
-        </RNView>
-
-        <TouchableOpacity
-          style={[styles.newBtn, { backgroundColor: currentColors.primary }]}
-          activeOpacity={0.8}
-          onPress={() => router.push("/create-negotiation")}
-        >
-          <FontAwesome
-            name="plus"
-            size={12}
-            color="white"
-            style={{ marginRight: 6 }}
-          />
-          <Text style={styles.newBtnText}>Nueva negociación</Text>
-        </TouchableOpacity>
-      </RNView>
-
       {/* ── Filtros ── */}
-      <RNView style={styles.filtersRow}>
-        <RNView style={styles.searchWrap}>
+      <RNView style={globalStyles.searchRow}>
+        <RNView style={globalStyles.flex1}>
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -181,181 +157,195 @@ export default function NegotiationsScreen() {
         />
       </RNView>
 
-      {/* ── Tabla ── */}
-      <RNView
+      {/* ── Botón de Acción ── */}
+      <TouchableOpacity
         style={[
-          styles.tableCard,
+          globalStyles.actionButton,
+          { backgroundColor: currentColors.primary },
+        ]}
+        onPress={() => router.push("/create-negotiation")}
+      >
+        <FontAwesome
+          name="plus"
+          size={14}
+          color="white"
+          style={globalStyles.actionIcon}
+        />
+        <Text style={globalStyles.actionButtonText}>Nueva negociación</Text>
+      </TouchableOpacity>
+
+      {/* ── Contenedor Tarjeta Principal ── */}
+      <View
+        style={[
+          globalStyles.card,
           {
-            backgroundColor: currentColors.card ?? "#fff",
-            borderColor: currentColors.border ?? "#E5E7EB",
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+            paddingHorizontal: 10,
           },
         ]}
       >
-        {/* Header de columnas */}
-        <RNView
-          style={[
-            styles.tableHeader,
-            { borderBottomColor: currentColors.border ?? "#E5E7EB" },
-          ]}
-        >
-          <RNView style={{ flex: 2.2 }}>
-            <Text style={styles.headerText}>Empresa</Text>
-          </RNView>
-
-          <RNView style={{ flex: 1.4 }}>
-            <Text style={styles.headerText}>Estado</Text>
-          </RNView>
-
-          <TouchableOpacity
-            style={{ flex: 1.1 }}
-            onPress={() =>
-              setSortOrder(
-                sortOrder === "inicioAsc" ? "inicioDesc" : "inicioAsc",
-              )
-            }
-          >
-            <Text style={styles.headerText}>Fecha inicio ↑↓</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{ flex: 1.1 }}
-            onPress={() =>
-              setSortOrder(
-                sortOrder === "cierreAsc" ? "cierreDesc" : "cierreAsc",
-              )
-            }
-          >
-            <Text style={styles.headerText}>Cierre est. ↑↓</Text>
-          </TouchableOpacity>
+        <RNView style={globalStyles.titleRow}>
+          <Text style={globalStyles.title}>Negociaciones</Text>
         </RNView>
 
-        {/* Filas */}
-        {filteredNegotiations.length === 0 ? (
-          <Text style={styles.emptyText}>
-            {searchQuery
-              ? `No se encontraron resultados para "${searchQuery}"`
-              : "Sin negociaciones registradas."}
-          </Text>
-        ) : (
-          sortedNegotiations.map((item) => (
-            <NegotiationCard
-              key={item.id}
-              negotiation={item}
-              colorScheme={colorScheme ?? "light"}
+        <Text
+          style={[
+            globalStyles.subtitle,
+            { color: currentColors.mutedForeground },
+          ]}
+        >
+          Gestión de cuentas, contratos y visitas comerciales
+        </Text>
+
+        <RNView
+          style={[
+            globalStyles.divider,
+            { backgroundColor: currentColors.border },
+          ]}
+        />
+
+        <Text
+          style={[
+            globalStyles.totalCountText,
+            { color: currentColors.mutedForeground },
+          ]}
+        >
+          Total negociaciones: {filteredNegotiations.length}
+        </Text>
+
+        {/* ── Tabla de Negociaciones ── */}
+        <RNView
+          style={[
+            styles.tableCard,
+            {
+              borderColor: currentColors.border ?? "#E5E7EB",
+            },
+          ]}
+        >
+          {/* Header de columnas */}
+          <RNView
+            style={[
+              styles.tableHeader,
+              {
+                backgroundColor: currentColors.muted,
+                borderBottomColor: currentColors.border ?? "#E5E7EB",
+              },
+            ]}
+          >
+            <RNView style={{ flex: 2.4 }}>
+              <Text style={[styles.headerText, { color: currentColors.text }]}>Empresa</Text>
+            </RNView>
+
+            <RNView style={{ flex: 1.2 }}>
+              <Text style={[styles.headerText, { color: currentColors.text }]}>Estado</Text>
+            </RNView>
+
+            <TouchableOpacity
+              style={{ flex: 1.1 }}
               onPress={() =>
-                router.push({
-                  pathname: "/negotiation-detail",
-                  params: {
-                    id: item.id,
-                    clientName: item.clientName,
-                    planName: item.planName,
-                    amount: item.amount,
-                    status: item.status,
-                    date: item.date,
-                    advisorName: item.advisorName,
-                    estimatedCloseDate: item.estimatedCloseDate,
-                  },
-                })
+                setSortOrder(
+                  sortOrder === "inicioAsc" ? "inicioDesc" : "inicioAsc",
+                )
               }
-            />
-          ))
-        )}
+            >
+              <Text style={[styles.headerText, { color: currentColors.text }]}>Inicio ↑↓</Text>
+            </TouchableOpacity>
 
-        {/* Footer con total */}
-        <RNView
-          style={[
-            styles.tableFooter,
-            { borderTopColor: currentColors.border ?? "#E5E7EB" },
-          ]}
-        >
-          <Text style={styles.totalText}>
-            {filteredNegotiations.length} resultado
-            {filteredNegotiations.length !== 1 ? "s" : ""}
-          </Text>
+            <TouchableOpacity
+              style={{ flex: 1.1 }}
+              onPress={() =>
+                setSortOrder(
+                  sortOrder === "cierreAsc" ? "cierreDesc" : "cierreAsc",
+                )
+              }
+            >
+              <Text style={[styles.headerText, { color: currentColors.text }]}>Fin ↑↓</Text>
+            </TouchableOpacity>
+          </RNView>
+
+          {/* Filas */}
+          {filteredNegotiations.length === 0 ? (
+            <Text style={[styles.emptyText, { color: currentColors.mutedForeground }]}>
+              {searchQuery
+                ? `No se encontraron resultados para "${searchQuery}"`
+                : "Sin negociaciones registradas."}
+            </Text>
+          ) : (
+            sortedNegotiations.map((item) => (
+              <NegotiationCard
+                key={item.id}
+                negotiation={item}
+                colorScheme={colorScheme ?? "light"}
+                onPress={() =>
+                  router.push({
+                    pathname: "/negotiation-detail",
+                    params: {
+                      id: item.id,
+                      clientName: item.clientName,
+                      planName: item.planName,
+                      amount: item.amount,
+                      status: item.status,
+                      date: item.date,
+                      advisorName: item.advisorName,
+                      estimatedCloseDate: item.estimatedCloseDate,
+                    },
+                  })
+                }
+              />
+            ))
+          )}
+
+          {/* Footer con total */}
+          <RNView
+            style={[
+              styles.tableFooter,
+              { borderTopColor: currentColors.border ?? "#E5E7EB" },
+            ]}
+          >
+            <Text style={[styles.totalText, { color: currentColors.mutedForeground }]}>
+              {filteredNegotiations.length} resultado
+              {filteredNegotiations.length !== 1 ? "s" : ""}
+            </Text>
+          </RNView>
         </RNView>
-      </RNView>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  /* page header */
-  pageHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 20,
-  },
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  pageSubtitle: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginTop: 2,
-  },
-  newBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 8,
-  },
-  newBtnText: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-
-  /* filtros */
-  filtersRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 16,
-  },
-  searchWrap: {
-    flex: 1,
-  },
-
   /* tabla */
   tableCard: {
     borderRadius: 12,
     borderWidth: 1,
     overflow: "hidden",
-    marginBottom: 24,
   },
   tableHeader: {
     flexDirection: "row",
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    backgroundColor: "#FAFAFA",
   },
   headerText: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#374151",
   },
 
   /* footer */
   tableFooter: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
     paddingVertical: 12,
     borderTopWidth: 1,
     alignItems: "flex-end",
   },
   totalText: {
     fontSize: 12,
-    color: "#6B7280",
   },
 
   emptyText: {
     padding: 24,
     textAlign: "center",
-    color: "#9CA3AF",
     fontSize: 14,
   },
 });

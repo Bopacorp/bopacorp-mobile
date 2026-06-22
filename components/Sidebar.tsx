@@ -40,12 +40,6 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
 
   const menuItems = [
     {
-      name: "Overview",
-      icon: "home" as const,
-      path: "/overview",
-      target: "/(tabs)/overview" as const,
-    },
-    {
       name: "Clientes",
       icon: "building" as const,
       path: "/clients",

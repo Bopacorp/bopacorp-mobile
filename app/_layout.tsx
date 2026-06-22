@@ -80,7 +80,7 @@ function RootLayoutNav() {
       !inTabsGroup &&
       !allowedOutsideTabs.includes(currentRoute)
     ) {
-      router.replace("/(tabs)/overview" as any);
+      router.replace("/(tabs)/clients" as any);
     }
   }, [role, segments, isLoading]);
 

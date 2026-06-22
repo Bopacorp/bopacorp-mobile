@@ -7,6 +7,10 @@ import {
     TextInput,
     TouchableOpacity,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BackButton from "@/components/BackButton";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 import { Text, View } from "@/components/Themed";
 import { globalStyles } from "@/constants/Styles";
@@ -29,65 +33,78 @@ export default function EditClientScreen() {
   );
   const [address, setAddress] = useState(params.address?.toString() || "");
 
+  const insets = useSafeAreaInsets();
+
+  const colorScheme = useColorScheme();
+  const currentColors = Colors[colorScheme ?? "light"];
+  const placeholderColor = colorScheme === "dark" ? "#5c6e8c" : "#9CA3AF";
+
   return (
     <ScrollView
-      style={globalStyles.container}
+      style={[globalStyles.container, { backgroundColor: currentColors.background, paddingTop: insets.top }]}
       contentContainerStyle={[
         globalStyles.scrollPadding,
         { paddingBottom: 40 },
       ]}
     >
-      <TouchableOpacity
-        onPress={() => router.back()}
-        style={{ marginBottom: 20 }}
-      >
-        <FontAwesome name="arrow-left" size={22} color="#111827" />
-      </TouchableOpacity>
+      <View style={{ marginBottom: 20, backgroundColor: "transparent" }}>
+        <BackButton />
+      </View>
 
-      <Text style={styles.title}>Editar cliente</Text>
+      <Text style={[styles.title, { color: currentColors.text }]}>Editar cliente</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>RUC</Text>
-        <TextInput style={styles.input} value={ruc} onChangeText={setRuc} />
-
-        <Text style={styles.label}>Nombre comercial</Text>
+      <View style={[styles.card, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+        <Text style={[styles.label, { color: currentColors.text }]}>RUC</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          value={ruc}
+          onChangeText={setRuc}
+          placeholderTextColor={placeholderColor}
+        />
+
+        <Text style={[styles.label, { color: currentColors.text }]}>Nombre comercial</Text>
+        <TextInput
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={businessName}
           onChangeText={setBusinessName}
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Contacto</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Contacto</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={contactName}
           onChangeText={setContactName}
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Teléfono</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Teléfono</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={contactPhone}
           onChangeText={setContactPhone}
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Email</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Email</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={contactEmail}
           onChangeText={setContactEmail}
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Dirección</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Dirección</Text>
         <TextInput
-          style={[styles.input, styles.textArea]}
+          style={[styles.input, styles.textArea, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={address}
           onChangeText={setAddress}
           multiline
+          placeholderTextColor={placeholderColor}
         />
 
         <TouchableOpacity
-          style={styles.saveButton}
+          style={[styles.saveButton, { backgroundColor: currentColors.primary }]}
           onPress={() => {
             console.log("Actualizar cliente");
           }}

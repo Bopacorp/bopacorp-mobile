@@ -3,6 +3,8 @@ import Colors from "@/constants/Colors";
 import { Negotiation } from "@/services/ClientServices";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { useColorScheme } from "@/components/useColorScheme";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 interface NegotiationCardProps {
   negotiation: Negotiation;
@@ -10,19 +12,64 @@ interface NegotiationCardProps {
   onPress?: () => void;
 }
 
-const STATUS_STYLE: Record<
+const STAGE_CONFIG: Record<
   string,
-  { bg: string; text: string; filled?: boolean }
+  {
+    light: { bg: string; text: string };
+    dark: { bg: string; text: string };
+    icon: string;
+    label: string;
+  }
 > = {
-  Negociación: { bg: "#13a3ec", text: "#fff", filled: true },
-  Cierre: { bg: "#13a3ec", text: "#fff", filled: true },
-  "Post-venta": { bg: "#F3F4F6", text: "#374151" },
-  "Contacto Inicial": { bg: "#F3F4F6", text: "#374151" },
-  Prospección: { bg: "#F3F4F6", text: "#374151" },
-  Aprobado: { bg: "#D1FAE5", text: "#065F46" },
-  Enviado: { bg: "#DBEAFE", text: "#1E40AF" },
-  Borrador: { bg: "#F3F4F6", text: "#374151" },
-  Rechazado: { bg: "#FEE2E2", text: "#991B1B" },
+  Prospeccion: {
+    light: { bg: "#FEF3C7", text: "#D97706" },
+    dark: { bg: "rgba(245, 158, 11, 0.15)", text: "#FBBF24" },
+    icon: "bullseye",
+    label: "Prosp.",
+  },
+  Prospección: {
+    light: { bg: "#FEF3C7", text: "#D97706" },
+    dark: { bg: "rgba(245, 158, 11, 0.15)", text: "#FBBF24" },
+    icon: "bullseye",
+    label: "Prosp.",
+  },
+  "Contacto Inicial": {
+    light: { bg: "#F3E8FF", text: "#7C3AED" },
+    dark: { bg: "rgba(168, 85, 247, 0.15)", text: "#C084FC" },
+    icon: "comments-o",
+    label: "Contact.",
+  },
+  Negociacion: {
+    light: { bg: "#DBEAFE", text: "#2563EB" },
+    dark: { bg: "rgba(59, 130, 246, 0.15)", text: "#60A5FA" },
+    icon: "handshake-o",
+    label: "Negoc.",
+  },
+  Negociación: {
+    light: { bg: "#DBEAFE", text: "#2563EB" },
+    dark: { bg: "rgba(59, 130, 246, 0.15)", text: "#60A5FA" },
+    icon: "handshake-o",
+    label: "Negoc.",
+  },
+  Cierre: {
+    light: { bg: "#D1FAE5", text: "#059669" },
+    dark: { bg: "rgba(34, 197, 94, 0.15)", text: "#4ADE80" },
+    icon: "check-circle-o",
+    label: "Cierre",
+  },
+  "Post-venta": {
+    light: { bg: "#CCFBF1", text: "#0D9488" },
+    dark: { bg: "rgba(20, 184, 166, 0.15)", text: "#2DD4BF" },
+    icon: "star-o",
+    label: "Post-V.",
+  },
+};
+
+const DEFAULT_CONFIG = {
+  light: { bg: "#F3F4F6", text: "#4B5563" },
+  dark: { bg: "rgba(156, 163, 175, 0.15)", text: "#D1D5DB" },
+  icon: "tag",
+  label: "Status",
 };
 
 export default function NegotiationCard({
@@ -30,11 +77,12 @@ export default function NegotiationCard({
   colorScheme,
   onPress,
 }: NegotiationCardProps) {
-  const currentColors = Colors[colorScheme ?? "light"];
-  const s = STATUS_STYLE[negotiation.status ?? ""] ?? {
-    bg: "#F3F4F6",
-    text: "#374151",
-  };
+  const scheme = useColorScheme();
+  const currentColors = Colors[scheme ?? "light"];
+  const statusStr = negotiation.status as string;
+
+  const config = STAGE_CONFIG[statusStr] || DEFAULT_CONFIG;
+  const s = scheme === "dark" ? config.dark : config.light;
 
   return (
     <TouchableOpacity
@@ -50,7 +98,7 @@ export default function NegotiationCard({
         <Text
           style={[
             styles.empresa,
-            { color: currentColors.primary ?? "#13a3ec" },
+            { color: currentColors.text },
           ]}
         >
           {negotiation.clientName}
@@ -61,19 +109,19 @@ export default function NegotiationCard({
       <View style={styles.colEstado}>
         <View style={[styles.badge, { backgroundColor: s.bg }]}>
           <Text style={[styles.badgeText, { color: s.text }]}>
-            {negotiation.status}
+            {config.label}
           </Text>
         </View>
       </View>
 
       {/* Fecha inicio */}
       <View style={styles.colFecha}>
-        <Text style={styles.cell}>{negotiation.date ?? "—"}</Text>
+        <Text style={[styles.cell, { color: currentColors.mutedForeground }]}>{negotiation.date ?? "—"}</Text>
       </View>
 
       {/* Cierre estimado */}
       <View style={styles.colCierre}>
-        <Text style={styles.cell}>{negotiation.estimatedCloseDate ?? "—"}</Text>
+        <Text style={[styles.cell, { color: currentColors.mutedForeground }]}>{negotiation.estimatedCloseDate ?? "—"}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -84,26 +132,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 14,
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
     borderBottomWidth: 1,
   },
-  colEmpresa: { flex: 2.2 },
-  colEstado: { flex: 1.4 },
+  colEmpresa: { flex: 2.4 },
+  colEstado: { flex: 1.2 },
   colAsesor: { flex: 1.4 },
   colFecha: { flex: 1.1 },
   colCierre: { flex: 1.1 },
 
   empresa: {
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   cell: {
     fontSize: 12,
-    color: "#374151",
   },
   badge: {
+    flexDirection: "row",
+    alignItems: "center",
     alignSelf: "flex-start",
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 20,
   },

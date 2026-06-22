@@ -11,12 +11,16 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { login } = useAuth();
+  const colorScheme = useColorScheme();
+  const currentColors = Colors[colorScheme ?? "light"];
 
   const handleLogin = async () => {
     let finalEmail = email.trim();
@@ -43,24 +47,24 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: currentColors.background }]}>
       <View style={styles.header}>
         <FontAwesome
           name="building"
           size={54}
-          color="#1E88E5"
+          color={currentColors.primary}
           style={styles.logo}
         />
-        <Text style={styles.title}>BOPACORPSA</Text>
+        <Text style={[styles.title, { color: currentColors.text }]}>BOPACORPSA</Text>
         <Text style={styles.subtitle}>CRM Movil - Asesores</Text>
       </View>
 
-      <View style={styles.formCard}>
-        <Text style={styles.label}>Correo electrónico</Text>
+      <View style={[styles.formCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>Correo electrónico</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, color: currentColors.text, backgroundColor: currentColors.secondary }]}
           placeholder="usuario@empresa.com"
-          placeholderTextColor="#B0B0B0"
+          placeholderTextColor={colorScheme === "dark" ? "#5c6e8c" : "#B0B0B0"}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -68,11 +72,11 @@ export default function LoginScreen() {
           editable={!isLoggingIn}
         />
 
-        <Text style={styles.label}>Contraseña</Text>
+        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>Contraseña</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, color: currentColors.text, backgroundColor: currentColors.secondary }]}
           placeholder="Contraseña"
-          placeholderTextColor="#B0B0B0"
+          placeholderTextColor={colorScheme === "dark" ? "#5c6e8c" : "#B0B0B0"}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -81,12 +85,12 @@ export default function LoginScreen() {
 
         {isLoggingIn ? (
           <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#2196F3" />
-            <Text style={styles.loaderText}>Iniciando sesión...</Text>
+            <ActivityIndicator size="large" color={currentColors.primary} />
+            <Text style={[styles.loaderText, { color: currentColors.mutedForeground }]}>Iniciando sesión...</Text>
           </View>
         ) : (
           <Pressable
-            style={[styles.button, styles.btnLogin]}
+            style={[styles.button, { backgroundColor: currentColors.primary }]}
             onPress={handleLogin}
           >
             <FontAwesome
@@ -106,7 +110,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#F5F6F8",
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
@@ -116,35 +119,29 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#333333",
     letterSpacing: 0.5,
   },
   subtitle: { fontSize: 16, color: "#F57C00", fontWeight: "600", marginTop: 2 },
   formCard: {
-    backgroundColor: "#FFFFFF",
     width: "100%",
     maxWidth: 400,
     borderRadius: 12,
     padding: 24,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
   },
-  label: { fontSize: 14, color: "#4B5563", marginBottom: 8, fontWeight: "500" },
+  label: { fontSize: 14, marginBottom: 8, fontWeight: "500" },
   input: {
     borderWidth: 1,
-    borderColor: "#E5E7EB",
     borderRadius: 8,
     height: 48,
     paddingHorizontal: 16,
     marginBottom: 20,
     fontSize: 15,
-    color: "#333",
-    backgroundColor: "#FAFAFA",
   },
   button: {
     flexDirection: "row",
@@ -153,7 +150,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  btnLogin: { backgroundColor: "#2196F3" },
   btnIcon: { marginRight: 10 },
   buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "bold" },
   loaderContainer: {
@@ -163,7 +159,6 @@ const styles = StyleSheet.create({
   },
   loaderText: {
     marginTop: 10,
-    color: "#6B7280",
     fontSize: 14,
     fontWeight: "500",
   },

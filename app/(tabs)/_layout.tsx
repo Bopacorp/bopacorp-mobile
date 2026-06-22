@@ -136,14 +136,6 @@ function TabLayoutContent() {
         >
           {}
           <Tabs.Screen
-            name="overview"
-            options={{
-              title: "Overview",
-            }}
-          />
-
-          {}
-          <Tabs.Screen
             name="clients"
             options={{
               title: "Clientes",

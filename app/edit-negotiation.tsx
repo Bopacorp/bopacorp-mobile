@@ -1,9 +1,9 @@
 import { Text } from "@/components/Themed";
 import { globalStyles } from "@/constants/Styles";
-import { updateNegotiation } from "@/services/ClientServices";
+import { updateNegotiation, getNegotiationStates } from "@/services/ClientServices";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     FlatList,
     Modal,
@@ -16,15 +16,12 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BackButton from "@/components/BackButton";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
-const ESTADOS = [
-  "Prospección",
-  "Contacto Inicial",
-  "Negociación",
-  "Cierre",
-  "Post-venta",
-] as const;
-type Estado = (typeof ESTADOS)[number];
+
 
 export default function EditNegotiationScreen() {
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -51,62 +48,131 @@ export default function EditNegotiationScreen() {
   const [observations, setObservations] = useState(
     params.observations?.toString() || "",
   );
-  const [selectedStatus, setSelectedStatus] = useState<Estado | "">(
-    (params.status?.toString() as Estado) || "",
-  );
+  const [states, setStates] = useState<any[]>([]);
+  const [stateId, setStateId] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [statusModalVisible, setStatusModalVisible] = useState(false);
+
+  useEffect(() => {
+    loadStates();
+  }, []);
+
+  async function loadStates() {
+    try {
+      const statesData = await getNegotiationStates();
+      setStates(statesData);
+
+      const currentStatusName = params.status?.toString();
+      if (currentStatusName) {
+        const found = statesData.find(
+          (s: any) =>
+            s.name.toLowerCase() === currentStatusName.toLowerCase() ||
+            s.name.replace(/ó/g, "o").replace(/é/g, "e").toLowerCase() ===
+              currentStatusName.replace(/ó/g, "o").replace(/é/g, "e").toLowerCase()
+        );
+        if (found) {
+          setStateId(found.id);
+          setSelectedStatus(found.name);
+        } else {
+          setSelectedStatus(currentStatusName);
+        }
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  }
 
   // Read-only info
   const clientName = params.clientName?.toString() || "";
 
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const currentColors = Colors[colorScheme ?? "light"];
+  const placeholderColor = colorScheme === "dark" ? "#5c6e8c" : "#9CA3AF";
+
+  const calendarTheme = {
+    calendarBackground: currentColors.card,
+    textSectionTitleColor: currentColors.mutedForeground,
+    selectedDayBackgroundColor: currentColors.primary,
+    selectedDayTextColor: '#ffffff',
+    todayTextColor: currentColors.primary,
+    dayTextColor: currentColors.text,
+    textDisabledColor: currentColors.border,
+    dotColor: currentColors.primary,
+    selectedDotColor: '#ffffff',
+    arrowColor: currentColors.primary,
+    disabledArrowColor: currentColors.border,
+    monthTextColor: currentColors.text,
+    indicatorColor: currentColors.primary,
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateNegotiation(negotiationId, {
+        stateId: stateId || undefined,
+        estimatedCloseDate: closeDate.toISOString(),
+        observations,
+        isActive,
+      });
+
+      alert("Negociación actualizada");
+
+      router.back();
+    } catch (error) {
+      console.error(error);
+      alert("Error al actualizar negociación");
+    }
+  };
+
   return (
     <ScrollView
-      style={globalStyles.container}
-      contentContainerStyle={styles.scrollContent}
+      style={[globalStyles.container, { backgroundColor: currentColors.background, paddingTop: insets.top }]}
+      contentContainerStyle={[styles.scrollContent, { backgroundColor: currentColors.background }]}
     >
       {/* ── Top bar ── */}
       <RNView style={styles.topBar}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <FontAwesome name="arrow-left" size={18} color="#374151" />
-          <Text style={styles.backText}>Volver</Text>
-        </TouchableOpacity>
+        <BackButton />
       </RNView>
 
-      <Text style={styles.title}>Editar negociación</Text>
-      {clientName ? <Text style={styles.subtitle}>{clientName}</Text> : null}
+      <Text style={[styles.title, { color: currentColors.text }]}>Editar negociación</Text>
+      {clientName ? <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>{clientName}</Text> : null}
 
       {/* ── Campos editables ── */}
-      <RNView style={styles.card}>
-        <Text style={styles.label}>Cliente</Text>
+      <RNView style={[styles.card, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+        <Text style={[styles.label, { color: currentColors.text }]}>Cliente</Text>
 
-        <TextInput style={styles.input} value={clientName} editable={false} />
+        <Text style={{ fontSize: 15, fontWeight: "500", color: currentColors.text, paddingVertical: 6 }}>
+          {clientName}
+        </Text>
 
         {/* Estado — selector modal */}
-        <Text style={styles.label}>Estado</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Estado</Text>
         <TouchableOpacity
-          style={styles.selector}
+          style={[styles.selector, { borderColor: currentColors.border, backgroundColor: currentColors.secondary }]}
           onPress={() => setStatusModalVisible(true)}
         >
           <Text
             style={[
               styles.selectorText,
-              !selectedStatus && styles.selectorPlaceholder,
+              { color: selectedStatus ? currentColors.text : placeholderColor },
             ]}
           >
             {selectedStatus || "Seleccionar estado"}
           </Text>
-          <FontAwesome name="chevron-down" size={12} color="#6B7280" />
+          <FontAwesome name="chevron-down" size={12} color={currentColors.mutedForeground} />
         </TouchableOpacity>
 
-        <Text style={styles.label}>Fecha de inicio</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Fecha de inicio</Text>
 
         <TouchableOpacity
-          style={styles.inputWrapper}
+          style={[styles.inputWrapper, { borderColor: currentColors.border, backgroundColor: currentColors.secondary }]}
           onPress={() => setShowStartPicker(true)}
         >
-          <Text>{startDate.toLocaleDateString("es-ES")}</Text>
+          <Text style={[styles.input, { color: currentColors.text }]}>
+            {startDate.toLocaleDateString("es-ES")}
+          </Text>
 
-          <FontAwesome name="calendar-o" size={14} color="#9CA3AF" />
+          <FontAwesome name="calendar-o" size={14} color={placeholderColor} />
         </TouchableOpacity>
 
         {showStartPicker && (
@@ -116,25 +182,21 @@ export default function EditNegotiationScreen() {
               setStartDate(new Date(day.dateString));
               setShowStartPicker(false);
             }}
-            theme={{
-              todayTextColor: "#13a3ec",
-              selectedDayBackgroundColor: "#13a3ec",
-              arrowColor: "#13a3ec",
-            }}
+            theme={calendarTheme}
           />
         )}
 
-        <Text style={styles.label}>Fecha de cierre</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Fecha de cierre</Text>
 
         <TouchableOpacity
-          style={styles.inputWrapper}
+          style={[styles.inputWrapper, { borderColor: currentColors.border, backgroundColor: currentColors.secondary }]}
           onPress={() => setShowClosePicker(true)}
         >
-          <Text style={styles.input}>
+          <Text style={[styles.input, { color: currentColors.text }]}>
             {closeDate.toLocaleDateString("es-ES")}
           </Text>
 
-          <FontAwesome name="calendar-o" size={14} color="#9CA3AF" />
+          <FontAwesome name="calendar-o" size={14} color={placeholderColor} />
         </TouchableOpacity>
 
         {showClosePicker && (
@@ -144,60 +206,38 @@ export default function EditNegotiationScreen() {
               setCloseDate(new Date(day.dateString));
               setShowClosePicker(false);
             }}
-            theme={{
-              todayTextColor: "#13a3ec",
-              selectedDayBackgroundColor: "#13a3ec",
-              arrowColor: "#13a3ec",
-            }}
+            theme={calendarTheme}
           />
         )}
 
         {/* Observaciones */}
-        <Text style={styles.label}>Observaciones</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Observaciones</Text>
         <TextInput
-          style={[styles.inputBare, styles.textarea]}
+          style={[styles.inputBare, styles.textarea, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={observations}
           onChangeText={setObservations}
           placeholder="Notas adicionales..."
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={placeholderColor}
           multiline
           numberOfLines={4}
           textAlignVertical="top"
         />
       </RNView>
       <RNView style={styles.switchRow}>
-        <Text style={styles.label}>Activa</Text>
+        <Text style={[styles.label, { color: currentColors.text, marginTop: 0 }]}>Activa</Text>
 
         <Switch value={isActive} onValueChange={setIsActive} />
       </RNView>
       {/* ── Acciones ── */}
       <RNView style={styles.actions}>
         <TouchableOpacity
-          style={styles.cancelBtn}
+          style={[styles.cancelBtn, { borderColor: currentColors.border }]}
           onPress={() => router.back()}
         >
-          <Text style={styles.cancelText}>Cancelar</Text>
+          <Text style={[styles.cancelText, { color: currentColors.mutedForeground }]}>Cancelar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.saveBtn}
-          onPress={async () => {
-            try {
-              await updateNegotiation(negotiationId, {
-                estimatedCloseDate: closeDate.toISOString(),
-                observations,
-                isActive,
-              });
-
-              alert("Negociación actualizada");
-
-              router.back();
-            } catch (error) {
-              console.error(error);
-              alert("Error al actualizar negociación");
-            }
-          }}
-        >
+        <TouchableOpacity style={[styles.saveBtn, { backgroundColor: currentColors.primary }]} onPress={handleSave}>
           <Text style={styles.saveText}>Guardar cambios</Text>
         </TouchableOpacity>
       </RNView>
@@ -213,40 +253,43 @@ export default function EditNegotiationScreen() {
           style={styles.modalOverlay}
           onPress={() => setStatusModalVisible(false)}
         >
-          <RNView style={styles.modalBox}>
-            <RNView style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Seleccionar estado</Text>
+          <RNView style={[styles.modalBox, { backgroundColor: currentColors.card }]}>
+            <RNView style={[styles.modalHeader, { borderBottomColor: currentColors.border }]}>
+              <Text style={[styles.modalTitle, { color: currentColors.text }]}>Seleccionar estado</Text>
               <TouchableOpacity onPress={() => setStatusModalVisible(false)}>
-                <FontAwesome name="times" size={18} color="#6B7280" />
+                <FontAwesome name="times" size={18} color={currentColors.mutedForeground} />
               </TouchableOpacity>
             </RNView>
 
             <FlatList
-              data={ESTADOS}
-              keyExtractor={(item) => item}
+              data={states}
+              keyExtractor={(item) => item.id}
               renderItem={({ item }) => {
-                const isSelected = selectedStatus === item;
+                const isSelected = stateId === item.id;
                 return (
                   <TouchableOpacity
                     style={[
                       styles.modalItem,
-                      isSelected && styles.modalItemSelected,
+                      { borderBottomColor: currentColors.border },
+                      isSelected && { backgroundColor: colorScheme === "dark" ? "rgba(0, 127, 206, 0.15)" : "#EFF6FF" },
                     ]}
                     onPress={() => {
-                      setSelectedStatus(item);
+                      setStateId(item.id);
+                      setSelectedStatus(item.name);
                       setStatusModalVisible(false);
                     }}
                   >
                     <Text
                       style={[
                         styles.modalItemText,
-                        isSelected && styles.modalItemTextSelected,
+                        { color: currentColors.text },
+                        isSelected && { color: currentColors.primary, fontWeight: "600" },
                       ]}
                     >
-                      {item}
+                      {item.name}
                     </Text>
                     {isSelected && (
-                      <FontAwesome name="check" size={14} color="#13a3ec" />
+                      <FontAwesome name="check" size={14} color={currentColors.primary} />
                     )}
                   </TouchableOpacity>
                 );
@@ -329,9 +372,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     backgroundColor: "#FAFAFA",
+    height: 44,
   },
   inputIcon: { marginRight: 8 },
-  input: { flex: 1, height: 44, fontSize: 14, color: "#111827" },
+  input: { flex: 1, fontSize: 14, color: "#111827" },
   inputBare: {
     borderWidth: 1,
     borderColor: "#D1D5DB",

@@ -5,7 +5,7 @@ export interface Negotiation {
   clientName: string;
   planName: string;
   amount: string;
-  status: "Borrador" | "Enviado" | "Aprobado" | "Rechazado";
+  status: string;
   date: string;
   advisorName?: string;
   estimatedCloseDate?: string;
@@ -28,19 +28,7 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
     const data: any = await apiClient.get("/api/v1/crm/negotiations");
 
     return data.map((item: any) => {
-      let status: "Borrador" | "Enviado" | "Aprobado" | "Rechazado" =
-        "Borrador";
-      const code = item.state?.code || "";
-
-      if (code === "prospecting") {
-        status = "Borrador";
-      } else if (code === "initial_contact" || code === "negotiation") {
-        status = "Enviado";
-      } else if (code === "closing") {
-        status = "Aprobado";
-      } else if (code === "post_sale") {
-        status = "Aprobado";
-      }
+      const status = item.state?.name || "Prospeccion";
 
       let date = "N/A";
       const dateSource = item.startDate || item.createdAt;

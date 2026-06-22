@@ -166,7 +166,7 @@ export default function ClientsScreen() {
                 { color: currentColors.mutedForeground },
               ]}
             >
-              No se encontraron clientes para "{searchQuery}"
+              No se encontraron resultados
             </Text>
           ) : (
             filteredClients.map((client) => (

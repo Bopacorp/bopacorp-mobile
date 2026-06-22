@@ -7,6 +7,10 @@ import {
     TextInput,
     TouchableOpacity,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BackButton from "@/components/BackButton";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 import { Text, View } from "@/components/Themed";
 import { globalStyles } from "@/constants/Styles";
@@ -19,80 +23,89 @@ export default function CreateClientScreen() {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
 
+  const insets = useSafeAreaInsets();
+
+  const colorScheme = useColorScheme();
+  const currentColors = Colors[colorScheme ?? "light"];
+  const placeholderColor = colorScheme === "dark" ? "#5c6e8c" : "#9CA3AF";
+
   return (
     <ScrollView
-      style={globalStyles.container}
+      style={[globalStyles.container, { backgroundColor: currentColors.background, paddingTop: insets.top }]}
       contentContainerStyle={[
         globalStyles.scrollPadding,
         { paddingBottom: 40 },
       ]}
       showsVerticalScrollIndicator={false}
     >
-      <TouchableOpacity
-        onPress={() => router.back()}
-        style={{ marginBottom: 20 }}
-      >
-        <FontAwesome name="arrow-left" size={22} color="#111827" />
-      </TouchableOpacity>
+      <View style={{ marginBottom: 20, backgroundColor: "transparent" }}>
+        <BackButton />
+      </View>
 
-      <Text style={styles.title}>Nuevo cliente</Text>
+      <Text style={[styles.title, { color: currentColors.text }]}>Nuevo cliente</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>RUC</Text>
+      <View style={[styles.card, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+        <Text style={[styles.label, { color: currentColors.text }]}>RUC</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={ruc}
           onChangeText={setRuc}
           placeholder="0991234567001"
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Nombre comercial</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Nombre comercial</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={businessName}
           onChangeText={setBusinessName}
           placeholder="Empresa S.A."
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Contacto</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Contacto</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={contactName}
           onChangeText={setContactName}
           placeholder="Nombre del contacto"
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Teléfono</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Teléfono</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={phone}
           onChangeText={setPhone}
           placeholder="0999999999"
           keyboardType="phone-pad"
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Email</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Email</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={email}
           onChangeText={setEmail}
           placeholder="correo@empresa.com"
           keyboardType="email-address"
           autoCapitalize="none"
+          placeholderTextColor={placeholderColor}
         />
 
-        <Text style={styles.label}>Dirección</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Dirección</Text>
         <TextInput
-          style={[styles.input, styles.textArea]}
+          style={[styles.input, styles.textArea, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
           value={address}
           onChangeText={setAddress}
           placeholder="Dirección"
           multiline
           numberOfLines={4}
+          placeholderTextColor={placeholderColor}
         />
 
         <TouchableOpacity
-          style={styles.saveButton}
+          style={[styles.saveButton, { backgroundColor: currentColors.primary }]}
           activeOpacity={0.8}
           onPress={() => {
             console.log({
