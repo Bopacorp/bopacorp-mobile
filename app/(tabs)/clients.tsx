@@ -5,7 +5,10 @@ import { Text, View } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
-import { BusinessClient, getBusinessClients } from "@/services/ClientServices";
+import {
+  BusinessClient,
+  getBusinessClients
+} from "@/services/ClientServices";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -176,16 +179,9 @@ export default function ClientsScreen() {
                 colorScheme={colorScheme ?? "light"}
                 onPress={() =>
                   router.push({
-                    pathname: "/client-detail" as any,
+                    pathname: "/client-detail",
                     params: {
-                      businessName: client.businessName,
-                      ruc: client.ruc,
-                      contactName: client.contactName,
-                      contactPhone: client.contactPhone,
-                      contactEmail: client.contactEmail,
-                      address: client.address,
-                      advisorName: client.advisorName,
-                      isActive: String(client.isActive),
+                      id: client.id,
                     },
                   })
                 }

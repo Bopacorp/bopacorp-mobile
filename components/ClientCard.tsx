@@ -78,9 +78,13 @@ export default function ClientCard({
 
         {client.contactPhone ? (
           <View style={styles.metaItem}>
-            <Ionicons name="call-outline" size={13} color={c.mutedForeground} />
+            <Ionicons
+              name="calendar-outline"
+              size={13}
+              color={c.mutedForeground}
+            />
             <Text style={[styles.metaText, { color: c.mutedForeground }]}>
-              {client.contactPhone}
+              {new Date(client.createdAt).toLocaleDateString()}
             </Text>
           </View>
         ) : null}

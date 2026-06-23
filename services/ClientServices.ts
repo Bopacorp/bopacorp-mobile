@@ -80,7 +80,8 @@ export const getBusinessClients = async (): Promise<BusinessClient[]> => {
       const advisorName = advProfile
         ? `${advProfile.firstName} ${advProfile.lastName}`
         : item.advisor?.username || "Sin Asignar";
-
+      console.log("CLIENTE COMPLETO");
+      console.log(JSON.stringify(item, null, 2));
       return {
         id: item.id,
         ruc: item.ruc,
@@ -91,6 +92,7 @@ export const getBusinessClients = async (): Promise<BusinessClient[]> => {
         address: item.address || "Sin dirección",
         isActive: item.isActive,
         advisorName,
+        createdAt: item.createdAt,
       };
     });
   } catch (error) {
@@ -243,4 +245,9 @@ export const createNegotiation = async (data: {
   isActive?: boolean;
 }): Promise<any> => {
   return apiClient.post("/api/v1/crm/negotiations", data);
+};
+
+export const getBusinessClient = async (id: string): Promise<any> => {
+  const data = await apiClient.get(`/api/v1/crm/business-clients/${id}`);
+  return data;
 };
