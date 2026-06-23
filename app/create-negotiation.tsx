@@ -2,27 +2,27 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    FlatList,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import BackButton from "@/components/BackButton";
 import { Text } from "@/components/Themed";
-import { globalStyles } from "@/constants/Styles";
-import { useAuth } from "@/context/AuthContext";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import BackButton from "@/components/BackButton";
+import { globalStyles } from "@/constants/Styles";
+import { useAuth } from "@/context/AuthContext";
 import {
-    createNegotiation,
-    getBusinessClients,
-    getNegotiationStates,
+  createNegotiation,
+  getBusinessClients,
+  getNegotiationStates,
 } from "@/services/ClientServices";
 
 export default function CreateNegotiationScreen() {
@@ -72,13 +72,20 @@ export default function CreateNegotiationScreen() {
         alert("Seleccione cliente y estado");
         return;
       }
-
+      const toISO = (dateStr: string) => {
+        if (!dateStr) return undefined;
+        const [day, month, year] = dateStr.split("/");
+        if (!day || !month || !year) return undefined;
+        return new Date(`${year}-${month}-${day}`).toISOString();
+      };
+      const isoStart = toISO(startDate);
+      const isoClose = toISO(estimatedCloseDate);
       await createNegotiation({
         clientId,
         advisorId: user?.id || "",
         stateId,
-        startDate,
-        estimatedCloseDate,
+        startDate: isoStart,
+        estimatedCloseDate: isoClose,
         observations,
         isActive: true,
       });
@@ -97,24 +104,42 @@ export default function CreateNegotiationScreen() {
 
   return (
     <ScrollView
-      style={[globalStyles.container, { backgroundColor: currentColors.background, paddingTop: insets.top }]}
-      contentContainerStyle={[styles.content, { backgroundColor: currentColors.background }]}
+      style={[
+        globalStyles.container,
+        { backgroundColor: currentColors.background, paddingTop: insets.top },
+      ]}
+      contentContainerStyle={[
+        styles.content,
+        { backgroundColor: currentColors.background },
+      ]}
     >
       <View style={{ marginBottom: 20, backgroundColor: "transparent" }}>
         <BackButton onPress={() => router.replace("/negotiations")} />
       </View>
 
       <View style={[styles.header, { backgroundColor: "transparent" }]}>
-        <Text style={[styles.title, { color: currentColors.text }]}>Nueva negociación</Text>
+        <Text style={[styles.title, { color: currentColors.text }]}>
+          Nueva negociación
+        </Text>
       </View>
 
       <Text style={[styles.label, { color: currentColors.text }]}>Cliente</Text>
 
       <TouchableOpacity
-        style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary }]}
+        style={[
+          styles.input,
+          {
+            borderColor: currentColors.border,
+            backgroundColor: currentColors.secondary,
+          },
+        ]}
         onPress={() => setClientModalVisible(true)}
       >
-        <Text style={{ color: selectedClientName ? currentColors.text : placeholderColor }}>
+        <Text
+          style={{
+            color: selectedClientName ? currentColors.text : placeholderColor,
+          }}
+        >
           {selectedClientName || "Seleccionar cliente"}
         </Text>
       </TouchableOpacity>
@@ -122,7 +147,11 @@ export default function CreateNegotiationScreen() {
       <TouchableOpacity
         style={[
           globalStyles.actionButton,
-          { backgroundColor: currentColors.primary, marginTop: 10, marginBottom: 0 },
+          {
+            backgroundColor: currentColors.primary,
+            marginTop: 10,
+            marginBottom: 0,
+          },
         ]}
         onPress={() => router.push("/create-client")}
       >
@@ -135,41 +164,80 @@ export default function CreateNegotiationScreen() {
         <Text style={globalStyles.actionButtonText}>Nuevo cliente</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.label, { color: currentColors.text }]}>Estado inicial</Text>
+      <Text style={[styles.label, { color: currentColors.text }]}>
+        Estado inicial
+      </Text>
 
       <TouchableOpacity
-        style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary }]}
+        style={[
+          styles.input,
+          {
+            borderColor: currentColors.border,
+            backgroundColor: currentColors.secondary,
+          },
+        ]}
         onPress={() => setStateModalVisible(true)}
       >
-        <Text style={{ color: selectedStateName ? currentColors.text : placeholderColor }}>
+        <Text
+          style={{
+            color: selectedStateName ? currentColors.text : placeholderColor,
+          }}
+        >
           {selectedStateName || "Seleccionar estado"}
         </Text>
       </TouchableOpacity>
 
-      <Text style={[styles.label, { color: currentColors.text }]}>Fecha de inicio</Text>
+      <Text style={[styles.label, { color: currentColors.text }]}>
+        Fecha de inicio
+      </Text>
 
       <TextInput
-        style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+        style={[
+          styles.input,
+          {
+            borderColor: currentColors.border,
+            backgroundColor: currentColors.secondary,
+            color: currentColors.text,
+          },
+        ]}
         placeholder="dd/mm/aaaa"
         placeholderTextColor={placeholderColor}
         value={startDate}
         onChangeText={setStartDate}
       />
 
-      <Text style={[styles.label, { color: currentColors.text }]}>Cierre estimado</Text>
+      <Text style={[styles.label, { color: currentColors.text }]}>
+        Cierre estimado
+      </Text>
 
       <TextInput
-        style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+        style={[
+          styles.input,
+          {
+            borderColor: currentColors.border,
+            backgroundColor: currentColors.secondary,
+            color: currentColors.text,
+          },
+        ]}
         placeholder="dd/mm/aaaa"
         placeholderTextColor={placeholderColor}
         value={estimatedCloseDate}
         onChangeText={setEstimatedCloseDate}
       />
 
-      <Text style={[styles.label, { color: currentColors.text }]}>Observaciones</Text>
+      <Text style={[styles.label, { color: currentColors.text }]}>
+        Observaciones
+      </Text>
 
       <TextInput
-        style={[styles.textarea, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+        style={[
+          styles.textarea,
+          {
+            borderColor: currentColors.border,
+            backgroundColor: currentColors.secondary,
+            color: currentColors.text,
+          },
+        ]}
         multiline
         value={observations}
         onChangeText={setObservations}
@@ -178,7 +246,10 @@ export default function CreateNegotiationScreen() {
       />
 
       <TouchableOpacity
-        style={[styles.createButton, { backgroundColor: currentColors.primary }]}
+        style={[
+          styles.createButton,
+          { backgroundColor: currentColors.primary },
+        ]}
         onPress={handleCreate}
       >
         <Text style={styles.createButtonText}>Crear negociación</Text>
@@ -189,20 +260,27 @@ export default function CreateNegotiationScreen() {
           style={styles.modalOverlay}
           onPress={() => setClientModalVisible(false)}
         >
-          <View style={[styles.modalBox, { backgroundColor: currentColors.card }]}>
+          <View
+            style={[styles.modalBox, { backgroundColor: currentColors.card }]}
+          >
             <FlatList
               data={clients}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.modalItem, { borderBottomColor: currentColors.border }]}
+                  style={[
+                    styles.modalItem,
+                    { borderBottomColor: currentColors.border },
+                  ]}
                   onPress={() => {
                     setClientId(item.id);
                     setSelectedClientName(item.businessName);
                     setClientModalVisible(false);
                   }}
                 >
-                  <Text style={{ color: currentColors.text }}>{item.businessName}</Text>
+                  <Text style={{ color: currentColors.text }}>
+                    {item.businessName}
+                  </Text>
                 </TouchableOpacity>
               )}
             />
@@ -215,13 +293,18 @@ export default function CreateNegotiationScreen() {
           style={styles.modalOverlay}
           onPress={() => setStateModalVisible(false)}
         >
-          <View style={[styles.modalBox, { backgroundColor: currentColors.card }]}>
+          <View
+            style={[styles.modalBox, { backgroundColor: currentColors.card }]}
+          >
             <FlatList
               data={states}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.modalItem, { borderBottomColor: currentColors.border }]}
+                  style={[
+                    styles.modalItem,
+                    { borderBottomColor: currentColors.border },
+                  ]}
                   onPress={() => {
                     setStateId(item.id);
                     setSelectedStateName(item.name);

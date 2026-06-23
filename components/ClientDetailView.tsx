@@ -1,12 +1,12 @@
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import React from "react";
-import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackButton from "./BackButton";
 import EditarButton from "./EditarButton";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
 
 import { Text, View } from "@/components/Themed";
 import { globalStyles } from "@/constants/Styles";
@@ -38,6 +38,7 @@ function InfoRow({
 }
 
 interface Props {
+  id?: string;
   businessName?: string;
   ruc?: string;
   contactName?: string;
@@ -49,6 +50,7 @@ interface Props {
 }
 
 export default function ClientDetailView({
+  id,
   businessName,
   ruc,
   contactName,
@@ -65,7 +67,10 @@ export default function ClientDetailView({
 
   return (
     <ScrollView
-      style={[globalStyles.container, { paddingTop: insets.top, backgroundColor: currentColors.background }]}
+      style={[
+        globalStyles.container,
+        { paddingTop: insets.top, backgroundColor: currentColors.background },
+      ]}
       contentContainerStyle={[
         globalStyles.scrollPadding,
         { paddingBottom: 40 },
@@ -84,10 +89,12 @@ export default function ClientDetailView({
         <BackButton />
 
         <EditarButton
-          onPress={() =>
+          onPress={() => {
+            console.log("ID en ClientDetailView:", id);
             router.push({
               pathname: "/edit-client",
               params: {
+                id,
                 businessName,
                 ruc,
                 contactName,
@@ -97,8 +104,8 @@ export default function ClientDetailView({
                 advisorName,
                 isActive,
               },
-            })
-          }
+            });
+          }}
         />
       </View>
 
@@ -122,18 +129,30 @@ export default function ClientDetailView({
         INFORMACIÓN
       </Text>
 
-      <View style={[styles.card, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+          },
+        ]}
+      >
         <InfoRow icon="id-card" label="RUC">
           <Text style={styles.value}>{ruc}</Text>
         </InfoRow>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+        <View
+          style={[styles.divider, { backgroundColor: currentColors.border }]}
+        />
 
         <InfoRow icon="building" label="Empresa">
           <Text style={styles.value}>{businessName}</Text>
         </InfoRow>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+        <View
+          style={[styles.divider, { backgroundColor: currentColors.border }]}
+        />
 
         <InfoRow icon="gear" label="Estado">
           <View
@@ -141,8 +160,12 @@ export default function ClientDetailView({
               styles.badge,
               {
                 backgroundColor: active
-                  ? (scheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7")
-                  : (scheme === "dark" ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2"),
+                  ? scheme === "dark"
+                    ? "rgba(34, 197, 94, 0.2)"
+                    : "#DCFCE7"
+                  : scheme === "dark"
+                    ? "rgba(239, 68, 68, 0.2)"
+                    : "#FEE2E2",
               },
             ]}
           >
@@ -151,8 +174,12 @@ export default function ClientDetailView({
                 styles.badgeText,
                 {
                   color: active
-                    ? (scheme === "dark" ? "#4ADE80" : "#166534")
-                    : (scheme === "dark" ? "#F87171" : "#991B1B"),
+                    ? scheme === "dark"
+                      ? "#4ADE80"
+                      : "#166534"
+                    : scheme === "dark"
+                      ? "#F87171"
+                      : "#991B1B",
                 },
               ]}
             >
@@ -174,24 +201,38 @@ export default function ClientDetailView({
         CONTACTO
       </Text>
 
-      <View style={[styles.card, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+          },
+        ]}
+      >
         <InfoRow icon="user" label="Nombre">
           <Text style={styles.value}>{contactName}</Text>
         </InfoRow>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+        <View
+          style={[styles.divider, { backgroundColor: currentColors.border }]}
+        />
 
         <InfoRow icon="phone" label="Teléfono">
           <Text style={[styles.value, styles.link]}>{contactPhone}</Text>
         </InfoRow>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+        <View
+          style={[styles.divider, { backgroundColor: currentColors.border }]}
+        />
 
         <InfoRow icon="envelope" label="Email">
           <Text style={[styles.value, styles.link]}>{contactEmail}</Text>
         </InfoRow>
 
-        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
+        <View
+          style={[styles.divider, { backgroundColor: currentColors.border }]}
+        />
 
         <InfoRow icon="map-marker" label="Dirección">
           <Text style={styles.value}>{address}</Text>
@@ -210,7 +251,15 @@ export default function ClientDetailView({
         ASESOR
       </Text>
 
-      <View style={[styles.card, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+          },
+        ]}
+      >
         <InfoRow icon="user-circle" label="Asesor">
           <Text style={styles.value}>{advisorName}</Text>
         </InfoRow>

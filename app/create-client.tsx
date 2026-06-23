@@ -1,19 +1,20 @@
+import BackButton from "@/components/BackButton";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import BackButton from "@/components/BackButton";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
 
 import { Text, View } from "@/components/Themed";
 import { globalStyles } from "@/constants/Styles";
+import { createBusinessClient } from "@/services/ClientServices";
 
 export default function CreateClientScreen() {
   const [ruc, setRuc] = useState("");
@@ -28,10 +29,44 @@ export default function CreateClientScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const placeholderColor = colorScheme === "dark" ? "#5c6e8c" : "#9CA3AF";
+  async function handleSave() {
+    try {
+      const response = await createBusinessClient({
+        ruc,
+        businessName,
+        contactName,
+        contactPhone: phone,
+        contactEmail: email,
+        address,
+        activeServicesCount: 0,
+        currentMonthlyBilling: 0,
+        isActive: true,
+      });
 
+      console.log("CLIENTE CREADO:");
+      console.log(JSON.stringify(response, null, 2));
+
+      alert("Cliente creado");
+
+      router.back();
+    } catch (error: any) {
+      console.log("ERROR COMPLETO:");
+      console.log(error);
+
+      if (error?.details) {
+        console.log("DETAILS:");
+        console.log(error.details);
+      }
+
+      alert("Error al crear cliente");
+    }
+  }
   return (
     <ScrollView
-      style={[globalStyles.container, { backgroundColor: currentColors.background, paddingTop: insets.top }]}
+      style={[
+        globalStyles.container,
+        { backgroundColor: currentColors.background, paddingTop: insets.top },
+      ]}
       contentContainerStyle={[
         globalStyles.scrollPadding,
         { paddingBottom: 40 },
@@ -42,39 +77,83 @@ export default function CreateClientScreen() {
         <BackButton />
       </View>
 
-      <Text style={[styles.title, { color: currentColors.text }]}>Nuevo cliente</Text>
+      <Text style={[styles.title, { color: currentColors.text }]}>
+        Nuevo cliente
+      </Text>
 
-      <View style={[styles.card, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+          },
+        ]}
+      >
         <Text style={[styles.label, { color: currentColors.text }]}>RUC</Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={ruc}
           onChangeText={setRuc}
           placeholder="0991234567001"
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>Nombre comercial</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>
+          Nombre comercial
+        </Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={businessName}
           onChangeText={setBusinessName}
           placeholder="Empresa S.A."
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>Contacto</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>
+          Contacto
+        </Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={contactName}
           onChangeText={setContactName}
           placeholder="Nombre del contacto"
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>Teléfono</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>
+          Teléfono
+        </Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={phone}
           onChangeText={setPhone}
           placeholder="0999999999"
@@ -84,7 +163,14 @@ export default function CreateClientScreen() {
 
         <Text style={[styles.label, { color: currentColors.text }]}>Email</Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={email}
           onChangeText={setEmail}
           placeholder="correo@empresa.com"
@@ -93,9 +179,19 @@ export default function CreateClientScreen() {
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>Dirección</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>
+          Dirección
+        </Text>
         <TextInput
-          style={[styles.input, styles.textArea, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            styles.textArea,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={address}
           onChangeText={setAddress}
           placeholder="Dirección"
@@ -105,18 +201,12 @@ export default function CreateClientScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.saveButton, { backgroundColor: currentColors.primary }]}
+          style={[
+            styles.saveButton,
+            { backgroundColor: currentColors.primary },
+          ]}
           activeOpacity={0.8}
-          onPress={() => {
-            console.log({
-              ruc,
-              businessName,
-              contactName,
-              phone,
-              email,
-              address,
-            });
-          }}
+          onPress={handleSave}
         >
           <FontAwesome
             name="save"

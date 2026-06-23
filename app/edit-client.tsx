@@ -1,24 +1,25 @@
+import BackButton from "@/components/BackButton";
+import { Text, View } from "@/components/Themed";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { globalStyles } from "@/constants/Styles";
+import { updateBusinessClient } from "@/services/ClientServices";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import BackButton from "@/components/BackButton";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
-
-import { Text, View } from "@/components/Themed";
-import { globalStyles } from "@/constants/Styles";
 
 export default function EditClientScreen() {
   const params = useLocalSearchParams();
-
+  const id = params.id?.toString() || "";
   const [ruc, setRuc] = useState(params.ruc?.toString() || "");
+
   const [businessName, setBusinessName] = useState(
     params.businessName?.toString() || "",
   );
@@ -38,10 +39,29 @@ export default function EditClientScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
   const placeholderColor = colorScheme === "dark" ? "#5c6e8c" : "#9CA3AF";
-
+  async function handleSave() {
+    try {
+      await updateBusinessClient(id, {
+        ruc,
+        businessName,
+        contactName,
+        contactPhone,
+        contactEmail,
+        address,
+      });
+      alert("Cliente actualizado");
+      router.back();
+    } catch (error) {
+      console.log(error);
+      alert("Error al actualizar cliente");
+    }
+  }
   return (
     <ScrollView
-      style={[globalStyles.container, { backgroundColor: currentColors.background, paddingTop: insets.top }]}
+      style={[
+        globalStyles.container,
+        { backgroundColor: currentColors.background, paddingTop: insets.top },
+      ]}
       contentContainerStyle={[
         globalStyles.scrollPadding,
         { paddingBottom: 40 },
@@ -51,36 +71,80 @@ export default function EditClientScreen() {
         <BackButton />
       </View>
 
-      <Text style={[styles.title, { color: currentColors.text }]}>Editar cliente</Text>
+      <Text style={[styles.title, { color: currentColors.text }]}>
+        Editar cliente
+      </Text>
 
-      <View style={[styles.card, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: currentColors.card,
+            borderColor: currentColors.border,
+          },
+        ]}
+      >
         <Text style={[styles.label, { color: currentColors.text }]}>RUC</Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={ruc}
           onChangeText={setRuc}
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>Nombre comercial</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>
+          Nombre comercial
+        </Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={businessName}
           onChangeText={setBusinessName}
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>Contacto</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>
+          Contacto
+        </Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={contactName}
           onChangeText={setContactName}
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>Teléfono</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>
+          Teléfono
+        </Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={contactPhone}
           onChangeText={setContactPhone}
           placeholderTextColor={placeholderColor}
@@ -88,15 +152,32 @@ export default function EditClientScreen() {
 
         <Text style={[styles.label, { color: currentColors.text }]}>Email</Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={contactEmail}
           onChangeText={setContactEmail}
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>Dirección</Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>
+          Dirección
+        </Text>
         <TextInput
-          style={[styles.input, styles.textArea, { borderColor: currentColors.border, backgroundColor: currentColors.secondary, color: currentColors.text }]}
+          style={[
+            styles.input,
+            styles.textArea,
+            {
+              borderColor: currentColors.border,
+              backgroundColor: currentColors.secondary,
+              color: currentColors.text,
+            },
+          ]}
           value={address}
           onChangeText={setAddress}
           multiline
@@ -104,10 +185,11 @@ export default function EditClientScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.saveButton, { backgroundColor: currentColors.primary }]}
-          onPress={() => {
-            console.log("Actualizar cliente");
-          }}
+          style={[
+            styles.saveButton,
+            { backgroundColor: currentColors.primary },
+          ]}
+          onPress={handleSave}
         >
           <FontAwesome
             name="save"

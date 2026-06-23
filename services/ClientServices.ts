@@ -21,11 +21,12 @@ export interface BusinessClient {
   address: string;
   isActive: boolean;
   advisorName: string;
+  createdAt: string;
 }
 
 export const getNegotiations = async (): Promise<Negotiation[]> => {
   try {
-    const data: any = await apiClient.get("/api/v1/crm/negotiations");
+    const data: any = await apiClient.get("/api/v1/crm/negotiations?limit=100");
 
     return data.map((item: any) => {
       const status = item.state?.name || "Prospeccion";
@@ -73,15 +74,15 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
 
 export const getBusinessClients = async (): Promise<BusinessClient[]> => {
   try {
-    const data: any = await apiClient.get("/api/v1/crm/business-clients");
+    const data: any = await apiClient.get(
+      "/api/v1/crm/business-clients?limit=100",
+    );
 
     return data.map((item: any) => {
       const advProfile = item.advisor?.profile;
       const advisorName = advProfile
         ? `${advProfile.firstName} ${advProfile.lastName}`
         : item.advisor?.username || "Sin Asignar";
-      console.log("CLIENTE COMPLETO");
-      console.log(JSON.stringify(item, null, 2));
       return {
         id: item.id,
         ruc: item.ruc,
@@ -250,4 +251,15 @@ export const createNegotiation = async (data: {
 export const getBusinessClient = async (id: string): Promise<any> => {
   const data = await apiClient.get(`/api/v1/crm/business-clients/${id}`);
   return data;
+};
+
+export const createBusinessClient = async (data: any): Promise<any> => {
+  return apiClient.post("/api/v1/crm/business-clients", data);
+};
+
+export const updateBusinessClient = async (
+  id: string,
+  data: any,
+): Promise<any> => {
+  return apiClient.patch(`/api/v1/crm/business-clients/${id}`, data);
 };

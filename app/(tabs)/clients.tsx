@@ -5,13 +5,10 @@ import { Text, View } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
-import {
-  BusinessClient,
-  getBusinessClients
-} from "@/services/ClientServices";
+import { BusinessClient, getBusinessClients } from "@/services/ClientServices";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
 
 export default function ClientsScreen() {
@@ -27,13 +24,17 @@ export default function ClientsScreen() {
     { value: "inactive", label: "Inactivos" },
   ];
 
-  useEffect(() => {
-    loadClients();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadClients();
+    }, []),
+  );
 
   async function loadClients() {
+    setLoading(true);
     try {
       const data = await getBusinessClients();
+
       setClients(data);
     } catch (error) {
       console.log(error);
