@@ -326,6 +326,8 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 64,
+    flexDirection: "row",     // 1. Aligns the image and the title view horizontally
+    alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
     marginBottom: 16,
