@@ -9,7 +9,9 @@ import { BusinessClient, getBusinessClients } from "@/services/ClientServices";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
+import { ActivityIndicator, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+
+const LIMIT = 50;
 
 export default function ClientsScreen() {
   const colorScheme = useColorScheme();
@@ -18,6 +20,10 @@ export default function ClientsScreen() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [clients, setClients] = useState<BusinessClient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
   const filterOptions = [
     { value: "all", label: "Todos" },
     { value: "active", label: "Activos" },
@@ -26,22 +32,39 @@ export default function ClientsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadClients();
+      loadClients(1, false);
     }, []),
   );
 
-  async function loadClients() {
-    setLoading(true);
+  async function loadClients(pageToLoad: number, append: boolean) {
+    if (pageToLoad === 1) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
     try {
-      const data = await getBusinessClients();
+      const data = await getBusinessClients(LIMIT, pageToLoad);
 
-      setClients(data);
+      if (append) {
+        setClients((prev) => [...prev, ...data]);
+      } else {
+        setClients(data);
+      }
+      setPage(pageToLoad);
+      setHasMore(data.length === LIMIT);
     } catch (error) {
       console.log(error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadClients(page + 1, true);
+    }
+  };
 
   const filteredClients = clients.filter((client) => {
     const query = searchQuery.toLowerCase();
@@ -190,7 +213,50 @@ export default function ClientsScreen() {
             ))
           )}
         </View>
+
+        {hasMore && filteredClients.length > 0 && (
+          <TouchableOpacity
+            style={[
+              styles.loadMoreButton,
+              {
+                backgroundColor: currentColors.card,
+                borderColor: currentColors.border,
+              },
+            ]}
+            onPress={handleLoadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? (
+              <ActivityIndicator size="small" color={currentColors.primary} />
+            ) : (
+              <Text
+                style={[
+                  styles.loadMoreText,
+                  { color: currentColors.primary },
+                ]}
+              >
+                Cargar más
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  loadMoreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+});

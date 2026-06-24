@@ -24,9 +24,9 @@ export interface BusinessClient {
   createdAt: string;
 }
 
-export const getNegotiations = async (): Promise<Negotiation[]> => {
+export const getNegotiations = async (limit: number = 100, page: number = 1): Promise<Negotiation[]> => {
   try {
-    const data: any = await apiClient.get("/api/v1/crm/negotiations?limit=100");
+    const data: any = await apiClient.get(`/api/v1/crm/negotiations?limit=${limit}&page=${page}`);
 
     return data.map((item: any) => {
       const status = item.state?.name || "Prospeccion";
@@ -72,10 +72,10 @@ export const getNegotiations = async (): Promise<Negotiation[]> => {
   }
 };
 
-export const getBusinessClients = async (): Promise<BusinessClient[]> => {
+export const getBusinessClients = async (limit: number = 100, page: number = 1): Promise<BusinessClient[]> => {
   try {
     const data: any = await apiClient.get(
-      "/api/v1/crm/business-clients?limit=100",
+      `/api/v1/crm/business-clients?limit=${limit}&page=${page}`,
     );
 
     return data.map((item: any) => {

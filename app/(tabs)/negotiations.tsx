@@ -7,8 +7,8 @@ import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
 import { Negotiation, getNegotiations } from "@/services/ClientServices";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   View as RNView,
@@ -24,6 +24,8 @@ const TABLE_HEADERS = [
   { label: "Fin", flex: 1.1 },
 ];
 
+const LIMIT = 50;
+
 export default function NegotiationsScreen() {
   const colorScheme = useColorScheme();
   const currentColors = Colors[colorScheme ?? "light"];
@@ -35,6 +37,9 @@ export default function NegotiationsScreen() {
 
   const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const filterOptions = [
     { value: "Todos", label: "Todos" },
@@ -45,20 +50,40 @@ export default function NegotiationsScreen() {
     { value: "Post-venta", label: "Post-venta" },
   ];
 
-  useEffect(() => {
-    loadNegotiations();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadNegotiations(1, false);
+    }, []),
+  );
 
-  async function loadNegotiations() {
+  async function loadNegotiations(pageToLoad: number, append: boolean) {
+    if (pageToLoad === 1) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
     try {
-      const data = await getNegotiations();
-      setNegotiations(data);
+      const data = await getNegotiations(LIMIT, pageToLoad);
+      if (append) {
+        setNegotiations((prev) => [...prev, ...data]);
+      } else {
+        setNegotiations(data);
+      }
+      setPage(pageToLoad);
+      setHasMore(data.length === LIMIT);
     } catch (error) {
       console.log(error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadNegotiations(page + 1, true);
+    }
+  };
 
   const filteredNegotiations = negotiations.filter((n) => {
     const q = searchQuery.toLowerCase();
@@ -137,7 +162,6 @@ export default function NegotiationsScreen() {
       contentContainerStyle={globalStyles.scrollPadding}
       showsVerticalScrollIndicator={false}
     >
-      {/* ── Filtros ── */}
       <RNView style={globalStyles.searchRow}>
         <RNView style={globalStyles.flex1}>
           <SearchBar
@@ -157,7 +181,6 @@ export default function NegotiationsScreen() {
         />
       </RNView>
 
-      {/* ── Botón de Acción ── */}
       <TouchableOpacity
         style={[
           globalStyles.actionButton,
@@ -174,7 +197,6 @@ export default function NegotiationsScreen() {
         <Text style={globalStyles.actionButtonText}>Nueva negociación</Text>
       </TouchableOpacity>
 
-      {/* ── Contenedor Tarjeta Principal ── */}
       <View
         style={[
           globalStyles.card,
@@ -214,7 +236,6 @@ export default function NegotiationsScreen() {
           Total negociaciones: {filteredNegotiations.length}
         </Text>
 
-        {/* ── Tabla de Negociaciones ── */}
         <RNView
           style={[
             styles.tableCard,
@@ -223,7 +244,6 @@ export default function NegotiationsScreen() {
             },
           ]}
         >
-          {/* Header de columnas */}
           <RNView
             style={[
               styles.tableHeader,
@@ -264,7 +284,6 @@ export default function NegotiationsScreen() {
             </TouchableOpacity>
           </RNView>
 
-          {/* Filas */}
           {filteredNegotiations.length === 0 ? (
             <Text style={[styles.emptyText, { color: currentColors.mutedForeground }]}>
               {searchQuery
@@ -296,7 +315,34 @@ export default function NegotiationsScreen() {
             ))
           )}
 
-          {/* Footer con total */}
+          {hasMore && filteredNegotiations.length > 0 && (
+            <TouchableOpacity
+              style={[
+                styles.loadMoreButton,
+                {
+                  backgroundColor: currentColors.card,
+                  borderTopWidth: 1,
+                  borderTopColor: currentColors.border ?? "#E5E7EB",
+                },
+              ]}
+              onPress={handleLoadMore}
+              disabled={loadingMore}
+            >
+              {loadingMore ? (
+                <ActivityIndicator size="small" color={currentColors.primary} />
+              ) : (
+                <Text
+                  style={[
+                    styles.loadMoreText,
+                    { color: currentColors.primary },
+                  ]}
+                >
+                  Cargar más
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+
           <RNView
             style={[
               styles.tableFooter,
@@ -315,7 +361,6 @@ export default function NegotiationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  /* tabla */
   tableCard: {
     borderRadius: 12,
     borderWidth: 1,
@@ -331,8 +376,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
-
-  /* footer */
   tableFooter: {
     paddingHorizontal: 6,
     paddingVertical: 12,
@@ -342,10 +385,19 @@ const styles = StyleSheet.create({
   totalText: {
     fontSize: 12,
   },
-
   emptyText: {
     padding: 24,
     textAlign: "center",
     fontSize: 14,
+  },
+  loadMoreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
