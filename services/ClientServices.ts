@@ -59,6 +59,7 @@ export const getNegotiations = async (limit: number = 100, page: number = 1): Pr
 
       return {
         id: item.id,
+        clientId: item.client?.id || "",
         clientName: item.client?.businessName || "Cliente Sin Nombre",
         planName: item.state?.name || "Sin Estado",
         amount: item.amount || "$0.00",
@@ -329,6 +330,7 @@ export const getNegotiation = async (id: string): Promise<any> => {
 
     return {
       id: item.id,
+      clientId: item.client?.id || "",
       clientName: item.client?.businessName || "Cliente Sin Nombre",
       planName: item.state?.name || "Sin Estado",
       amount,
@@ -345,4 +347,75 @@ export const getNegotiation = async (id: string): Promise<any> => {
     throw error;
   }
 };
+
+export interface VisitItem {
+  id: string;
+  visitDate: string;
+  isVerified: boolean;
+  observations?: string;
+  negotiationId?: string;
+  client: { id: string; businessName: string };
+  advisor: { id: string; username: string; profile: { firstName: string; lastName: string } | null };
+  visitType: { id: string; code: string; name: string };
+}
+
+export const getNegotiationVisits = async (clientId: string): Promise<VisitItem[]> => {
+  try {
+    console.log("[DEBUG] getNegotiationVisits calling API for clientId:", clientId);
+    const data: any = await apiClient.get(`/api/v1/crm/visits?clientId=${clientId}&limit=100`);
+    console.log("[DEBUG] getNegotiationVisits raw data length:", data?.length);
+    const formatted = data.map((visit: any) => {
+      let visitDate = "N/A";
+      if (visit.visitDate) {
+        const datePart = visit.visitDate.split("T")[0];
+        const parts = datePart.split("-");
+        if (parts.length === 3) {
+          const [year, month, day] = parts;
+          visitDate = `${day}/${month}/${year}`;
+        } else {
+          visitDate = visit.visitDate;
+        }
+      }
+      return {
+        ...visit,
+        visitDate,
+      };
+    });
+    console.log("[DEBUG] getNegotiationVisits formatted data:", JSON.stringify(formatted));
+    return formatted;
+  } catch (error) {
+    console.warn("Could not load negotiation visits:", error);
+    return [];
+  }
+};
+
+export const getVisitTypes = async (): Promise<any[]> => {
+  try {
+    console.log("[DEBUG] getVisitTypes calling apiClient...");
+    const data: any = await apiClient.get("/api/v1/crm/visit-types?limit=100");
+    console.log("[DEBUG] getVisitTypes apiClient response data:", JSON.stringify(data));
+    return data;
+  } catch (error: any) {
+    console.warn("Could not load visit types:", error);
+    console.warn("Could not load visit types (message):", error?.message);
+    console.warn("Could not load visit types (response):", JSON.stringify(error?.response?.data));
+    return [];
+  }
+};
+
+export const createVisit = async (data: {
+  negotiationId?: string;
+  clientId: string;
+  advisorId: string;
+  visitTypeId: string;
+  visitDate: string;
+  observations?: string;
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsAccuracy?: number;
+  gpsTimestamp?: string;
+}): Promise<any> => {
+  return apiClient.post("/api/v1/crm/visits", data);
+};
+
 

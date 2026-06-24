@@ -10,13 +10,29 @@ import {
     ScrollView,
     StyleSheet,
     TouchableOpacity,
+    Modal,
+    TextInput,
+    Pressable,
+    FlatList,
+    Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Calendar } from "react-native-calendars";
+import * as Location from "expo-location";
+import { useAuth } from "@/context/AuthContext";
 import BackButton from "./BackButton";
 import EditarButton from "./EditarButton";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { getNegotiation, getNegotiationDocuments, DocumentItem } from "@/services/ClientServices";
+import {
+  getNegotiation,
+  getNegotiationDocuments,
+  DocumentItem,
+  getNegotiationVisits,
+  getVisitTypes,
+  createVisit,
+  VisitItem,
+} from "@/services/ClientServices";
 import { getAccessToken, API_URL } from "@/services/api";
 
 interface Props {
@@ -115,27 +131,83 @@ export default function NegotiationDetailView({
   const [isActive, setIsActive] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(true);
 
+  const { user } = useAuth();
+  const [clientId, setClientId] = useState<string | undefined>(undefined);
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
 
+  // Visits state
+  const [visitsList, setVisitsList] = useState<VisitItem[]>([]);
+  const [loadingVisits, setLoadingVisits] = useState(false);
+  const [visitTypesList, setVisitTypesList] = useState<any[]>([]);
 
+  // Create visit form state
+  const [visitModalVisible, setVisitModalVisible] = useState(false);
+  const [selectedVisitType, setSelectedVisitType] = useState<any>(null);
+  const [visitTypeModalVisible, setVisitTypeModalVisible] = useState(false);
+  const [visitDate, setVisitDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [visitObservations, setVisitObservations] = useState("");
+  const [submittingVisit, setSubmittingVisit] = useState(false);
 
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const currentColors = Colors[scheme ?? "light"];
+  const placeholderColor = scheme === "dark" ? "#5c6e8c" : "#9CA3AF";
+
+  const toLocalYYYYMMDD = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const calendarTheme = {
+    calendarBackground: currentColors.card,
+    textSectionTitleColor: currentColors.mutedForeground,
+    selectedDayBackgroundColor: currentColors.primary,
+    selectedDayTextColor: "#ffffff",
+    todayTextColor: currentColors.primary,
+    dayTextColor: currentColors.text,
+    textDisabledColor: currentColors.border,
+    dotColor: currentColors.primary,
+    selectedDotColor: "#ffffff",
+    arrowColor: currentColors.primary,
+    disabledArrowColor: currentColors.border,
+    monthTextColor: currentColors.text,
+    indicatorColor: currentColors.primary,
+  };
 
   useFocusEffect(
     useCallback(() => {
+      console.log("[DEBUG] useFocusEffect triggered, id =", id);
       if (id) {
         loadNegotiationDetails();
+        loadVisitTypes();
       }
     }, [id])
   );
 
-  async function loadNegotiationDetails() {
-    setLoadingDetails(true);
+  async function loadVisitTypes() {
     try {
+      const types = await getVisitTypes();
+      console.log("[DEBUG] loadVisitTypes returned:", JSON.stringify(types));
+      setVisitTypesList(types);
+    } catch (error) {
+      console.warn("Error loading visit types:", error);
+    }
+  }
+
+  async function loadNegotiationDetails() {
+    console.log("[DEBUG] loadNegotiationDetails started for id =", id);
+    setLoadingDetails(true);
+    setLoadingDocs(true);
+    setLoadingVisits(true);
+    try {
+      // 1. Fetch negotiation details first to get the clientId
       const fresh = await getNegotiation(id!);
+      console.log("[DEBUG] getNegotiation returned clientId =", fresh.clientId);
+      setClientId(fresh.clientId);
       setClientName(fresh.clientName);
       setPlanName(fresh.planName);
       setAmount(fresh.amount);
@@ -145,20 +217,87 @@ export default function NegotiationDetailView({
       setEstimatedCloseDate(fresh.estimatedCloseDate);
       setObservations(fresh.observations);
       setIsActive(fresh.isActive);
+
+      // 2. Fetch documents and visits in parallel
+      const docsPromise = getNegotiationDocuments(id!);
+      const visitsPromise = fresh.clientId
+        ? getNegotiationVisits(fresh.clientId)
+        : Promise.resolve([]);
+
+      console.log("[DEBUG] Fetching documents and visits in parallel...");
+      const [docs, visits] = await Promise.all([docsPromise, visitsPromise]);
+      
+      console.log("[DEBUG] Loaded docs length =", docs.length, "visits length =", visits.length);
+      setDocuments(docs);
+      setVisitsList(visits);
     } catch (error) {
-      console.warn(error);
+      console.warn("[DEBUG] loadNegotiationDetails failed:", error);
     } finally {
       setLoadingDetails(false);
+      setLoadingDocs(false);
+      setLoadingVisits(false);
+    }
+  }
+
+  async function handleSubmitVisit() {
+    if (!selectedVisitType) {
+      Alert.alert("Error", "Por favor seleccione un tipo de visita.");
+      return;
+    }
+    if (!clientId) {
+      Alert.alert("Error", "No se encontró el ID del cliente de la negociación.");
+      return;
+    }
+
+    setSubmittingVisit(true);
+    let gpsData: any = {};
+
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === "granted") {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        gpsData = {
+          gpsLatitude: location.coords.latitude,
+          gpsLongitude: location.coords.longitude,
+          gpsAccuracy: location.coords.accuracy || undefined,
+          gpsTimestamp: new Date(location.timestamp).toISOString(),
+        };
+      } else {
+        console.warn("GPS Permission not granted");
+      }
+    } catch (err) {
+      console.warn("Error fetching geolocation data:", err);
     }
 
     try {
-      setLoadingDocs(true);
-      const docs = await getNegotiationDocuments(id!);
-      setDocuments(docs);
-    } catch (error) {
-      console.warn(error);
+      await createVisit({
+        negotiationId: id,
+        clientId: clientId,
+        advisorId: user?.id || "",
+        visitTypeId: selectedVisitType.id,
+        visitDate: visitDate.toISOString(),
+        observations: visitObservations || undefined,
+        ...gpsData,
+      });
+
+      Alert.alert("Éxito", "Visita guardada correctamente.");
+      setVisitModalVisible(false);
+      setSelectedVisitType(null);
+      setVisitObservations("");
+      setVisitDate(new Date());
+
+      // Reload visits list
+      setLoadingVisits(true);
+      const visits = await getNegotiationVisits(clientId);
+      setVisitsList(visits);
+    } catch (error: any) {
+      console.warn("Error creating visit:", error);
+      Alert.alert("Error", error?.message || "Ocurrió un error al guardar la visita.");
     } finally {
-      setLoadingDocs(false);
+      setSubmittingVisit(false);
+      setLoadingVisits(false);
     }
   }
 
@@ -329,7 +468,8 @@ export default function NegotiationDetailView({
                 { backgroundColor: currentColors.primary, marginBottom: 0 },
               ]}
               onPress={() => {
-                alert("Función para agregar visita próximamente");
+                loadVisitTypes();
+                setVisitModalVisible(true);
               }}
             >
               <FontAwesome
@@ -341,9 +481,68 @@ export default function NegotiationDetailView({
               <Text style={globalStyles.actionButtonText}>Agregar Visita</Text>
             </TouchableOpacity>
 
-            <Text style={[styles.emptyText, { color: currentColors.mutedForeground, marginTop: 12 }]}>
-              Sin visitas registradas.
-            </Text>
+            {loadingVisits ? (
+              <ActivityIndicator size="small" color={currentColors.primary} style={{ marginTop: 12 }} />
+            ) : visitsList.length === 0 ? (
+              <Text style={[styles.emptyText, { color: currentColors.mutedForeground, marginTop: 12 }]}>
+                Sin visitas registradas.
+              </Text>
+            ) : (
+              visitsList.map((visit) => (
+                <RNView
+                  key={visit.id}
+                  style={[
+                    styles.visitCard,
+                    {
+                      backgroundColor: currentColors.card,
+                      borderColor: currentColors.border,
+                    },
+                  ]}
+                >
+                  <RNView style={styles.visitHeader}>
+                    <Text style={[styles.visitTypeName, { color: currentColors.text }]}>
+                      {visit.visitType?.name || "Visita"}
+                    </Text>
+                    <RNView
+                      style={[
+                        globalStyles.statusBadge,
+                        {
+                          backgroundColor: visit.isVerified
+                            ? scheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7"
+                            : scheme === "dark" ? "rgba(245, 158, 11, 0.2)" : "#FEF3C7",
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          fontWeight: "600",
+                          color: visit.isVerified
+                            ? scheme === "dark" ? "#4ADE80" : "#166534"
+                            : scheme === "dark" ? "#FBBF24" : "#92400E",
+                        }}
+                      >
+                        {visit.isVerified ? "Verificada" : "Pendiente"}
+                      </Text>
+                    </RNView>
+                  </RNView>
+
+                  <Text style={[styles.visitDetail, { color: currentColors.text }]}>
+                    Fecha: {visit.visitDate}
+                  </Text>
+
+                  <Text style={[styles.visitDetail, { color: currentColors.mutedForeground }]}>
+                    Asesor: {visit.advisor?.profile ? `${visit.advisor.profile.firstName} ${visit.advisor.profile.lastName}` : visit.advisor?.username}
+                  </Text>
+
+                  {visit.observations ? (
+                    <Text style={[styles.visitObservations, { color: currentColors.mutedForeground }]}>
+                      Obs: {visit.observations}
+                    </Text>
+                  ) : null}
+                </RNView>
+              ))
+            )}
           </RNView>
         )}
         {activeTab === "Documentos" && (
@@ -413,6 +612,157 @@ export default function NegotiationDetailView({
           </Text>
         )}
       </RNView>
+
+      {/* --- ADD VISIT MODAL --- */}
+      <Modal visible={visitModalVisible} transparent animationType="fade">
+        <Pressable
+          style={localStyles.modalOverlay}
+          onPress={() => {
+            if (visitTypeModalVisible) {
+              setVisitTypeModalVisible(false);
+            } else {
+              setVisitModalVisible(false);
+            }
+          }}
+        >
+          <Pressable
+            style={[localStyles.modalContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <RNView style={localStyles.modalHeader}>
+              <Text style={[localStyles.modalTitle, { color: currentColors.text }]}>
+                Agregar Visita
+              </Text>
+              <TouchableOpacity onPress={() => setVisitModalVisible(false)}>
+                <FontAwesome name="times" size={18} color={currentColors.text} />
+              </TouchableOpacity>
+            </RNView>
+
+            <ScrollView style={{ flexGrow: 0 }} showsVerticalScrollIndicator={false}>
+              {/* Visit Type Dropdown Trigger */}
+              <Text style={[localStyles.label, { color: currentColors.text }]}>
+                Tipo de Visita
+              </Text>
+              <TouchableOpacity
+                style={[localStyles.selector, { borderColor: currentColors.border }]}
+                onPress={() => setVisitTypeModalVisible(true)}
+              >
+                <Text style={{ color: selectedVisitType ? currentColors.text : currentColors.mutedForeground }}>
+                  {selectedVisitType ? selectedVisitType.name : "Seleccionar tipo..."}
+                </Text>
+                <FontAwesome name="chevron-down" size={12} color={currentColors.mutedForeground} />
+              </TouchableOpacity>
+
+              {/* Visit Date Calendar Trigger */}
+              <Text style={[localStyles.label, { color: currentColors.text }]}>
+                Fecha de la Visita
+              </Text>
+              <TouchableOpacity
+                style={[localStyles.selector, { borderColor: currentColors.border }]}
+                onPress={() => setShowDatePicker(!showDatePicker)}
+              >
+                <Text style={{ color: currentColors.text }}>
+                  {visitDate.toLocaleDateString("es-ES")}
+                </Text>
+                <FontAwesome name="calendar-o" size={14} color={currentColors.mutedForeground} />
+              </TouchableOpacity>
+
+              {showDatePicker && (
+                <RNView style={{ borderWidth: 1, borderColor: currentColors.border, borderRadius: 8, overflow: "hidden", marginVertical: 8 }}>
+                  <Calendar
+                    current={toLocalYYYYMMDD(visitDate)}
+                    onDayPress={(day) => {
+                      setVisitDate(new Date(day.year, day.month - 1, day.day));
+                      setShowDatePicker(false);
+                    }}
+                    theme={calendarTheme}
+                  />
+                </RNView>
+              )}
+
+              {/* Observations Input */}
+              <Text style={[localStyles.label, { color: currentColors.text }]}>
+                Observaciones
+              </Text>
+              <TextInput
+                style={[
+                  localStyles.textarea,
+                  {
+                    borderColor: currentColors.border,
+                    backgroundColor: currentColors.background,
+                    color: currentColors.text,
+                  },
+                ]}
+                multiline
+                value={visitObservations}
+                onChangeText={setVisitObservations}
+                placeholder="Detalles sobre lo conversado..."
+                placeholderTextColor={placeholderColor}
+              />
+
+              {/* Submit Button */}
+              <TouchableOpacity
+                style={[
+                  localStyles.submitButton,
+                  {
+                    backgroundColor: currentColors.primary,
+                    opacity: (submittingVisit || !selectedVisitType) ? 0.6 : 1,
+                  },
+                ]}
+                disabled={submittingVisit || !selectedVisitType}
+                onPress={handleSubmitVisit}
+              >
+                {submittingVisit ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={localStyles.submitButtonText}>Guardar Visita</Text>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+
+            {/* --- VISIT TYPE SELECTION INLINE OVERLAY --- */}
+            {visitTypeModalVisible && (
+              <Pressable
+                style={[StyleSheet.absoluteFill, localStyles.inlinePickerOverlay]}
+                onPress={() => setVisitTypeModalVisible(false)}
+              >
+                <Pressable
+                  style={[localStyles.inlinePickerContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}
+                  onPress={(e) => e.stopPropagation()}
+                >
+                  <RNView style={localStyles.pickerHeader}>
+                    <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>Seleccionar Tipo de Visita</Text>
+                    <TouchableOpacity onPress={() => setVisitTypeModalVisible(false)}>
+                      <FontAwesome name="close" size={18} color={currentColors.text} />
+                    </TouchableOpacity>
+                  </RNView>
+                  <ScrollView style={{ maxHeight: 300 }} nestedScrollEnabled={true}>
+                    {visitTypesList.length === 0 ? (
+                      <Text style={{ color: currentColors.mutedForeground, fontSize: 13, textAlign: "center", paddingVertical: 20 }}>
+                        No se encontraron tipos de visita
+                      </Text>
+                    ) : (
+                      visitTypesList.map((t) => (
+                        <TouchableOpacity
+                          key={t.id}
+                          style={[localStyles.pickerItem, { borderBottomColor: currentColors.border }]}
+                          onPress={() => {
+                            setSelectedVisitType(t);
+                            setVisitTypeModalVisible(false);
+                          }}
+                        >
+                          <Text style={{ color: currentColors.text, fontSize: 14 }}>{t.name}</Text>
+                          <Text style={{ color: currentColors.mutedForeground, fontSize: 11, marginTop: 2 }}>{t.description}</Text>
+                        </TouchableOpacity>
+                      ))
+                    )}
+                  </ScrollView>
+                </Pressable>
+              </Pressable>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
@@ -578,5 +928,124 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginTop: 12,
     paddingHorizontal: 6,
+  },
+  visitCard: {
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  visitHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+    backgroundColor: "transparent",
+  },
+  visitTypeName: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  visitDetail: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  visitObservations: {
+    fontSize: 12,
+    fontStyle: "italic",
+    marginTop: 4,
+  },
+});
+
+const localStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContainer: {
+    width: "100%",
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 20,
+    maxHeight: "90%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginTop: 12,
+  },
+  selector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 48,
+    marginBottom: 8,
+  },
+  textarea: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 100,
+    textAlignVertical: "top",
+    marginBottom: 8,
+  },
+  submitButton: {
+    borderRadius: 8,
+    padding: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+    height: 48,
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  inlinePickerOverlay: {
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 20,
+  },
+  inlinePickerContainer: {
+    width: "80%",
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+  },
+  pickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    paddingBottom: 8,
+  },
+  pickerTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  pickerItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
   },
 });
