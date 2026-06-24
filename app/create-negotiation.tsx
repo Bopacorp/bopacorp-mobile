@@ -52,16 +52,16 @@ export default function CreateNegotiationScreen() {
   async function loadData() {
     try {
       const clientsData = await getBusinessClients();
-
-      console.log("CLIENTES:", clientsData);
-
-      setClients(clientsData);
+      const sortedClients = [...clientsData].sort((a: any, b: any) =>
+        (a.businessName || "").localeCompare(b.businessName || "", "es", { sensitivity: "base" })
+      );
+      setClients(sortedClients);
 
       const statesData = await getNegotiationStates();
-
-      console.log("ESTADOS:", statesData);
-
-      setStates(statesData);
+      const sortedStates = [...statesData].sort((a: any, b: any) =>
+        (a.name || "").localeCompare(b.name || "", "es", { sensitivity: "base" })
+      );
+      setStates(sortedStates);
     } catch (error) {
       console.log(error);
     }
@@ -127,7 +127,7 @@ export default function CreateNegotiationScreen() {
 
       <TouchableOpacity
         style={[
-          styles.input,
+          styles.selector,
           {
             borderColor: currentColors.border,
             backgroundColor: currentColors.secondary,
@@ -142,6 +142,11 @@ export default function CreateNegotiationScreen() {
         >
           {selectedClientName || "Seleccionar cliente"}
         </Text>
+        <FontAwesome
+          name="chevron-down"
+          size={12}
+          color={placeholderColor}
+        />
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -170,7 +175,7 @@ export default function CreateNegotiationScreen() {
 
       <TouchableOpacity
         style={[
-          styles.input,
+          styles.selector,
           {
             borderColor: currentColors.border,
             backgroundColor: currentColors.secondary,
@@ -185,6 +190,11 @@ export default function CreateNegotiationScreen() {
         >
           {selectedStateName || "Seleccionar estado"}
         </Text>
+        <FontAwesome
+          name="chevron-down"
+          size={12}
+          color={placeholderColor}
+        />
       </TouchableOpacity>
 
       <Text style={[styles.label, { color: currentColors.text }]}>
@@ -350,6 +360,17 @@ const styles = StyleSheet.create({
     borderColor: "#D1D5DB",
     borderRadius: 10,
     padding: 12,
+  },
+
+  selector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 46,
   },
 
   textarea: {

@@ -34,20 +34,22 @@ export const getNegotiations = async (limit: number = 100, page: number = 1): Pr
       let date = "N/A";
       const dateSource = item.startDate || item.createdAt;
       if (dateSource) {
-        const d = new Date(dateSource);
-        const day = String(d.getDate()).padStart(2, "0");
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const year = d.getFullYear();
-        date = `${day}/${month}/${year}`;
+        const datePart = dateSource.split("T")[0];
+        const parts = datePart.split("-");
+        if (parts.length === 3) {
+          const [year, month, day] = parts;
+          date = `${day}/${month}/${year}`;
+        }
       }
 
       let estimatedCloseDate = "N/A";
       if (item.estimatedCloseDate) {
-        const d = new Date(item.estimatedCloseDate);
-        const day = String(d.getDate()).padStart(2, "0");
-        const month = String(d.getMonth() + 1).padStart(2, "0");
-        const year = d.getFullYear();
-        estimatedCloseDate = `${day}/${month}/${year}`;
+        const datePart = item.estimatedCloseDate.split("T")[0];
+        const parts = datePart.split("-");
+        if (parts.length === 3) {
+          const [year, month, day] = parts;
+          estimatedCloseDate = `${day}/${month}/${year}`;
+        }
       }
 
       const advProfile = item.advisor?.profile;
@@ -59,7 +61,7 @@ export const getNegotiations = async (limit: number = 100, page: number = 1): Pr
         id: item.id,
         clientName: item.client?.businessName || "Cliente Sin Nombre",
         planName: item.state?.name || "Sin Estado",
-        amount: "$350.00",
+        amount: item.amount || "$0.00",
         status,
         date,
         advisorName,
@@ -263,3 +265,55 @@ export const updateBusinessClient = async (
 ): Promise<any> => {
   return apiClient.patch(`/api/v1/crm/business-clients/${id}`, data);
 };
+
+export const getNegotiation = async (id: string): Promise<any> => {
+  try {
+    const item: any = await apiClient.get(`/api/v1/crm/negotiations/${id}`);
+
+    const status = item.state?.name || "Prospeccion";
+
+    let date = "N/A";
+    const dateSource = item.startDate || item.createdAt;
+    if (dateSource) {
+      const datePart = dateSource.split("T")[0];
+      const parts = datePart.split("-");
+      if (parts.length === 3) {
+        const [year, month, day] = parts;
+        date = `${day}/${month}/${year}`;
+      }
+    }
+
+    let estimatedCloseDate = "N/A";
+    if (item.estimatedCloseDate) {
+      const datePart = item.estimatedCloseDate.split("T")[0];
+      const parts = datePart.split("-");
+      if (parts.length === 3) {
+        const [year, month, day] = parts;
+        estimatedCloseDate = `${day}/${month}/${year}`;
+      }
+    }
+
+    const advProfile = item.advisor?.profile;
+    const advisorName = advProfile
+      ? `${advProfile.firstName} ${advProfile.lastName}`
+      : item.advisor?.username || "Sin Asignar";
+
+    return {
+      id: item.id,
+      clientName: item.client?.businessName || "Cliente Sin Nombre",
+      planName: item.state?.name || "Sin Estado",
+      amount: item.amount || "$0.00",
+      status,
+      date,
+      advisorName,
+      estimatedCloseDate,
+      observations: item.observations || "",
+      isActive: item.isActive ?? true,
+      stateId: item.state?.id || "",
+    };
+  } catch (error) {
+    console.warn(`Could not load negotiation ${id}:`, error);
+    throw error;
+  }
+};
+

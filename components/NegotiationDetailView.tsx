@@ -1,8 +1,8 @@
 import { Text } from "@/components/Themed";
 import { globalStyles } from "@/constants/Styles";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { router } from "expo-router";
-import React, { useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useState, useCallback } from "react";
 import {
     View as RNView,
     ScrollView,
@@ -14,6 +14,7 @@ import BackButton from "./BackButton";
 import EditarButton from "./EditarButton";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { getNegotiation } from "@/services/ClientServices";
 
 interface Props {
   id?: string;
@@ -91,18 +92,53 @@ type Tab = (typeof TABS)[number];
 
 export default function NegotiationDetailView({
   id,
-  clientName,
-  planName,
-  amount,
-  status,
-  date,
-  advisorName,
-  estimatedCloseDate,
+  clientName: initialClientName,
+  planName: initialPlanName,
+  amount: initialAmount,
+  status: initialStatus,
+  date: initialDate,
+  advisorName: initialAdvisorName,
+  estimatedCloseDate: initialEstimatedCloseDate,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Historial");
+  const [clientName, setClientName] = useState(initialClientName);
+  const [planName, setPlanName] = useState(initialPlanName);
+  const [amount, setAmount] = useState(initialAmount);
+  const [status, setStatus] = useState(initialStatus);
+  const [date, setDate] = useState(initialDate);
+  const [advisorName, setAdvisorName] = useState(initialAdvisorName);
+  const [estimatedCloseDate, setEstimatedCloseDate] = useState(initialEstimatedCloseDate);
+  const [observations, setObservations] = useState("");
+  const [isActive, setIsActive] = useState(true);
+
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const currentColors = Colors[scheme ?? "light"];
+
+  useFocusEffect(
+    useCallback(() => {
+      if (id) {
+        loadNegotiationDetails();
+      }
+    }, [id])
+  );
+
+  async function loadNegotiationDetails() {
+    try {
+      const fresh = await getNegotiation(id!);
+      setClientName(fresh.clientName);
+      setPlanName(fresh.planName);
+      setAmount(fresh.amount);
+      setStatus(fresh.status);
+      setDate(fresh.date);
+      setAdvisorName(fresh.advisorName);
+      setEstimatedCloseDate(fresh.estimatedCloseDate);
+      setObservations(fresh.observations);
+      setIsActive(fresh.isActive);
+    } catch (error) {
+      console.warn(error);
+    }
+  }
 
   const statusStr = status as string;
   const config = STAGE_CONFIG[statusStr] || DEFAULT_CONFIG;
@@ -130,6 +166,8 @@ export default function NegotiationDetailView({
                 date,
                 advisorName,
                 estimatedCloseDate,
+                observations,
+                isActive: isActive ? "true" : "false",
               },
             })
           }
@@ -180,7 +218,7 @@ export default function NegotiationDetailView({
               color={currentColors.mutedForeground}
               style={styles.detailIcon}
             />
-            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Monto</Text>
+            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Facturación mensual</Text>
             <Text style={[styles.detailValue, { color: currentColors.text }]}>{amount ?? "—"}</Text>
           </RNView>
 

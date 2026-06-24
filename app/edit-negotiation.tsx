@@ -31,13 +31,20 @@ export default function EditNegotiationScreen() {
   const params = useLocalSearchParams();
   const negotiationId = params.id?.toString() || "";
 
+  const toLocalYYYYMMDD = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
   const parseDate = (dateStr: string | string[] | undefined) => {
     if (!dateStr || dateStr === "N/A") return new Date();
     const str = Array.isArray(dateStr) ? dateStr[0] : dateStr;
     const parts = str.split("/");
     if (parts.length !== 3) return new Date();
     const [day, month, year] = parts;
-    const d = new Date(`${year}-${month}-${day}`);
+    const d = new Date(Number(year), Number(month) - 1, Number(day));
     return isNaN(d.getTime()) ? new Date() : d;
   };
 
@@ -46,7 +53,7 @@ export default function EditNegotiationScreen() {
     parseDate(params.estimatedCloseDate),
   );
 
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(() => params.isActive !== "false");
   const [observations, setObservations] = useState(
     params.observations?.toString() || "",
   );
@@ -89,6 +96,7 @@ export default function EditNegotiationScreen() {
 
   // Read-only info
   const clientName = params.clientName?.toString() || "";
+  const amount = params.amount?.toString() || "$0.00";
 
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -115,7 +123,8 @@ export default function EditNegotiationScreen() {
     try {
       await updateNegotiation(negotiationId, {
         stateId: stateId || undefined,
-        //estimatedCloseDate: closeDate.toISOString(),
+        startDate: toLocalYYYYMMDD(startDate),
+        estimatedCloseDate: toLocalYYYYMMDD(closeDate),
         observations,
         isActive,
       });
@@ -181,6 +190,8 @@ export default function EditNegotiationScreen() {
           {clientName}
         </Text>
 
+
+
         {/* Estado — selector modal */}
         <Text style={[styles.label, { color: currentColors.text }]}>
           Estado
@@ -233,9 +244,9 @@ export default function EditNegotiationScreen() {
 
         {showStartPicker && (
           <Calendar
-            current={startDate.toISOString().split("T")[0]}
+            current={toLocalYYYYMMDD(startDate)}
             onDayPress={(day) => {
-              setStartDate(new Date(day.dateString));
+              setStartDate(new Date(day.year, day.month - 1, day.day));
               setShowStartPicker(false);
             }}
             theme={calendarTheme}
@@ -265,9 +276,9 @@ export default function EditNegotiationScreen() {
 
         {showClosePicker && (
           <Calendar
-            current={closeDate.toISOString().split("T")[0]}
+            current={toLocalYYYYMMDD(closeDate)}
             onDayPress={(day) => {
-              setCloseDate(new Date(day.dateString));
+              setCloseDate(new Date(day.year, day.month - 1, day.day));
               setShowClosePicker(false);
             }}
             theme={calendarTheme}
