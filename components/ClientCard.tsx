@@ -50,13 +50,21 @@ export default function ClientCard({
         <View
           style={[
             styles.badge,
-            { backgroundColor: client.isActive ? "#DCFCE7" : "#FEE2E2" },
+            {
+              backgroundColor: client.isActive
+                ? colorScheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7"
+                : colorScheme === "dark" ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2",
+            },
           ]}
         >
           <Text
             style={[
               styles.badgeText,
-              { color: client.isActive ? "#166534" : "#991B1B" },
+              {
+                color: client.isActive
+                  ? colorScheme === "dark" ? "#4ADE80" : "#166534"
+                  : colorScheme === "dark" ? "#F87171" : "#991B1B",
+              },
             ]}
           >
             {client.isActive ? "Activo" : "Inactivo"}

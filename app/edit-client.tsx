@@ -10,8 +10,10 @@ import React, { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
+  Switch,
   TextInput,
   TouchableOpacity,
+  View as RNView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -33,6 +35,7 @@ export default function EditClientScreen() {
     params.contactEmail?.toString() || "",
   );
   const [address, setAddress] = useState(params.address?.toString() || "");
+  const [isActive, setIsActive] = useState(() => params.isActive !== "false");
 
   const insets = useSafeAreaInsets();
 
@@ -48,6 +51,7 @@ export default function EditClientScreen() {
         contactPhone,
         contactEmail,
         address,
+        isActive,
       });
       alert("Cliente actualizado");
       router.back();
@@ -91,7 +95,7 @@ export default function EditClientScreen() {
           style={{
             fontSize: 15,
             fontWeight: "500",
-            color: currentColors.mutedForeground,
+            color: currentColors.text,
             paddingVertical: 6,
           }}
         >
@@ -105,7 +109,7 @@ export default function EditClientScreen() {
           style={{
             fontSize: 15,
             fontWeight: "500",
-            color: currentColors.mutedForeground,
+            color: currentColors.text,
             paddingVertical: 6,
           }}
         >
@@ -179,6 +183,13 @@ export default function EditClientScreen() {
           multiline
           placeholderTextColor={placeholderColor}
         />
+
+        <RNView style={styles.switchRow}>
+          <Text style={[styles.label, { color: currentColors.text, marginTop: 0 }]}>
+            Activo
+          </Text>
+          <Switch value={isActive} onValueChange={setIsActive} />
+        </RNView>
 
         <TouchableOpacity
           style={[
@@ -254,5 +265,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontStyle: "italic",
     fontWeight: "400",
+  },
+
+  switchRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 20,
   },
 });

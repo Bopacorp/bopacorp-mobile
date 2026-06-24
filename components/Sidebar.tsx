@@ -3,6 +3,7 @@ import { useNavigation, usePathname, useRouter } from "expo-router";
 import React from "react";
 import {
   Animated,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -126,17 +127,12 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
       >
         {}
         <View style={styles.header}>
-          <View style={styles.expandedHeader}>
-            <View style={styles.headerRow}>
-              <View
-                style={[
-                  styles.logoIconBg,
-                  { backgroundColor: currentColors.primary },
-                ]}
-              >
-                <Text style={styles.logoIconText}>B</Text>
-              </View>
-              <View style={styles.headerTitles}>
+          <Image
+            source={require("@/assets/images/logo.png")}
+            style={styles.sidebarLogo}
+            resizeMode="contain"
+          />
+          <View style={styles.headerTitles}>
                 <Text style={[styles.brandText, { color: currentColors.text }]}>
                   BOPACORP
                 </Text>
@@ -149,8 +145,6 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                   Partner Movistar
                 </Text>
               </View>
-            </View>
-          </View>
         </View>
 
         {}
@@ -335,16 +329,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 16,
     marginBottom: 16,
-  },
-  expandedHeader: {
-    alignItems: "flex-start",
-    width: "100%",
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerTitles: {
+  },headerTitles: {
     marginLeft: 12,
   },
   brandText: {
@@ -359,18 +344,11 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     marginTop: 1,
   },
-  logoIconBg: {
+  sidebarLogo: {
     width: 36,
     height: 36,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
   },
-  logoIconText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  
   scrollContent: {
     flexGrow: 1,
   },

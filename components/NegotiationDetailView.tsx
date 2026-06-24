@@ -90,7 +90,7 @@ const DEFAULT_CONFIG = {
   label: "Status",
 };
 
-const TABS = ["Visitas", "Documentos", "Matrices", "Comentarios"] as const;
+const TABS = ["Visitas", "Documentos", "Comentarios"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function NegotiationDetailView({
