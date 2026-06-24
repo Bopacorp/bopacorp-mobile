@@ -1,5 +1,6 @@
 import ClientCard from "@/components/ClientCard";
 import FilterButton from "@/components/FilterButton";
+import SortButton, { SortOrder } from "@/components/SortButton";
 import SearchBar from "@/components/SearchBar";
 import { Text, View } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
@@ -18,6 +19,7 @@ export default function ClientsScreen() {
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("default");
   const [clients, setClients] = useState<BusinessClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -66,22 +68,28 @@ export default function ClientsScreen() {
     }
   };
 
-  const filteredClients = clients.filter((client) => {
-    const query = searchQuery.toLowerCase();
+  const filteredClients = clients
+    .filter((client) => {
+      const query = searchQuery.toLowerCase();
 
-    const matchSearch =
-      client.businessName.toLowerCase().includes(query) ||
-      client.contactName.toLowerCase().includes(query) ||
-      client.advisorName.toLowerCase().includes(query) ||
-      (client.ruc || "").includes(searchQuery);
+      const matchSearch =
+        client.businessName.toLowerCase().includes(query) ||
+        client.contactName.toLowerCase().includes(query) ||
+        client.advisorName.toLowerCase().includes(query) ||
+        (client.ruc || "").includes(searchQuery);
 
-    const matchFilter =
-      activeFilter === "all" ||
-      (activeFilter === "active" && client.isActive) ||
-      (activeFilter === "inactive" && !client.isActive);
+      const matchFilter =
+        activeFilter === "all" ||
+        (activeFilter === "active" && client.isActive) ||
+        (activeFilter === "inactive" && !client.isActive);
 
-    return matchSearch && matchFilter;
-  });
+      return matchSearch && matchFilter;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "az") return a.businessName.localeCompare(b.businessName);
+      if (sortOrder === "za") return b.businessName.localeCompare(a.businessName);
+      return 0;
+    });
 
   if (loading) {
     return (
@@ -127,6 +135,11 @@ export default function ClientsScreen() {
           onSelect={setActiveFilter}
           colorScheme={colorScheme ?? "light"}
           title="Filtrar Clientes"
+        />
+        <SortButton
+          value={sortOrder}
+          onSelect={setSortOrder}
+          colorScheme={colorScheme ?? "light"}
         />
       </View>
 

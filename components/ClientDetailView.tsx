@@ -3,7 +3,7 @@ import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import React from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { Linking, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackButton from "./BackButton";
 import EditarButton from "./EditarButton";
@@ -219,7 +219,12 @@ export default function ClientDetailView({
         />
 
         <InfoRow icon="phone" label="Teléfono">
-          <Text style={[styles.value, styles.link]}>{contactPhone}</Text>
+          <TouchableOpacity
+            onPress={() => contactPhone && Linking.openURL(`tel:${contactPhone}`)}
+            disabled={!contactPhone}
+          >
+            <Text style={[styles.value, styles.link]}>{contactPhone || "—"}</Text>
+          </TouchableOpacity>
         </InfoRow>
 
         <View
@@ -227,7 +232,12 @@ export default function ClientDetailView({
         />
 
         <InfoRow icon="envelope" label="Email">
-          <Text style={[styles.value, styles.link]}>{contactEmail}</Text>
+          <TouchableOpacity
+            onPress={() => contactEmail && Linking.openURL(`mailto:${contactEmail}`)}
+            disabled={!contactEmail}
+          >
+            <Text style={[styles.value, styles.link]}>{contactEmail || "—"}</Text>
+          </TouchableOpacity>
         </InfoRow>
 
         <View

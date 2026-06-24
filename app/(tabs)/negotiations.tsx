@@ -32,8 +32,26 @@ export default function NegotiationsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Todos");
   const [sortOrder, setSortOrder] = useState<
-    "inicioAsc" | "inicioDesc" | "cierreAsc" | "cierreDesc"
-  >("inicioDesc");
+    "inicioAsc" | "inicioDesc" | "cierreAsc" | "cierreDesc" | "empresaAsc" | "empresaDesc" | "estadoGroup" | "default"
+  >("default");
+
+  const handleEmpresaSort = () => {
+    if (sortOrder === "empresaAsc") {
+      setSortOrder("empresaDesc");
+    } else if (sortOrder === "empresaDesc") {
+      setSortOrder("default");
+    } else {
+      setSortOrder("empresaAsc");
+    }
+  };
+
+  const handleEstadoSort = () => {
+    if (sortOrder === "estadoGroup") {
+      setSortOrder("default");
+    } else {
+      setSortOrder("estadoGroup");
+    }
+  };
 
   const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +144,15 @@ export default function NegotiationsScreen() {
 
       case "cierreDesc":
         return cierreB - cierreA;
+
+      case "empresaAsc":
+        return (a.clientName || "").localeCompare(b.clientName || "", "es", { sensitivity: "base" });
+
+      case "empresaDesc":
+        return (b.clientName || "").localeCompare(a.clientName || "", "es", { sensitivity: "base" });
+
+      case "estadoGroup":
+        return (a.status || "").localeCompare(b.status || "", "es", { sensitivity: "base" });
 
       default:
         return 0;
@@ -253,13 +280,23 @@ export default function NegotiationsScreen() {
               },
             ]}
           >
-            <RNView style={{ flex: 2.4 }}>
-              <Text style={[styles.headerText, { color: currentColors.text }]}>Empresa</Text>
-            </RNView>
+            <TouchableOpacity
+              style={{ flex: 2.4 }}
+              onPress={handleEmpresaSort}
+            >
+              <Text style={[styles.headerText, { color: currentColors.text }]}>
+                Empresa {sortOrder === "empresaAsc" ? "↑" : sortOrder === "empresaDesc" ? "↓" : "↑↓"}
+              </Text>
+            </TouchableOpacity>
 
-            <RNView style={{ flex: 1.2 }}>
-              <Text style={[styles.headerText, { color: currentColors.text }]}>Estado</Text>
-            </RNView>
+            <TouchableOpacity
+              style={{ flex: 1.2 }}
+              onPress={handleEstadoSort}
+            >
+              <Text style={[styles.headerText, { color: currentColors.text }]}>
+                Estado {sortOrder === "estadoGroup" ? "⊞" : "↑↓"}
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={{ flex: 1.1 }}

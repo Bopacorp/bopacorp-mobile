@@ -1,22 +1,22 @@
 import ClientDetailView from "@/components/ClientDetailView";
 import { getBusinessClient } from "@/services/ClientServices";
-import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useState } from "react";
 
 export default function ClientDetailScreen() {
   const params = useLocalSearchParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  console.log("ID en client-detail:", id);
   const [client, setClient] = useState<any>(null);
 
-  useEffect(() => {
-    loadClient();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadClient();
+    }, [id])
+  );
 
   async function loadClient() {
     try {
       const data = await getBusinessClient(id as string);
-      console.log("ID cargado:", id); // 👈 temporal
       setClient(data);
     } catch (error) {
       console.log(error);

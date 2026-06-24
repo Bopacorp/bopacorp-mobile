@@ -84,37 +84,33 @@ export default function EditClientScreen() {
           },
         ]}
       >
-        <Text style={[styles.label, { color: currentColors.text }]}>RUC</Text>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              borderColor: currentColors.border,
-              backgroundColor: currentColors.secondary,
-              color: currentColors.text,
-            },
-          ]}
-          value={ruc}
-          onChangeText={setRuc}
-          placeholderTextColor={placeholderColor}
-        />
-
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Nombre comercial
+        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>
+          RUC{" "}
         </Text>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              borderColor: currentColors.border,
-              backgroundColor: currentColors.secondary,
-              color: currentColors.text,
-            },
-          ]}
-          value={businessName}
-          onChangeText={setBusinessName}
-          placeholderTextColor={placeholderColor}
-        />
+        <Text
+          style={{
+            fontSize: 15,
+            fontWeight: "500",
+            color: currentColors.mutedForeground,
+            paddingVertical: 6,
+          }}
+        >
+          {ruc}
+        </Text>
+
+        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>
+          Nombre comercial{" "}
+        </Text>
+        <Text
+          style={{
+            fontSize: 15,
+            fontWeight: "500",
+            color: currentColors.mutedForeground,
+            paddingVertical: 6,
+          }}
+        >
+          {businessName}
+        </Text>
 
         <Text style={[styles.label, { color: currentColors.text }]}>
           Contacto
@@ -252,5 +248,11 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "white",
     fontWeight: "700",
+  },
+
+  lockedHint: {
+    fontSize: 11,
+    fontStyle: "italic",
+    fontWeight: "400",
   },
 });

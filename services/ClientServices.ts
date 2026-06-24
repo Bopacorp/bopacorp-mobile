@@ -112,9 +112,14 @@ export interface DocumentItem {
   date: string;
 }
 
-export const getNegotiationDocuments = async (): Promise<DocumentItem[]> => {
+export const getNegotiationDocuments = async (
+  negotiationId?: string,
+): Promise<DocumentItem[]> => {
   try {
-    const data: any = await apiClient.get("/api/v1/documents");
+    const url = negotiationId
+      ? `/api/v1/documents?negotiationId=${negotiationId}`
+      : "/api/v1/documents";
+    const data: any = await apiClient.get(url);
     return data.map((doc: any) => ({
       id: doc.id,
       company: doc.negotiation?.client?.businessName || "Cliente Sin Nombre",
@@ -298,11 +303,23 @@ export const getNegotiation = async (id: string): Promise<any> => {
       ? `${advProfile.firstName} ${advProfile.lastName}`
       : item.advisor?.username || "Sin Asignar";
 
+    let amount = "—";
+    try {
+      const clientData: any = await apiClient.get(`/api/v1/crm/business-clients/${item.client?.id}`);
+      const billing = clientData?.currentMonthlyBilling;
+      if (billing !== undefined && billing !== null) {
+        const num = Number(billing);
+        amount = isNaN(num) ? "—" : `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+    } catch {
+      // If client fetch fails, leave amount as "—"
+    }
+
     return {
       id: item.id,
       clientName: item.client?.businessName || "Cliente Sin Nombre",
       planName: item.state?.name || "Sin Estado",
-      amount: item.amount || "$0.00",
+      amount,
       status,
       date,
       advisorName,

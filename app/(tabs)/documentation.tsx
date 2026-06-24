@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import DocumentCard from "@/components/DocumentCard";
 import FilterButton from "@/components/FilterButton";
+import SortButton, { SortOrder } from "@/components/SortButton";
 import SearchBar from "@/components/SearchBar";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -34,6 +35,7 @@ export default function DocumentationScreen() {
   const currentColors = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("default");
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -158,15 +160,21 @@ export default function DocumentationScreen() {
     }
   };
 
-  const filteredDocuments = documents.filter((doc) => {
-    const matchSearch =
-      doc.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.fileName.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredDocuments = documents
+    .filter((doc) => {
+      const matchSearch =
+        doc.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.fileName.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchFilter = activeFilter === "all" || doc.status === activeFilter;
+      const matchFilter = activeFilter === "all" || doc.status === activeFilter;
 
-    return matchSearch && matchFilter;
-  });
+      return matchSearch && matchFilter;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "az") return a.fileName.localeCompare(b.fileName);
+      if (sortOrder === "za") return b.fileName.localeCompare(a.fileName);
+      return 0;
+    });
 
   if (loading) {
     return (
@@ -200,6 +208,11 @@ export default function DocumentationScreen() {
           onSelect={setActiveFilter}
           colorScheme={colorScheme ?? "light"}
           title="Estado del Documento"
+        />
+        <SortButton
+          value={sortOrder}
+          onSelect={setSortOrder}
+          colorScheme={colorScheme ?? "light"}
         />
       </View>
 

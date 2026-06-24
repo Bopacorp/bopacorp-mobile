@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Calendar } from "react-native-calendars";
 
 import BackButton from "@/components/BackButton";
 import { Text } from "@/components/Themed";
@@ -35,15 +36,45 @@ export default function CreateNegotiationScreen() {
 
   const [clientId, setClientId] = useState("");
   const [stateId, setStateId] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [estimatedCloseDate, setEstimatedCloseDate] = useState("");
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [estimatedCloseDate, setEstimatedCloseDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return d;
+  });
   const [observations, setObservations] = useState("");
+
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showClosePicker, setShowClosePicker] = useState(false);
 
   const [clientModalVisible, setClientModalVisible] = useState(false);
   const [stateModalVisible, setStateModalVisible] = useState(false);
 
   const [selectedClientName, setSelectedClientName] = useState("");
   const [selectedStateName, setSelectedStateName] = useState("");
+
+  const toLocalYYYYMMDD = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const calendarTheme = {
+    calendarBackground: currentColors.card,
+    textSectionTitleColor: currentColors.mutedForeground,
+    selectedDayBackgroundColor: currentColors.primary,
+    selectedDayTextColor: "#ffffff",
+    todayTextColor: currentColors.primary,
+    dayTextColor: currentColors.text,
+    textDisabledColor: currentColors.border,
+    dotColor: currentColors.primary,
+    selectedDotColor: "#ffffff",
+    arrowColor: currentColors.primary,
+    disabledArrowColor: currentColors.border,
+    monthTextColor: currentColors.text,
+    indicatorColor: currentColors.primary,
+  };
 
   useEffect(() => {
     loadData();
@@ -72,20 +103,14 @@ export default function CreateNegotiationScreen() {
         alert("Seleccione cliente y estado");
         return;
       }
-      const toISO = (dateStr: string) => {
-        if (!dateStr) return undefined;
-        const [day, month, year] = dateStr.split("/");
-        if (!day || !month || !year) return undefined;
-        return new Date(`${year}-${month}-${day}`).toISOString();
-      };
-      const isoStart = toISO(startDate);
-      const isoClose = toISO(estimatedCloseDate);
+      const dateStart = toLocalYYYYMMDD(startDate);
+      const dateClose = toLocalYYYYMMDD(estimatedCloseDate);
       await createNegotiation({
         clientId,
         advisorId: user?.id || "",
         stateId,
-        startDate: isoStart,
-        estimatedCloseDate: isoClose,
+        startDate: dateStart,
+        estimatedCloseDate: dateClose,
         observations,
         isActive: true,
       });
@@ -201,39 +226,63 @@ export default function CreateNegotiationScreen() {
         Fecha de inicio
       </Text>
 
-      <TextInput
+      <TouchableOpacity
         style={[
-          styles.input,
+          styles.selector,
           {
             borderColor: currentColors.border,
             backgroundColor: currentColors.secondary,
-            color: currentColors.text,
           },
         ]}
-        placeholder="dd/mm/aaaa"
-        placeholderTextColor={placeholderColor}
-        value={startDate}
-        onChangeText={setStartDate}
-      />
+        onPress={() => setShowStartPicker(true)}
+      >
+        <Text style={{ color: currentColors.text }}>
+          {startDate.toLocaleDateString("es-ES")}
+        </Text>
+        <FontAwesome name="calendar-o" size={14} color={placeholderColor} />
+      </TouchableOpacity>
+
+      {showStartPicker && (
+        <Calendar
+          current={toLocalYYYYMMDD(startDate)}
+          onDayPress={(day) => {
+            setStartDate(new Date(day.year, day.month - 1, day.day));
+            setShowStartPicker(false);
+          }}
+          theme={calendarTheme}
+        />
+      )}
 
       <Text style={[styles.label, { color: currentColors.text }]}>
         Cierre estimado
       </Text>
 
-      <TextInput
+      <TouchableOpacity
         style={[
-          styles.input,
+          styles.selector,
           {
             borderColor: currentColors.border,
             backgroundColor: currentColors.secondary,
-            color: currentColors.text,
           },
         ]}
-        placeholder="dd/mm/aaaa"
-        placeholderTextColor={placeholderColor}
-        value={estimatedCloseDate}
-        onChangeText={setEstimatedCloseDate}
-      />
+        onPress={() => setShowClosePicker(true)}
+      >
+        <Text style={{ color: currentColors.text }}>
+          {estimatedCloseDate.toLocaleDateString("es-ES")}
+        </Text>
+        <FontAwesome name="calendar-o" size={14} color={placeholderColor} />
+      </TouchableOpacity>
+
+      {showClosePicker && (
+        <Calendar
+          current={toLocalYYYYMMDD(estimatedCloseDate)}
+          onDayPress={(day) => {
+            setEstimatedCloseDate(new Date(day.year, day.month - 1, day.day));
+            setShowClosePicker(false);
+          }}
+          theme={calendarTheme}
+        />
+      )}
 
       <Text style={[styles.label, { color: currentColors.text }]}>
         Observaciones

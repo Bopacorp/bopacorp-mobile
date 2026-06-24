@@ -2,8 +2,10 @@ import { Text } from "@/components/Themed";
 import { globalStyles } from "@/constants/Styles";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useFocusEffect } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import React, { useState, useCallback } from "react";
 import {
+    ActivityIndicator,
     View as RNView,
     ScrollView,
     StyleSheet,
@@ -14,7 +16,8 @@ import BackButton from "./BackButton";
 import EditarButton from "./EditarButton";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { getNegotiation } from "@/services/ClientServices";
+import { getNegotiation, getNegotiationDocuments, DocumentItem } from "@/services/ClientServices";
+import { getAccessToken, API_URL } from "@/services/api";
 
 interface Props {
   id?: string;
@@ -87,7 +90,7 @@ const DEFAULT_CONFIG = {
   label: "Status",
 };
 
-const TABS = ["Historial", "Visitas", "Documentos", "Matrices"] as const;
+const TABS = ["Visitas", "Documentos", "Matrices", "Comentarios"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function NegotiationDetailView({
@@ -100,7 +103,7 @@ export default function NegotiationDetailView({
   advisorName: initialAdvisorName,
   estimatedCloseDate: initialEstimatedCloseDate,
 }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>("Historial");
+  const [activeTab, setActiveTab] = useState<Tab>("Visitas");
   const [clientName, setClientName] = useState(initialClientName);
   const [planName, setPlanName] = useState(initialPlanName);
   const [amount, setAmount] = useState(initialAmount);
@@ -110,6 +113,12 @@ export default function NegotiationDetailView({
   const [estimatedCloseDate, setEstimatedCloseDate] = useState(initialEstimatedCloseDate);
   const [observations, setObservations] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [loadingDetails, setLoadingDetails] = useState(true);
+
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+
+
 
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
@@ -124,6 +133,7 @@ export default function NegotiationDetailView({
   );
 
   async function loadNegotiationDetails() {
+    setLoadingDetails(true);
     try {
       const fresh = await getNegotiation(id!);
       setClientName(fresh.clientName);
@@ -137,12 +147,37 @@ export default function NegotiationDetailView({
       setIsActive(fresh.isActive);
     } catch (error) {
       console.warn(error);
+    } finally {
+      setLoadingDetails(false);
+    }
+
+    try {
+      setLoadingDocs(true);
+      const docs = await getNegotiationDocuments(id!);
+      setDocuments(docs);
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setLoadingDocs(false);
     }
   }
 
   const statusStr = status as string;
   const config = STAGE_CONFIG[statusStr] || DEFAULT_CONFIG;
   const s = scheme === "dark" ? config.dark : config.light;
+
+  if (loadingDetails) {
+    return (
+      <RNView
+        style={[
+          globalStyles.loadingContainer,
+          { backgroundColor: currentColors.background, paddingTop: insets.top },
+        ]}
+      >
+        <ActivityIndicator size="large" color={currentColors.primary} />
+      </RNView>
+    );
+  }
 
   return (
     <ScrollView
@@ -185,17 +220,32 @@ export default function NegotiationDetailView({
               </Text>
             </RNView>
           )}
-          {planName && (
-            <RNView style={[styles.badge, { backgroundColor: currentColors.muted }]}>
-              <Text style={[styles.badgeText, { color: currentColors.text }]}>
-                {planName}
-              </Text>
-            </RNView>
-          )}
+          <RNView
+            style={[
+              styles.badge,
+              {
+                backgroundColor: isActive
+                  ? scheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7"
+                  : scheme === "dark" ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.badgeText,
+                {
+                  color: isActive
+                    ? scheme === "dark" ? "#4ADE80" : "#166534"
+                    : scheme === "dark" ? "#F87171" : "#991B1B",
+                },
+              ]}
+            >
+              {isActive ? "Activa" : "Inactiva"}
+            </Text>
+          </RNView>
         </RNView>
       </RNView>
 
-      {/* ── Detalles en grid 2 columnas ── */}
       <RNView style={[styles.detailCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
         <Text style={[styles.sectionLabel, { color: currentColors.mutedForeground }]}>DETALLES</Text>
 
@@ -270,11 +320,7 @@ export default function NegotiationDetailView({
         ))}
       </RNView>
 
-      {/* ── Contenido del tab activo ── */}
       <RNView style={styles.tabContent}>
-        {activeTab === "Historial" && (
-          <Text style={[styles.emptyText, { color: currentColors.mutedForeground }]}>Sin historial registrado.</Text>
-        )}
         {activeTab === "Visitas" && (
           <RNView style={{ gap: 12, backgroundColor: "transparent" }}>
             <TouchableOpacity
@@ -301,10 +347,70 @@ export default function NegotiationDetailView({
           </RNView>
         )}
         {activeTab === "Documentos" && (
-          <Text style={[styles.emptyText, { color: currentColors.mutedForeground }]}>Sin documentos adjuntos.</Text>
+          <RNView style={styles.documentsContainer}>
+            {loadingDocs ? (
+              <ActivityIndicator size="small" color={currentColors.primary} />
+            ) : documents.length === 0 ? (
+              <Text style={[styles.emptyText, { color: currentColors.mutedForeground }]}>
+                Sin documentos adjuntos.
+              </Text>
+            ) : (
+              documents.map((doc) => {
+                const handleViewDoc = async () => {
+                  const token = getAccessToken();
+                  if (!token) return;
+                  const downloadUrl = `${API_URL}/api/v1/documents/${doc.id}/download?token=${token}`;
+                  try {
+                    await WebBrowser.openBrowserAsync(downloadUrl);
+                  } catch (err) {
+                    console.error("Failed to open document browser:", err);
+                    alert("No se pudo visualizar el documento.");
+                  }
+                };
+
+                return (
+                  <RNView
+                    key={doc.id}
+                    style={[
+                      styles.documentRow,
+                      {
+                        backgroundColor: currentColors.card,
+                        borderColor: currentColors.border,
+                      },
+                    ]}
+                  >
+                    <RNView style={styles.documentInfo}>
+                      <Text
+                        style={[styles.documentName, { color: currentColors.text }]}
+                        numberOfLines={1}
+                      >
+                        {doc.fileName}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: currentColors.mutedForeground, marginTop: 2 }}>
+                        Fecha: {doc.date}
+                      </Text>
+                    </RNView>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.viewButton,
+                        { backgroundColor: currentColors.primary + "15" },
+                      ]}
+                      onPress={handleViewDoc}
+                    >
+                      <FontAwesome name="eye" size={14} color={currentColors.primary} />
+                    </TouchableOpacity>
+                  </RNView>
+                );
+              })
+            )}
+          </RNView>
         )}
-        {activeTab === "Matrices" && (
-          <Text style={[styles.emptyText, { color: currentColors.mutedForeground }]}>Sin matrices disponibles.</Text>
+        
+        {activeTab === "Comentarios" && (
+          <Text style={[styles.commentsText, { color: currentColors.text }]}>
+            {observations || "Sin comentarios registrados."}
+          </Text>
         )}
       </RNView>
     </ScrollView>
@@ -438,5 +544,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 12,
     textAlign: "center",
+  },
+  documentsContainer: {
+    gap: 10,
+    backgroundColor: "transparent",
+  },
+  documentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  documentInfo: {
+    flex: 1,
+    paddingRight: 10,
+    backgroundColor: "transparent",
+  },
+  documentName: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  viewButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  commentsText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 12,
+    paddingHorizontal: 6,
   },
 });

@@ -11,6 +11,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Modal,
   Pressable,
@@ -61,6 +62,7 @@ export default function EditNegotiationScreen() {
   const [stateId, setStateId] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [statusModalVisible, setStatusModalVisible] = useState(false);
+  const [loadingStates, setLoadingStates] = useState(true);
 
   useEffect(() => {
     loadStates();
@@ -91,6 +93,8 @@ export default function EditNegotiationScreen() {
       }
     } catch (error) {
       console.warn(error);
+    } finally {
+      setLoadingStates(false);
     }
   }
 
@@ -137,6 +141,19 @@ export default function EditNegotiationScreen() {
       alert("Error al actualizar negociación");
     }
   };
+
+  if (loadingStates) {
+    return (
+      <RNView
+        style={[
+          globalStyles.loadingContainer,
+          { backgroundColor: currentColors.background, paddingTop: insets.top },
+        ]}
+      >
+        <ActivityIndicator size="large" color={currentColors.primary} />
+      </RNView>
+    );
+  }
 
   return (
     <ScrollView
@@ -221,37 +238,21 @@ export default function EditNegotiationScreen() {
           />
         </TouchableOpacity>
 
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Fecha de inicio
+        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>
+          Fecha de inicio{" "}
         </Text>
 
-        <TouchableOpacity
-          style={[
-            styles.inputWrapper,
-            {
-              borderColor: currentColors.border,
-              backgroundColor: currentColors.secondary,
-            },
-          ]}
-          onPress={() => setShowStartPicker(true)}
+        <Text
+          style={{
+            fontSize: 15,
+            fontWeight: "500",
+            color: currentColors.mutedForeground,
+            paddingVertical: 6,
+          }}
         >
-          <Text style={[styles.input, { color: currentColors.text }]}>
-            {startDate.toLocaleDateString("es-ES")}
-          </Text>
+          {startDate.toLocaleDateString("es-ES")}
+        </Text>
 
-          <FontAwesome name="calendar-o" size={14} color={placeholderColor} />
-        </TouchableOpacity>
-
-        {showStartPicker && (
-          <Calendar
-            current={toLocalYYYYMMDD(startDate)}
-            onDayPress={(day) => {
-              setStartDate(new Date(day.year, day.month - 1, day.day));
-              setShowStartPicker(false);
-            }}
-            theme={calendarTheme}
-          />
-        )}
 
         <Text style={[styles.label, { color: currentColors.text }]}>
           Fecha de cierre
