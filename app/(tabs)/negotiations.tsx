@@ -186,7 +186,10 @@ export default function NegotiationsScreen() {
         globalStyles.container,
         { backgroundColor: currentColors.background },
       ]}
-      contentContainerStyle={globalStyles.scrollPadding}
+      contentContainerStyle={[
+        globalStyles.scrollPadding,
+        { paddingHorizontal: 10 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
       <RNView style={globalStyles.searchRow}>
@@ -230,7 +233,7 @@ export default function NegotiationsScreen() {
           {
             backgroundColor: currentColors.card,
             borderColor: currentColors.border,
-            paddingHorizontal: 10,
+            paddingHorizontal: 6,
           },
         ]}
       >

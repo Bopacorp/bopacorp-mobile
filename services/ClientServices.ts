@@ -120,13 +120,25 @@ export const getNegotiationDocuments = async (
       ? `/api/v1/documents?negotiationId=${negotiationId}`
       : "/api/v1/documents";
     const data: any = await apiClient.get(url);
-    return data.map((doc: any) => ({
-      id: doc.id,
-      company: doc.negotiation?.client?.businessName || "Cliente Sin Nombre",
-      fileName: doc.filename,
-      status: doc.state,
-      date: doc.uploadedAt || doc.createdAt || "N/A",
-    }));
+    return data.map((doc: any) => {
+      let date = "N/A";
+      const dateSource = doc.uploadedAt || doc.createdAt;
+      if (dateSource) {
+        const datePart = dateSource.split("T")[0];
+        const parts = datePart.split("-");
+        if (parts.length === 3) {
+          const [year, month, day] = parts;
+          date = `${day}/${month}/${year}`;
+        }
+      }
+      return {
+        id: doc.id,
+        company: doc.negotiation?.client?.businessName || "Cliente Sin Nombre",
+        fileName: doc.filename,
+        status: doc.state,
+        date,
+      };
+    });
   } catch (error) {
     console.warn("Could not load negotiation documents:", error);
     return [];

@@ -39,7 +39,7 @@ export default function ClientCard({
         </View>
 
         <View style={styles.headerCenter}>
-          <Text style={[styles.name, { color: c.text }]} numberOfLines={1}>
+          <Text style={[styles.name, { color: c.text }]}>
             {client.businessName}
           </Text>
           <Text style={[styles.ruc, { color: c.mutedForeground }]}>

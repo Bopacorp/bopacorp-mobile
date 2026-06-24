@@ -25,31 +25,31 @@ const STAGE_CONFIG: Record<
     light: { bg: "#FEF3C7", text: "#D97706" },
     dark: { bg: "rgba(245, 158, 11, 0.15)", text: "#FBBF24" },
     icon: "bullseye",
-    label: "Prosp.",
+    label: "Prospección",
   },
   Prospección: {
     light: { bg: "#FEF3C7", text: "#D97706" },
     dark: { bg: "rgba(245, 158, 11, 0.15)", text: "#FBBF24" },
     icon: "bullseye",
-    label: "Prosp.",
+    label: "Prospección",
   },
   "Contacto Inicial": {
     light: { bg: "#F3E8FF", text: "#7C3AED" },
     dark: { bg: "rgba(168, 85, 247, 0.15)", text: "#C084FC" },
     icon: "comments-o",
-    label: "Contact.",
+    label: "Contacto Inicial",
   },
   Negociacion: {
     light: { bg: "#DBEAFE", text: "#2563EB" },
     dark: { bg: "rgba(59, 130, 246, 0.15)", text: "#60A5FA" },
     icon: "handshake-o",
-    label: "Negoc.",
+    label: "Negociación",
   },
   Negociación: {
     light: { bg: "#DBEAFE", text: "#2563EB" },
     dark: { bg: "rgba(59, 130, 246, 0.15)", text: "#60A5FA" },
     icon: "handshake-o",
-    label: "Negoc.",
+    label: "Negociación",
   },
   Cierre: {
     light: { bg: "#D1FAE5", text: "#059669" },
@@ -61,7 +61,7 @@ const STAGE_CONFIG: Record<
     light: { bg: "#CCFBF1", text: "#0D9488" },
     dark: { bg: "rgba(20, 184, 166, 0.15)", text: "#2DD4BF" },
     icon: "star-o",
-    label: "Post-V.",
+    label: "Post-venta",
   },
 };
 
@@ -108,7 +108,7 @@ export default function NegotiationCard({
       {/* Estado badge */}
       <View style={styles.colEstado}>
         <View style={[styles.badge, { backgroundColor: s.bg }]}>
-          <Text style={[styles.badgeText, { color: s.text }]}>
+          <Text style={[styles.badgeText, { color: s.text }]} numberOfLines={1}>
             {config.label}
           </Text>
         </View>
@@ -151,13 +151,14 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "flex-start",
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    justifyContent: "center",
+    width: 64,
+    height: 22,
     borderRadius: 20,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 9.5,
     fontWeight: "600",
+    letterSpacing: -0.25,
   },
 });
