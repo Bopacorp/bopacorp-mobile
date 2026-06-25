@@ -142,7 +142,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                     { color: currentColors.primary },
                   ]}
                 >
-                  Partner Movistar
+                  Partner Tigo
                 </Text>
               </View>
         </View>
