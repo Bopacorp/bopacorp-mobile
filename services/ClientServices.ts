@@ -1,4 +1,5 @@
 import { apiClient } from "./api";
+import { Platform } from "react-native";
 
 interface CacheEntry<T> {
   data: T;
@@ -258,11 +259,17 @@ export const uploadDocumentFile = async (
   mimeType: string,
 ): Promise<any> => {
   const formData = new FormData();
-  formData.append("file", {
-    uri: fileUri,
-    name: fileName,
-    type: mimeType,
-  } as any);
+  if (Platform.OS === "web") {
+    const response = await fetch(fileUri);
+    const blob = await response.blob();
+    formData.append("file", blob, fileName);
+  } else {
+    formData.append("file", {
+      uri: fileUri,
+      name: fileName,
+      type: mimeType,
+    } as any);
+  }
 
   return apiClient.post("/api/v1/document-uploads", formData, {
     headers: {
