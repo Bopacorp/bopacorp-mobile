@@ -1,6 +1,7 @@
 import { Text } from "@/components/Themed";
 import { globalStyles } from "@/constants/Styles";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import * as DocumentPicker from "expo-document-picker";
 import { router, useFocusEffect } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import React, { useState, useCallback } from "react";
@@ -32,6 +33,11 @@ import {
   getVisitTypes,
   createVisit,
   VisitItem,
+  getNegotiationMatrices,
+  createOfferMatrix,
+  getMatrixAttachments,
+  createMatrixAttachment,
+  uploadDocumentFile,
 } from "@/services/ClientServices";
 import { getAccessToken, API_URL } from "@/services/api";
 
@@ -106,7 +112,7 @@ const DEFAULT_CONFIG = {
   label: "Status",
 };
 
-const TABS = ["Visitas", "Documentos", "Comentarios"] as const;
+const TABS = ["Visitas", "Documentos", "Matrices", "Comentarios"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function NegotiationDetailView({
@@ -149,6 +155,14 @@ export default function NegotiationDetailView({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [visitObservations, setVisitObservations] = useState("");
   const [submittingVisit, setSubmittingVisit] = useState(false);
+
+  // Matrices state
+  const [matrixId, setMatrixId] = useState<string | null>(null);
+  const [offerMatrixFile, setOfferMatrixFile] = useState<{ id?: string; name: string; isUploaded: boolean } | null>(null);
+  const [emailTemplateFile, setEmailTemplateFile] = useState<{ id?: string; name: string; isUploaded: boolean } | null>(null);
+  const [pendingOfferFile, setPendingOfferFile] = useState<any | null>(null);
+  const [pendingEmailFile, setPendingEmailFile] = useState<any | null>(null);
+  const [submittingMatrices, setSubmittingMatrices] = useState(false);
 
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
@@ -218,18 +232,44 @@ export default function NegotiationDetailView({
       setObservations(fresh.observations);
       setIsActive(fresh.isActive);
 
-      // 2. Fetch documents and visits in parallel
+      // 2. Fetch documents, visits and matrices in parallel
       const docsPromise = getNegotiationDocuments(id!);
       const visitsPromise = fresh.clientId
         ? getNegotiationVisits(fresh.clientId)
         : Promise.resolve([]);
+      const matricesPromise = getNegotiationMatrices(id!);
 
-      console.log("[DEBUG] Fetching documents and visits in parallel...");
-      const [docs, visits] = await Promise.all([docsPromise, visitsPromise]);
+      console.log("[DEBUG] Fetching documents, visits and matrices in parallel...");
+      const [docs, visits, matrices] = await Promise.all([docsPromise, visitsPromise, matricesPromise]);
       
       console.log("[DEBUG] Loaded docs length =", docs.length, "visits length =", visits.length);
       setDocuments(docs);
       setVisitsList(visits);
+
+      if (matrices && matrices.length > 0) {
+        const activeMatrix = matrices[0];
+        setMatrixId(activeMatrix.id);
+        const atts = await getMatrixAttachments(activeMatrix.id);
+        
+        const offerAtt = atts.find((a: any) => a.attachmentType === "OFFER_MATRIX");
+        const emailAtt = atts.find((a: any) => a.attachmentType === "EMAIL_TEMPLATE");
+        
+        if (offerAtt) {
+          setOfferMatrixFile({ name: offerAtt.filename, isUploaded: true });
+        } else {
+          setOfferMatrixFile(null);
+        }
+        
+        if (emailAtt) {
+          setEmailTemplateFile({ name: emailAtt.filename, isUploaded: true });
+        } else {
+          setEmailTemplateFile(null);
+        }
+      } else {
+        setMatrixId(null);
+        setOfferMatrixFile(null);
+        setEmailTemplateFile(null);
+      }
     } catch (error) {
       console.warn("[DEBUG] loadNegotiationDetails failed:", error);
     } finally {
@@ -300,6 +340,111 @@ export default function NegotiationDetailView({
       setLoadingVisits(false);
     }
   }
+
+  const handlePickFile = async (type: "OFFER_MATRIX" | "EMAIL_TEMPLATE") => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-excel",
+          "application/pdf",
+          "image/*",
+          "text/*"
+        ],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const file = result.assets[0];
+      if (type === "OFFER_MATRIX") {
+        setPendingOfferFile(file);
+      } else {
+        setPendingEmailFile(file);
+      }
+    } catch (error) {
+      console.error("Error picking document:", error);
+      Alert.alert("Error", "No se pudo seleccionar el archivo.");
+    }
+  };
+
+  const handleSaveMatrices = async () => {
+    setSubmittingMatrices(true);
+    try {
+      let currentMatrixId = matrixId;
+      
+      // 1. Create matrix if it doesn't exist
+      if (!currentMatrixId) {
+        console.log("[DEBUG] No matrix exists, creating one...");
+        const matrixResult = await createOfferMatrix({
+          negotiationId: id!,
+          observations: "",
+        });
+        currentMatrixId = matrixResult.id;
+        setMatrixId(currentMatrixId);
+      }
+      
+      // 2. Upload pending Offer Matrix if present
+      if (pendingOfferFile) {
+        console.log("[DEBUG] Uploading pending OFFER_MATRIX file...");
+        const uploadResponse = await uploadDocumentFile(
+          pendingOfferFile.uri,
+          pendingOfferFile.name,
+          pendingOfferFile.mimeType || "application/octet-stream"
+        );
+        
+        await createMatrixAttachment(currentMatrixId, {
+          matrixId: currentMatrixId,
+          attachmentType: "OFFER_MATRIX",
+          filename: uploadResponse.filename,
+          fileExtension: uploadResponse.fileExtension,
+          fileSizeMb: uploadResponse.fileSizeMb,
+          storagePath: uploadResponse.storagePath,
+          mimeType: uploadResponse.mimeType,
+          encryptionMetadata: uploadResponse.encryptionMetadata,
+        });
+        
+        setOfferMatrixFile({ name: uploadResponse.filename, isUploaded: true });
+        setPendingOfferFile(null);
+      }
+
+      // 3. Upload pending Email Template if present
+      if (pendingEmailFile) {
+        console.log("[DEBUG] Uploading pending EMAIL_TEMPLATE file...");
+        const uploadResponse = await uploadDocumentFile(
+          pendingEmailFile.uri,
+          pendingEmailFile.name,
+          pendingEmailFile.mimeType || "application/octet-stream"
+        );
+        
+        await createMatrixAttachment(currentMatrixId, {
+          matrixId: currentMatrixId,
+          attachmentType: "EMAIL_TEMPLATE",
+          filename: uploadResponse.filename,
+          fileExtension: uploadResponse.fileExtension,
+          fileSizeMb: uploadResponse.fileSizeMb,
+          storagePath: uploadResponse.storagePath,
+          mimeType: uploadResponse.mimeType,
+          encryptionMetadata: uploadResponse.encryptionMetadata,
+        });
+        
+        setEmailTemplateFile({ name: uploadResponse.filename, isUploaded: true });
+        setPendingEmailFile(null);
+      }
+
+      Alert.alert("Éxito", "Matriz y adjuntos guardados correctamente.");
+      
+      // Refresh list to sync state
+      await loadNegotiationDetails();
+    } catch (error: any) {
+      console.warn("Error saving matrices:", error);
+      Alert.alert("Error", error?.message || "Ocurrió un error al guardar los archivos.");
+    } finally {
+      setSubmittingMatrices(false);
+    }
+  };
 
   const statusStr = status as string;
   const config = STAGE_CONFIG[statusStr] || DEFAULT_CONFIG;
@@ -610,6 +755,107 @@ export default function NegotiationDetailView({
           <Text style={[styles.commentsText, { color: currentColors.text }]}>
             {observations || "Sin comentarios registrados."}
           </Text>
+        )}
+
+        {activeTab === "Matrices" && (
+          <RNView style={{ gap: 16, backgroundColor: "transparent" }}>
+            <Text style={[styles.sectionLabel, { color: currentColors.mutedForeground }]}>MATRICES DE LA NEGOCIACIÓN</Text>
+            
+            {/* Offer Matrix Slot */}
+            <RNView style={[localStyles.fileCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+              <RNView style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <FontAwesome name="file-excel-o" size={24} color="#1D7444" />
+                <RNView style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: "600", color: currentColors.text }}>Matriz de Oferta</Text>
+                  <Text style={{ fontSize: 12, color: currentColors.mutedForeground }}>Hoja de cálculo de oferta comercial</Text>
+                </RNView>
+              </RNView>
+              
+              {offerMatrixFile ? (
+                <RNView style={[localStyles.uploadedStatusBox, { backgroundColor: currentColors.secondary + "40" }]}>
+                  <FontAwesome name="check-circle" size={16} color="#10B981" />
+                  <Text style={{ fontSize: 13, color: currentColors.text, marginLeft: 6 }} numberOfLines={1}>
+                    Subido: {offerMatrixFile.name}
+                  </Text>
+                </RNView>
+              ) : pendingOfferFile ? (
+                <RNView style={{ marginTop: 12 }}>
+                  <RNView style={[localStyles.uploadedStatusBox, { backgroundColor: "#FFFBEB" }]}>
+                    <FontAwesome name="file" size={14} color="#D97706" />
+                    <Text style={{ fontSize: 13, color: "#92400E", marginLeft: 6 }} numberOfLines={1}>
+                      Subido: {pendingOfferFile.name}
+                    </Text>
+                    <TouchableOpacity onPress={() => setPendingOfferFile(null)} style={{ marginLeft: "auto" }}>
+                      <FontAwesome name="times-circle" size={16} color="#EF4444" />
+                    </TouchableOpacity>
+                  </RNView>
+                </RNView>
+              ) : (
+                <TouchableOpacity
+                  style={[localStyles.uploadSlotBtn, { borderColor: currentColors.border, backgroundColor: currentColors.secondary + "20" }]}
+                  onPress={() => handlePickFile("OFFER_MATRIX")}
+                >
+                  <FontAwesome name="upload" size={14} color={currentColors.primary} />
+                  <Text style={{ color: currentColors.primary, fontWeight: "600", marginLeft: 8 }}>Subir Archivo</Text>
+                </TouchableOpacity>
+              )}
+            </RNView>
+
+            {/* Email Template Slot */}
+            <RNView style={[localStyles.fileCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+              <RNView style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <FontAwesome name="envelope-o" size={24} color="#1D4ED8" />
+                <RNView style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: "600", color: currentColors.text }}>Plantilla de Correo</Text>
+                  <Text style={{ fontSize: 12, color: currentColors.mutedForeground }}>Cuerpo de correo para el cliente</Text>
+                </RNView>
+              </RNView>
+              
+              {emailTemplateFile ? (
+                <RNView style={[localStyles.uploadedStatusBox, { backgroundColor: currentColors.secondary + "40" }]}>
+                  <FontAwesome name="check-circle" size={16} color="#10B981" />
+                  <Text style={{ fontSize: 13, color: currentColors.text, marginLeft: 6 }} numberOfLines={1}>
+                    Subido: {emailTemplateFile.name}
+                  </Text>
+                </RNView>
+              ) : pendingEmailFile ? (
+                <RNView style={{ marginTop: 12 }}>
+                  <RNView style={[localStyles.uploadedStatusBox, { backgroundColor: "#FFFBEB" }]}>
+                    <FontAwesome name="file" size={14} color="#D97706" />
+                    <Text style={{ fontSize: 13, color: "#92400E", marginLeft: 6 }} numberOfLines={1}>
+                      Subido: {pendingEmailFile.name}
+                    </Text>
+                    <TouchableOpacity onPress={() => setPendingEmailFile(null)} style={{ marginLeft: "auto" }}>
+                      <FontAwesome name="times-circle" size={16} color="#EF4444" />
+                    </TouchableOpacity>
+                  </RNView>
+                </RNView>
+              ) : (
+                <TouchableOpacity
+                  style={[localStyles.uploadSlotBtn, { borderColor: currentColors.border, backgroundColor: currentColors.secondary + "20" }]}
+                  onPress={() => handlePickFile("EMAIL_TEMPLATE")}
+                >
+                  <FontAwesome name="upload" size={14} color={currentColors.primary} />
+                  <Text style={{ color: currentColors.primary, fontWeight: "600", marginLeft: 8 }}>Subir Archivo</Text>
+                </TouchableOpacity>
+              )}
+            </RNView>
+            
+            {/* Guardar Button */}
+            {(pendingOfferFile || pendingEmailFile) && (
+              <TouchableOpacity
+                style={[localStyles.saveMatricesBtn, { backgroundColor: currentColors.primary }]}
+                onPress={handleSaveMatrices}
+                disabled={submittingMatrices}
+              >
+                {submittingMatrices ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={{ color: "white", fontWeight: "bold", fontSize: 15 }}>Guardar</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          </RNView>
         )}
       </RNView>
 
@@ -1047,5 +1293,36 @@ const localStyles = StyleSheet.create({
   pickerItem: {
     paddingVertical: 12,
     borderBottomWidth: 1,
+  },
+  fileCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 8,
+  },
+  uploadSlotBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+  },
+  uploadedStatusBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 12,
+  },
+  saveMatricesBtn: {
+    borderRadius: 8,
+    padding: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    height: 48,
   },
 });
