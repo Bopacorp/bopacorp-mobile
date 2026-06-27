@@ -7,7 +7,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build:web": "cd ../bopacorp-shared && npm install --legacy-peer-deps && npm run build && cd ../bopacorp-mobile && npx expo export --platform web"
+    "build:web": "cd ../bopacorp-shared && npm install --production=false --legacy-peer-deps && npm run build && cd ../bopacorp-mobile && npx expo export --platform web"
   },
   "dependencies": {
     "@bopacorp/shared": "file:../bopacorp-shared",
