@@ -34,12 +34,34 @@ export default function LoginScreen() {
       return;
     }
 
+    if (!finalEmail.toLowerCase().endsWith("@bopacorp.com")) {
+      Alert.alert(
+        "Correo no válido",
+        "Solo se permiten cuentas de correo corporativas (@bopacorp.com).",
+      );
+      return;
+    }
+
     setIsLoggingIn(true);
     try {
       await login(finalEmail, finalPassword);
     } catch (err: any) {
-      const errorMsg =
-        err.message || "Credenciales incorrectas o problema de red.";
+      let errorMsg = "Ocurrió un error de red o el servidor no responde.";
+      
+      if (err && err.code) {
+        if (err.code === "INVALID_CREDENTIALS") {
+          errorMsg = "El correo o la contraseña son incorrectos.";
+        } else if (err.code === "ACCOUNT_LOCKED") {
+          errorMsg = "Tu cuenta ha sido bloqueada temporalmente por demasiados intentos fallidos. Por favor, inténtalo más tarde.";
+        } else if (err.code === "ACCOUNT_DISABLED") {
+          errorMsg = "Tu cuenta está desactivada. Por favor, contacta al administrador de BOPACORP.";
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+      } else if (err && err.message) {
+        errorMsg = err.message;
+      }
+      
       Alert.alert("Error de Autenticación", errorMsg);
     } finally {
       setIsLoggingIn(false);
