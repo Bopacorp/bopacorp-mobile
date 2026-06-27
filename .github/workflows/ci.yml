@@ -15,11 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-<<<<<<< HEAD
-          node-version: 20  
-=======
           node-version: 22  
->>>>>>> 4901a60abf0aa480ebf75f23e467cd84aaea9135
           cache: 'npm'      
       - run: npm ci        
       - run: npx tsc --noEmit
