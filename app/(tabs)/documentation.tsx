@@ -378,12 +378,7 @@ export default function DocumentationScreen() {
           </View>
         </View>
 
-        <Modal
-          visible={negPickerVisible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setNegPickerVisible(false)}
-        >
+         {negPickerVisible && (
           <View style={localStyles.pickerOverlay}>
             <View style={[localStyles.pickerContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
               <View style={localStyles.pickerHeader}>
@@ -409,14 +404,9 @@ export default function DocumentationScreen() {
               </ScrollView>
             </View>
           </View>
-        </Modal>
+        )}
 
-        <Modal
-          visible={typePickerVisible}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setTypePickerVisible(false)}
-        >
+        {typePickerVisible && (
           <View style={localStyles.pickerOverlay}>
             <View style={[localStyles.pickerContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
               <View style={localStyles.pickerHeader}>
@@ -441,7 +431,7 @@ export default function DocumentationScreen() {
               </ScrollView>
             </View>
           </View>
-        </Modal>
+        )}
       </Modal>
     </ScrollView>
   );
@@ -531,8 +521,12 @@ const localStyles = StyleSheet.create({
     fontWeight: "bold",
   },
   pickerOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
   },

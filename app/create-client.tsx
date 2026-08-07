@@ -32,12 +32,12 @@ export default function CreateClientScreen() {
   async function handleSave() {
     try {
       const response = await createBusinessClient({
-        ruc,
-        businessName,
-        contactName,
-        contactPhone: phone,
-        contactEmail: email,
-        address,
+        ruc: ruc.trim(),
+        businessName: businessName.trim(),
+        contactName: contactName.trim(),
+        contactPhone: phone.trim() || undefined,
+        contactEmail: email.trim() || undefined,
+        address: address.trim() || undefined,
         activeServicesCount: 0,
         currentMonthlyBilling: 0,
         isActive: true,
@@ -58,7 +58,12 @@ export default function CreateClientScreen() {
         console.log(error.details);
       }
 
-      alert("Error al crear cliente");
+      if (error?.details && Array.isArray(error.details) && error.details.length > 0) {
+        const messages = error.details.map((d: any) => `${d.field}: ${d.message}`).join("\n");
+        alert(`Error de Validación:\n${messages}`);
+      } else {
+        alert(error?.message || "Error al crear cliente");
+      }
     }
   }
   return (
