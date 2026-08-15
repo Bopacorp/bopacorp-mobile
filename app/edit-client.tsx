@@ -45,12 +45,12 @@ export default function EditClientScreen() {
   async function handleSave() {
     try {
       await updateBusinessClient(id, {
-        ruc,
-        businessName,
-        contactName,
-        contactPhone,
-        contactEmail,
-        address,
+        ruc: ruc.trim() || undefined,
+        businessName: businessName.trim() || undefined,
+        contactName: contactName.trim() || undefined,
+        contactPhone: contactPhone.trim() || undefined,
+        contactEmail: contactEmail.trim() || undefined,
+        address: address.trim() || undefined,
         isActive,
       });
       alert("Cliente actualizado");

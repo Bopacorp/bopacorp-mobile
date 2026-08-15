@@ -251,6 +251,12 @@ export default function NegotiationDetailView({
       return;
     }
 
+    const trimmedObservations = visitObservations.trim();
+    if (trimmedObservations.length === 0) {
+      Alert.alert("Error", "Por favor ingrese las observaciones de la visita.");
+      return;
+    }
+
     setSubmittingVisit(true);
     let gpsData: any = {};
 
@@ -280,7 +286,7 @@ export default function NegotiationDetailView({
         advisorId: user?.id || "",
         visitTypeId: selectedVisitType.id,
         visitDate: visitDate.toISOString(),
-        observations: visitObservations || undefined,
+        observations: trimmedObservations,
         ...gpsData,
       });
 
@@ -688,7 +694,7 @@ export default function NegotiationDetailView({
 
               {/* Observations Input */}
               <Text style={[localStyles.label, { color: currentColors.text }]}>
-                Observaciones
+                Observaciones <Text style={{ color: "#EF4444" }}>*</Text>
               </Text>
               <TextInput
                 style={[
@@ -712,10 +718,10 @@ export default function NegotiationDetailView({
                   localStyles.submitButton,
                   {
                     backgroundColor: currentColors.primary,
-                    opacity: (submittingVisit || !selectedVisitType) ? 0.6 : 1,
+                    opacity: (submittingVisit || !selectedVisitType || !visitObservations.trim()) ? 0.6 : 1,
                   },
                 ]}
-                disabled={submittingVisit || !selectedVisitType}
+                disabled={submittingVisit || !selectedVisitType || !visitObservations.trim()}
                 onPress={handleSubmitVisit}
               >
                 {submittingVisit ? (
