@@ -1,18 +1,12 @@
-import BackButton from "@/components/BackButton";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
-import React, { useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import { useState } from "react";
+import { ScrollView, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import BackButton from "@/components/BackButton";
 import { Text, View } from "@/components/Themed";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
 import { createBusinessClient } from "@/services/ClientServices";
 
@@ -72,19 +66,14 @@ export default function CreateClientScreen() {
         globalStyles.container,
         { backgroundColor: currentColors.background, paddingTop: insets.top },
       ]}
-      contentContainerStyle={[
-        globalStyles.scrollPadding,
-        { paddingBottom: 40 },
-      ]}
+      contentContainerStyle={[globalStyles.scrollPadding, { paddingBottom: 40 }]}
       showsVerticalScrollIndicator={false}
     >
       <View style={{ marginBottom: 20, backgroundColor: "transparent" }}>
         <BackButton />
       </View>
 
-      <Text style={[styles.title, { color: currentColors.text }]}>
-        Nuevo cliente
-      </Text>
+      <Text style={[styles.title, { color: currentColors.text }]}>Nuevo cliente</Text>
 
       <View
         style={[
@@ -111,9 +100,7 @@ export default function CreateClientScreen() {
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Nombre comercial
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Nombre comercial</Text>
         <TextInput
           style={[
             styles.input,
@@ -129,9 +116,7 @@ export default function CreateClientScreen() {
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Contacto
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Contacto</Text>
         <TextInput
           style={[
             styles.input,
@@ -147,9 +132,7 @@ export default function CreateClientScreen() {
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Teléfono
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Teléfono</Text>
         <TextInput
           style={[
             styles.input,
@@ -184,9 +167,7 @@ export default function CreateClientScreen() {
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Dirección
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Dirección</Text>
         <TextInput
           style={[
             styles.input,
@@ -206,19 +187,11 @@ export default function CreateClientScreen() {
         />
 
         <TouchableOpacity
-          style={[
-            styles.saveButton,
-            { backgroundColor: currentColors.primary },
-          ]}
+          style={[styles.saveButton, { backgroundColor: currentColors.primary }]}
           activeOpacity={0.8}
           onPress={handleSave}
         >
-          <FontAwesome
-            name="save"
-            size={16}
-            color="white"
-            style={{ marginRight: 8 }}
-          />
+          <FontAwesome name="save" size={16} color="white" style={{ marginRight: 8 }} />
           <Text style={styles.saveButtonText}>Guardar cliente</Text>
         </TouchableOpacity>
       </View>

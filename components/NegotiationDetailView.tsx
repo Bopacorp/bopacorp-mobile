@@ -1,39 +1,38 @@
-import { Text } from "@/components/Themed";
-import { globalStyles } from "@/constants/Styles";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import * as Location from "expo-location";
 import { router, useFocusEffect } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import React, { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    View as RNView,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    Modal,
-    TextInput,
-    Pressable,
-    FlatList,
-    Alert,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  View as RNView,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Calendar } from "react-native-calendars";
-import * as Location from "expo-location";
-import { useAuth } from "@/context/AuthContext";
-import BackButton from "./BackButton";
-import EditarButton from "./EditarButton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { globalStyles } from "@/constants/Styles";
+import { useAuth } from "@/context/AuthContext";
+import { API_URL, getAccessToken } from "@/services/api";
 import {
+  createVisit,
+  DocumentItem,
   getNegotiation,
   getNegotiationDocuments,
-  DocumentItem,
   getNegotiationVisits,
   getVisitTypes,
-  createVisit,
   VisitItem,
 } from "@/services/ClientServices";
-import { getAccessToken, API_URL } from "@/services/api";
+import BackButton from "./BackButton";
+import EditarButton from "./EditarButton";
 
 interface Props {
   id?: string;
@@ -150,8 +149,6 @@ export default function NegotiationDetailView({
   const [visitObservations, setVisitObservations] = useState("");
   const [submittingVisit, setSubmittingVisit] = useState(false);
 
-
-
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const currentColors = Colors[scheme ?? "light"];
@@ -187,7 +184,7 @@ export default function NegotiationDetailView({
         loadNegotiationDetails();
         loadVisitTypes();
       }
-    }, [id])
+    }, [id]),
   );
 
   async function loadVisitTypes() {
@@ -228,7 +225,7 @@ export default function NegotiationDetailView({
 
       console.log("[DEBUG] Fetching documents and visits in parallel...");
       const [docs, visits] = await Promise.all([docsPromise, visitsPromise]);
-      
+
       console.log("[DEBUG] Loaded docs length =", docs.length, "visits length =", visits.length);
       setDocuments(docs);
       setVisitsList(visits);
@@ -309,8 +306,6 @@ export default function NegotiationDetailView({
     }
   }
 
-
-
   const statusStr = status as string;
   const config = STAGE_CONFIG[statusStr] || DEFAULT_CONFIG;
   const s = scheme === "dark" ? config.dark : config.light;
@@ -330,7 +325,10 @@ export default function NegotiationDetailView({
 
   return (
     <ScrollView
-      style={[globalStyles.container, { paddingTop: insets.top, backgroundColor: currentColors.background }]}
+      style={[
+        globalStyles.container,
+        { paddingTop: insets.top, backgroundColor: currentColors.background },
+      ]}
       contentContainerStyle={[styles.scrollContent, { backgroundColor: currentColors.background }]}
     >
       {/* ── Header ── */}
@@ -364,9 +362,7 @@ export default function NegotiationDetailView({
         <RNView style={styles.badgesRow}>
           {status && (
             <RNView style={[styles.badge, { backgroundColor: s.bg }]}>
-              <Text style={[styles.badgeText, { color: s.text }]}>
-                {config.label}
-              </Text>
+              <Text style={[styles.badgeText, { color: s.text }]}>{config.label}</Text>
             </RNView>
           )}
           <RNView
@@ -374,8 +370,12 @@ export default function NegotiationDetailView({
               styles.badge,
               {
                 backgroundColor: isActive
-                  ? scheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7"
-                  : scheme === "dark" ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2",
+                  ? scheme === "dark"
+                    ? "rgba(34, 197, 94, 0.2)"
+                    : "#DCFCE7"
+                  : scheme === "dark"
+                    ? "rgba(239, 68, 68, 0.2)"
+                    : "#FEE2E2",
               },
             ]}
           >
@@ -384,8 +384,12 @@ export default function NegotiationDetailView({
                 styles.badgeText,
                 {
                   color: isActive
-                    ? scheme === "dark" ? "#4ADE80" : "#166534"
-                    : scheme === "dark" ? "#F87171" : "#991B1B",
+                    ? scheme === "dark"
+                      ? "#4ADE80"
+                      : "#166534"
+                    : scheme === "dark"
+                      ? "#F87171"
+                      : "#991B1B",
                 },
               ]}
             >
@@ -395,8 +399,15 @@ export default function NegotiationDetailView({
         </RNView>
       </RNView>
 
-      <RNView style={[styles.detailCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
-        <Text style={[styles.sectionLabel, { color: currentColors.mutedForeground }]}>DETALLES</Text>
+      <RNView
+        style={[
+          styles.detailCard,
+          { backgroundColor: currentColors.card, borderColor: currentColors.border },
+        ]}
+      >
+        <Text style={[styles.sectionLabel, { color: currentColors.mutedForeground }]}>
+          DETALLES
+        </Text>
 
         <RNView style={styles.grid}>
           <RNView style={styles.gridItem}>
@@ -407,7 +418,9 @@ export default function NegotiationDetailView({
               style={styles.detailIcon}
             />
             <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Asesor</Text>
-            <Text style={[styles.detailValue, { color: currentColors.text }]}>{advisorName ?? "—"}</Text>
+            <Text style={[styles.detailValue, { color: currentColors.text }]}>
+              {advisorName ?? "—"}
+            </Text>
           </RNView>
 
           <RNView style={styles.gridItem}>
@@ -417,7 +430,9 @@ export default function NegotiationDetailView({
               color={currentColors.mutedForeground}
               style={styles.detailIcon}
             />
-            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Facturación mensual</Text>
+            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>
+              Facturación mensual
+            </Text>
             <Text style={[styles.detailValue, { color: currentColors.text }]}>{amount ?? "—"}</Text>
           </RNView>
 
@@ -428,7 +443,9 @@ export default function NegotiationDetailView({
               color={currentColors.mutedForeground}
               style={styles.detailIcon}
             />
-            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Fecha inicio</Text>
+            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>
+              Fecha inicio
+            </Text>
             <Text style={[styles.detailValue, { color: currentColors.text }]}>{date ?? "—"}</Text>
           </RNView>
 
@@ -439,8 +456,12 @@ export default function NegotiationDetailView({
               color={currentColors.mutedForeground}
               style={styles.detailIcon}
             />
-            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Cierre est.</Text>
-            <Text style={[styles.detailValue, { color: currentColors.text }]}>{estimatedCloseDate ?? "—"}</Text>
+            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>
+              Cierre est.
+            </Text>
+            <Text style={[styles.detailValue, { color: currentColors.text }]}>
+              {estimatedCloseDate ?? "—"}
+            </Text>
           </RNView>
         </RNView>
       </RNView>
@@ -482,19 +503,20 @@ export default function NegotiationDetailView({
                 setVisitModalVisible(true);
               }}
             >
-              <FontAwesome
-                name="plus"
-                size={14}
-                color="white"
-                style={globalStyles.actionIcon}
-              />
+              <FontAwesome name="plus" size={14} color="white" style={globalStyles.actionIcon} />
               <Text style={globalStyles.actionButtonText}>Agregar Visita</Text>
             </TouchableOpacity>
 
             {loadingVisits ? (
-              <ActivityIndicator size="small" color={currentColors.primary} style={{ marginTop: 12 }} />
+              <ActivityIndicator
+                size="small"
+                color={currentColors.primary}
+                style={{ marginTop: 12 }}
+              />
             ) : visitsList.length === 0 ? (
-              <Text style={[styles.emptyText, { color: currentColors.mutedForeground, marginTop: 12 }]}>
+              <Text
+                style={[styles.emptyText, { color: currentColors.mutedForeground, marginTop: 12 }]}
+              >
                 Sin visitas registradas.
               </Text>
             ) : (
@@ -518,8 +540,12 @@ export default function NegotiationDetailView({
                         globalStyles.statusBadge,
                         {
                           backgroundColor: visit.isVerified
-                            ? scheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7"
-                            : scheme === "dark" ? "rgba(245, 158, 11, 0.2)" : "#FEF3C7",
+                            ? scheme === "dark"
+                              ? "rgba(34, 197, 94, 0.2)"
+                              : "#DCFCE7"
+                            : scheme === "dark"
+                              ? "rgba(245, 158, 11, 0.2)"
+                              : "#FEF3C7",
                         },
                       ]}
                     >
@@ -528,8 +554,12 @@ export default function NegotiationDetailView({
                           fontSize: 10,
                           fontWeight: "600",
                           color: visit.isVerified
-                            ? scheme === "dark" ? "#4ADE80" : "#166534"
-                            : scheme === "dark" ? "#FBBF24" : "#92400E",
+                            ? scheme === "dark"
+                              ? "#4ADE80"
+                              : "#166534"
+                            : scheme === "dark"
+                              ? "#FBBF24"
+                              : "#92400E",
                         }}
                       >
                         {visit.isVerified ? "Verificada" : "Pendiente"}
@@ -542,11 +572,16 @@ export default function NegotiationDetailView({
                   </Text>
 
                   <Text style={[styles.visitDetail, { color: currentColors.mutedForeground }]}>
-                    Asesor: {visit.advisor?.profile ? `${visit.advisor.profile.firstName} ${visit.advisor.profile.lastName}` : visit.advisor?.username}
+                    Asesor:{" "}
+                    {visit.advisor?.profile
+                      ? `${visit.advisor.profile.firstName} ${visit.advisor.profile.lastName}`
+                      : visit.advisor?.username}
                   </Text>
 
                   {visit.observations ? (
-                    <Text style={[styles.visitObservations, { color: currentColors.mutedForeground }]}>
+                    <Text
+                      style={[styles.visitObservations, { color: currentColors.mutedForeground }]}
+                    >
                       Obs: {visit.observations}
                     </Text>
                   ) : null}
@@ -595,16 +630,15 @@ export default function NegotiationDetailView({
                       >
                         {doc.fileName}
                       </Text>
-                      <Text style={{ fontSize: 11, color: currentColors.mutedForeground, marginTop: 2 }}>
+                      <Text
+                        style={{ fontSize: 11, color: currentColors.mutedForeground, marginTop: 2 }}
+                      >
                         Fecha: {doc.date}
                       </Text>
                     </RNView>
 
                     <TouchableOpacity
-                      style={[
-                        styles.viewButton,
-                        { backgroundColor: currentColors.primary + "15" },
-                      ]}
+                      style={[styles.viewButton, { backgroundColor: `${currentColors.primary}15` }]}
                       onPress={handleViewDoc}
                     >
                       <FontAwesome name="eye" size={14} color={currentColors.primary} />
@@ -615,14 +649,12 @@ export default function NegotiationDetailView({
             )}
           </RNView>
         )}
-        
+
         {activeTab === "Comentarios" && (
           <Text style={[styles.commentsText, { color: currentColors.text }]}>
             {observations || "Sin comentarios registrados."}
           </Text>
         )}
-
-
       </RNView>
 
       {/* --- ADD VISIT MODAL --- */}
@@ -638,7 +670,10 @@ export default function NegotiationDetailView({
           }}
         >
           <Pressable
-            style={[localStyles.modalContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}
+            style={[
+              localStyles.modalContainer,
+              { backgroundColor: currentColors.card, borderColor: currentColors.border },
+            ]}
             onPress={(e) => e.stopPropagation()}
           >
             <RNView style={localStyles.modalHeader}>
@@ -652,14 +687,16 @@ export default function NegotiationDetailView({
 
             <ScrollView style={{ flexGrow: 0 }} showsVerticalScrollIndicator={false}>
               {/* Visit Type Dropdown Trigger */}
-              <Text style={[localStyles.label, { color: currentColors.text }]}>
-                Tipo de Visita
-              </Text>
+              <Text style={[localStyles.label, { color: currentColors.text }]}>Tipo de Visita</Text>
               <TouchableOpacity
                 style={[localStyles.selector, { borderColor: currentColors.border }]}
                 onPress={() => setVisitTypeModalVisible(true)}
               >
-                <Text style={{ color: selectedVisitType ? currentColors.text : currentColors.mutedForeground }}>
+                <Text
+                  style={{
+                    color: selectedVisitType ? currentColors.text : currentColors.mutedForeground,
+                  }}
+                >
                   {selectedVisitType ? selectedVisitType.name : "Seleccionar tipo..."}
                 </Text>
                 <FontAwesome name="chevron-down" size={12} color={currentColors.mutedForeground} />
@@ -680,7 +717,15 @@ export default function NegotiationDetailView({
               </TouchableOpacity>
 
               {showDatePicker && (
-                <RNView style={{ borderWidth: 1, borderColor: currentColors.border, borderRadius: 8, overflow: "hidden", marginVertical: 8 }}>
+                <RNView
+                  style={{
+                    borderWidth: 1,
+                    borderColor: currentColors.border,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    marginVertical: 8,
+                  }}
+                >
                   <Calendar
                     current={toLocalYYYYMMDD(visitDate)}
                     onDayPress={(day) => {
@@ -718,7 +763,8 @@ export default function NegotiationDetailView({
                   localStyles.submitButton,
                   {
                     backgroundColor: currentColors.primary,
-                    opacity: (submittingVisit || !selectedVisitType || !visitObservations.trim()) ? 0.6 : 1,
+                    opacity:
+                      submittingVisit || !selectedVisitType || !visitObservations.trim() ? 0.6 : 1,
                   },
                 ]}
                 disabled={submittingVisit || !selectedVisitType || !visitObservations.trim()}
@@ -739,32 +785,55 @@ export default function NegotiationDetailView({
                 onPress={() => setVisitTypeModalVisible(false)}
               >
                 <Pressable
-                  style={[localStyles.inlinePickerContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}
+                  style={[
+                    localStyles.inlinePickerContainer,
+                    { backgroundColor: currentColors.card, borderColor: currentColors.border },
+                  ]}
                   onPress={(e) => e.stopPropagation()}
                 >
                   <RNView style={localStyles.pickerHeader}>
-                    <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>Seleccionar Tipo de Visita</Text>
+                    <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>
+                      Seleccionar Tipo de Visita
+                    </Text>
                     <TouchableOpacity onPress={() => setVisitTypeModalVisible(false)}>
                       <FontAwesome name="close" size={18} color={currentColors.text} />
                     </TouchableOpacity>
                   </RNView>
                   <ScrollView style={{ maxHeight: 300 }} nestedScrollEnabled={true}>
                     {visitTypesList.length === 0 ? (
-                      <Text style={{ color: currentColors.mutedForeground, fontSize: 13, textAlign: "center", paddingVertical: 20 }}>
+                      <Text
+                        style={{
+                          color: currentColors.mutedForeground,
+                          fontSize: 13,
+                          textAlign: "center",
+                          paddingVertical: 20,
+                        }}
+                      >
                         No se encontraron tipos de visita
                       </Text>
                     ) : (
                       visitTypesList.map((t) => (
                         <TouchableOpacity
                           key={t.id}
-                          style={[localStyles.pickerItem, { borderBottomColor: currentColors.border }]}
+                          style={[
+                            localStyles.pickerItem,
+                            { borderBottomColor: currentColors.border },
+                          ]}
                           onPress={() => {
                             setSelectedVisitType(t);
                             setVisitTypeModalVisible(false);
                           }}
                         >
                           <Text style={{ color: currentColors.text, fontSize: 14 }}>{t.name}</Text>
-                          <Text style={{ color: currentColors.mutedForeground, fontSize: 11, marginTop: 2 }}>{t.description}</Text>
+                          <Text
+                            style={{
+                              color: currentColors.mutedForeground,
+                              fontSize: 11,
+                              marginTop: 2,
+                            }}
+                          >
+                            {t.description}
+                          </Text>
                         </TouchableOpacity>
                       ))
                     )}
@@ -1060,5 +1129,4 @@ const localStyles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-
 });

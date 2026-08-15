@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { View, TextInput, StyleSheet, Pressable } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useState } from "react";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Colors from "../constants/Colors";
 
 interface SearchBarProps {

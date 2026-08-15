@@ -1,33 +1,33 @@
-import { Text } from "@/components/Themed";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as DocumentPicker from "expo-document-picker";
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Modal,
   Pressable,
   ScrollView,
-  View,
-  ActivityIndicator,
-  Modal,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import DocumentCard from "@/components/DocumentCard";
 import FilterButton from "@/components/FilterButton";
-import SortButton, { SortOrder } from "@/components/SortButton";
 import SearchBar from "@/components/SearchBar";
+import SortButton, { SortOrder } from "@/components/SortButton";
+import { Text } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
 import {
-  getNegotiationDocuments,
+  createNegotiationDocument,
   DocumentItem,
+  DocumentTypeItem,
+  getDocumentTypes,
+  getNegotiationDocuments,
   getNegotiations,
   Negotiation,
-  getDocumentTypes,
-  DocumentTypeItem,
   uploadDocumentFile,
-  createNegotiationDocument,
 } from "@/services/ClientServices";
 
 export default function DocumentationScreen() {
@@ -76,10 +76,7 @@ export default function DocumentationScreen() {
     setModalVisible(true);
     setLoadingPickers(true);
     try {
-      const [negs, types] = await Promise.all([
-        getNegotiations(),
-        getDocumentTypes(),
-      ]);
+      const [negs, types] = await Promise.all([getNegotiations(), getDocumentTypes()]);
       setNegotiations(negs);
       setDocumentTypes(types);
     } catch (err) {
@@ -127,7 +124,7 @@ export default function DocumentationScreen() {
       const uploadResponse = await uploadDocumentFile(
         selectedFile.uri,
         selectedFile.name,
-        selectedFile.mimeType || "application/octet-stream"
+        selectedFile.mimeType || "application/octet-stream",
       );
 
       await createNegotiationDocument({
@@ -226,12 +223,7 @@ export default function DocumentationScreen() {
         ]}
         onPress={openUploadModal}
       >
-        <FontAwesome
-          name="upload"
-          size={16}
-          color="white"
-          style={globalStyles.actionIcon}
-        />
+        <FontAwesome name="upload" size={16} color="white" style={globalStyles.actionIcon} />
         <Text style={globalStyles.actionButtonText}>Subir Documento</Text>
       </Pressable>
 
@@ -248,15 +240,11 @@ export default function DocumentationScreen() {
           <Text style={globalStyles.title}>Documentación</Text>
         </View>
 
-        <Text
-          style={[globalStyles.subtitle, { color: currentColors.mutedForeground }]}
-        >
+        <Text style={[globalStyles.subtitle, { color: currentColors.mutedForeground }]}>
           Gestión de archivos contractuales y aprobaciones de carpetas.
         </Text>
 
-        <View
-          style={[globalStyles.divider, { backgroundColor: currentColors.border }]}
-        />
+        <View style={[globalStyles.divider, { backgroundColor: currentColors.border }]} />
 
         <Text style={[globalStyles.totalCountText, { color: currentColors.mutedForeground }]}>
           Total documentos: {filteredDocuments.length}
@@ -297,9 +285,16 @@ export default function DocumentationScreen() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={localStyles.modalOverlay}>
-          <View style={[localStyles.modalContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+          <View
+            style={[
+              localStyles.modalContainer,
+              { backgroundColor: currentColors.card, borderColor: currentColors.border },
+            ]}
+          >
             <View style={localStyles.modalHeader}>
-              <Text style={[localStyles.modalTitle, { color: currentColors.text }]}>Subir Documento</Text>
+              <Text style={[localStyles.modalTitle, { color: currentColors.text }]}>
+                Subir Documento
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <FontAwesome name="times" size={20} color={currentColors.text} />
               </TouchableOpacity>
@@ -308,7 +303,9 @@ export default function DocumentationScreen() {
             {loadingPickers ? (
               <View style={localStyles.pickerLoader}>
                 <ActivityIndicator size="small" color={currentColors.primary} />
-                <Text style={{ color: currentColors.mutedForeground, marginTop: 8 }}>Cargando datos...</Text>
+                <Text style={{ color: currentColors.mutedForeground, marginTop: 8 }}>
+                  Cargando datos...
+                </Text>
               </View>
             ) : (
               <ScrollView style={localStyles.modalForm}>
@@ -317,27 +314,52 @@ export default function DocumentationScreen() {
                   style={[localStyles.selectButton, { borderColor: currentColors.border }]}
                   onPress={() => setNegPickerVisible(true)}
                 >
-                  <Text style={{ color: selectedNegotiation ? currentColors.text : currentColors.mutedForeground }}>
-                    {selectedNegotiation ? selectedNegotiation.clientName : "Seleccionar negociación..."}
+                  <Text
+                    style={{
+                      color: selectedNegotiation
+                        ? currentColors.text
+                        : currentColors.mutedForeground,
+                    }}
+                  >
+                    {selectedNegotiation
+                      ? selectedNegotiation.clientName
+                      : "Seleccionar negociación..."}
                   </Text>
-                  <FontAwesome name="chevron-down" size={12} color={currentColors.mutedForeground} />
+                  <FontAwesome
+                    name="chevron-down"
+                    size={12}
+                    color={currentColors.mutedForeground}
+                  />
                 </TouchableOpacity>
 
-                <Text style={[localStyles.label, { color: currentColors.text }]}>Tipo de documento</Text>
+                <Text style={[localStyles.label, { color: currentColors.text }]}>
+                  Tipo de documento
+                </Text>
                 <TouchableOpacity
                   style={[localStyles.selectButton, { borderColor: currentColors.border }]}
                   onPress={() => setTypePickerVisible(true)}
                 >
-                  <Text style={{ color: selectedDocType ? currentColors.text : currentColors.mutedForeground }}>
+                  <Text
+                    style={{
+                      color: selectedDocType ? currentColors.text : currentColors.mutedForeground,
+                    }}
+                  >
                     {selectedDocType ? selectedDocType.name : "Seleccionar tipo..."}
                   </Text>
-                  <FontAwesome name="chevron-down" size={12} color={currentColors.mutedForeground} />
+                  <FontAwesome
+                    name="chevron-down"
+                    size={12}
+                    color={currentColors.mutedForeground}
+                  />
                 </TouchableOpacity>
 
                 <Text style={[localStyles.label, { color: currentColors.text }]}>Archivo</Text>
                 {selectedFile ? (
                   <View style={[localStyles.fileRow, { borderColor: currentColors.border }]}>
-                    <Text style={[localStyles.fileName, { color: currentColors.text }]} numberOfLines={1}>
+                    <Text
+                      style={[localStyles.fileName, { color: currentColors.text }]}
+                      numberOfLines={1}
+                    >
                       {selectedFile.name}
                     </Text>
                     <TouchableOpacity onPress={() => setSelectedFile(null)}>
@@ -361,7 +383,10 @@ export default function DocumentationScreen() {
                     localStyles.submitButton,
                     {
                       backgroundColor: currentColors.primary,
-                      opacity: (uploading || !selectedFile || !selectedNegotiation || !selectedDocType) ? 0.6 : 1,
+                      opacity:
+                        uploading || !selectedFile || !selectedNegotiation || !selectedDocType
+                          ? 0.6
+                          : 1,
                     },
                   ]}
                   disabled={uploading || !selectedFile || !selectedNegotiation || !selectedDocType}
@@ -378,11 +403,18 @@ export default function DocumentationScreen() {
           </View>
         </View>
 
-         {negPickerVisible && (
+        {negPickerVisible && (
           <View style={localStyles.pickerOverlay}>
-            <View style={[localStyles.pickerContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+            <View
+              style={[
+                localStyles.pickerContainer,
+                { backgroundColor: currentColors.card, borderColor: currentColors.border },
+              ]}
+            >
               <View style={localStyles.pickerHeader}>
-                <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>Seleccionar Negociación</Text>
+                <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>
+                  Seleccionar Negociación
+                </Text>
                 <TouchableOpacity onPress={() => setNegPickerVisible(false)}>
                   <FontAwesome name="close" size={18} color={currentColors.text} />
                 </TouchableOpacity>
@@ -398,7 +430,9 @@ export default function DocumentationScreen() {
                     }}
                   >
                     <Text style={{ color: currentColors.text }}>{n.clientName}</Text>
-                    <Text style={{ color: currentColors.mutedForeground, fontSize: 12 }}>{n.planName}</Text>
+                    <Text style={{ color: currentColors.mutedForeground, fontSize: 12 }}>
+                      {n.planName}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -408,9 +442,16 @@ export default function DocumentationScreen() {
 
         {typePickerVisible && (
           <View style={localStyles.pickerOverlay}>
-            <View style={[localStyles.pickerContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
+            <View
+              style={[
+                localStyles.pickerContainer,
+                { backgroundColor: currentColors.card, borderColor: currentColors.border },
+              ]}
+            >
               <View style={localStyles.pickerHeader}>
-                <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>Seleccionar Tipo</Text>
+                <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>
+                  Seleccionar Tipo
+                </Text>
                 <TouchableOpacity onPress={() => setTypePickerVisible(false)}>
                   <FontAwesome name="close" size={18} color={currentColors.text} />
                 </TouchableOpacity>

@@ -30,11 +30,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store",
-      "@react-native-community/datetimepicker"
-    ],
+    "plugins": ["expo-router", "expo-secure-store", "@react-native-community/datetimepicker"],
     "experiments": {
       "typedRoutes": true
     },

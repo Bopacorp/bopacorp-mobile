@@ -1,16 +1,16 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import ClientCard from "@/components/ClientCard";
 import FilterButton from "@/components/FilterButton";
-import SortButton, { SortOrder } from "@/components/SortButton";
 import SearchBar from "@/components/SearchBar";
+import SortButton, { SortOrder } from "@/components/SortButton";
 import { Text, View } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
 import { BusinessClient, getBusinessClients } from "@/services/ClientServices";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 
 const LIMIT = 50;
 
@@ -93,19 +93,9 @@ export default function ClientsScreen() {
 
   if (loading) {
     return (
-      <View
-        style={[
-          globalStyles.loadingContainer,
-          { backgroundColor: currentColors.background },
-        ]}
-      >
+      <View style={[globalStyles.loadingContainer, { backgroundColor: currentColors.background }]}>
         <ActivityIndicator size="large" color={currentColors.primary} />
-        <Text
-          style={[
-            globalStyles.loadingText,
-            { color: currentColors.mutedForeground },
-          ]}
-        >
+        <Text style={[globalStyles.loadingText, { color: currentColors.mutedForeground }]}>
           Cargando clientes...
         </Text>
       </View>
@@ -113,10 +103,7 @@ export default function ClientsScreen() {
   }
   return (
     <ScrollView
-      style={[
-        globalStyles.container,
-        { backgroundColor: currentColors.background },
-      ]}
+      style={[globalStyles.container, { backgroundColor: currentColors.background }]}
       contentContainerStyle={globalStyles.scrollPadding}
       showsVerticalScrollIndicator={false}
     >
@@ -144,18 +131,10 @@ export default function ClientsScreen() {
       </View>
 
       <TouchableOpacity
-        style={[
-          globalStyles.actionButton,
-          { backgroundColor: currentColors.primary },
-        ]}
+        style={[globalStyles.actionButton, { backgroundColor: currentColors.primary }]}
         onPress={() => router.push("/create-client")}
       >
-        <FontAwesome
-          name="plus"
-          size={14}
-          color="white"
-          style={globalStyles.actionIcon}
-        />
+        <FontAwesome name="plus" size={14} color="white" style={globalStyles.actionIcon} />
 
         <Text style={globalStyles.actionButtonText}>Nuevo cliente</Text>
       </TouchableOpacity>
@@ -173,39 +152,19 @@ export default function ClientsScreen() {
           <Text style={globalStyles.title}>Clientes</Text>
         </View>
 
-        <Text
-          style={[
-            globalStyles.subtitle,
-            { color: currentColors.mutedForeground },
-          ]}
-        >
+        <Text style={[globalStyles.subtitle, { color: currentColors.mutedForeground }]}>
           Listado de clientes corporativos y gestión de cuentas.
         </Text>
 
-        <View
-          style={[
-            globalStyles.divider,
-            { backgroundColor: currentColors.border },
-          ]}
-        />
+        <View style={[globalStyles.divider, { backgroundColor: currentColors.border }]} />
 
-        <Text
-          style={[
-            globalStyles.totalCountText,
-            { color: currentColors.mutedForeground },
-          ]}
-        >
+        <Text style={[globalStyles.totalCountText, { color: currentColors.mutedForeground }]}>
           Total clientes: {filteredClients.length}
         </Text>
 
         <View style={globalStyles.listContainer}>
           {filteredClients.length === 0 ? (
-            <Text
-              style={[
-                globalStyles.noResultsText,
-                { color: currentColors.mutedForeground },
-              ]}
-            >
+            <Text style={[globalStyles.noResultsText, { color: currentColors.mutedForeground }]}>
               No se encontraron resultados
             </Text>
           ) : (
@@ -242,12 +201,7 @@ export default function ClientsScreen() {
             {loadingMore ? (
               <ActivityIndicator size="small" color={currentColors.primary} />
             ) : (
-              <Text
-                style={[
-                  styles.loadMoreText,
-                  { color: currentColors.primary },
-                ]}
-              >
+              <Text style={[styles.loadMoreText, { color: currentColors.primary }]}>
                 Cargar más
               </Text>
             )}

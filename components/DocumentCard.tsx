@@ -1,11 +1,10 @@
-import React from "react";
-import { View, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as WebBrowser from "expo-web-browser";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
-import { getAccessToken, API_URL } from "@/services/api";
+import { API_URL, getAccessToken } from "@/services/api";
 import { deleteNegotiationDocument } from "@/services/ClientServices";
 
 export interface DocumentItem {
@@ -22,11 +21,7 @@ interface DocumentCardProps {
   onRefresh?: () => void;
 }
 
-export default function DocumentCard({
-  document,
-  colorScheme,
-  onRefresh,
-}: DocumentCardProps) {
+export default function DocumentCard({ document, colorScheme, onRefresh }: DocumentCardProps) {
   const currentColors = Colors[colorScheme ?? "light"];
 
   const handleView = async () => {
@@ -42,18 +37,14 @@ export default function DocumentCard({
   };
 
   const confirmDelete = () => {
-    Alert.alert(
-      "Eliminar Documento",
-      "¿Está seguro de que desea eliminar este documento?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: handleDelete,
-        },
-      ]
-    );
+    Alert.alert("Eliminar Documento", "¿Está seguro de que desea eliminar este documento?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: handleDelete,
+      },
+    ]);
   };
 
   const handleDelete = async () => {
@@ -79,17 +70,11 @@ export default function DocumentCard({
         },
       ]}
     >
-      <Text style={globalStyles.clientName}>
-        {document.fileName}
-      </Text>
+      <Text style={globalStyles.clientName}>{document.fileName}</Text>
 
-      <Text style={globalStyles.clientInfo}>
-        Empresa: {document.company}
-      </Text>
+      <Text style={globalStyles.clientInfo}>Empresa: {document.company}</Text>
 
-      <Text style={globalStyles.clientInfo}>
-        Fecha: {document.date}
-      </Text>
+      <Text style={globalStyles.clientInfo}>Fecha: {document.date}</Text>
 
       <View
         style={[
@@ -103,7 +88,7 @@ export default function DocumentCard({
       <View style={localCardStyles.actionRow}>
         <View style={localCardStyles.leftActions}>
           <TouchableOpacity
-            style={[localCardStyles.actionBtn, { backgroundColor: currentColors.primary + "15" }]}
+            style={[localCardStyles.actionBtn, { backgroundColor: `${currentColors.primary}15` }]}
             onPress={handleView}
           >
             <FontAwesome name="eye" size={14} color={currentColors.primary} />

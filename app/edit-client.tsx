@@ -1,39 +1,31 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import {
+  View as RNView,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackButton from "@/components/BackButton";
 import { Text, View } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { globalStyles } from "@/constants/Styles";
 import { updateBusinessClient } from "@/services/ClientServices";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Switch,
-  TextInput,
-  TouchableOpacity,
-  View as RNView,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function EditClientScreen() {
   const params = useLocalSearchParams();
   const id = params.id?.toString() || "";
-  const [ruc, setRuc] = useState(params.ruc?.toString() || "");
+  const [ruc, _setRuc] = useState(params.ruc?.toString() || "");
 
-  const [businessName, setBusinessName] = useState(
-    params.businessName?.toString() || "",
-  );
-  const [contactName, setContactName] = useState(
-    params.contactName?.toString() || "",
-  );
-  const [contactPhone, setContactPhone] = useState(
-    params.contactPhone?.toString() || "",
-  );
-  const [contactEmail, setContactEmail] = useState(
-    params.contactEmail?.toString() || "",
-  );
+  const [businessName, _setBusinessName] = useState(params.businessName?.toString() || "");
+  const [contactName, setContactName] = useState(params.contactName?.toString() || "");
+  const [contactPhone, setContactPhone] = useState(params.contactPhone?.toString() || "");
+  const [contactEmail, setContactEmail] = useState(params.contactEmail?.toString() || "");
   const [address, setAddress] = useState(params.address?.toString() || "");
   const [isActive, setIsActive] = useState(() => params.isActive !== "false");
 
@@ -66,18 +58,13 @@ export default function EditClientScreen() {
         globalStyles.container,
         { backgroundColor: currentColors.background, paddingTop: insets.top },
       ]}
-      contentContainerStyle={[
-        globalStyles.scrollPadding,
-        { paddingBottom: 40 },
-      ]}
+      contentContainerStyle={[globalStyles.scrollPadding, { paddingBottom: 40 }]}
     >
       <View style={{ marginBottom: 20, backgroundColor: "transparent" }}>
         <BackButton />
       </View>
 
-      <Text style={[styles.title, { color: currentColors.text }]}>
-        Editar cliente
-      </Text>
+      <Text style={[styles.title, { color: currentColors.text }]}>Editar cliente</Text>
 
       <View
         style={[
@@ -88,9 +75,7 @@ export default function EditClientScreen() {
           },
         ]}
       >
-        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>
-          RUC{" "}
-        </Text>
+        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>RUC </Text>
         <Text
           style={{
             fontSize: 15,
@@ -116,9 +101,7 @@ export default function EditClientScreen() {
           {businessName}
         </Text>
 
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Contacto
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Contacto</Text>
         <TextInput
           style={[
             styles.input,
@@ -133,9 +116,7 @@ export default function EditClientScreen() {
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Teléfono
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Teléfono</Text>
         <TextInput
           style={[
             styles.input,
@@ -165,9 +146,7 @@ export default function EditClientScreen() {
           placeholderTextColor={placeholderColor}
         />
 
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Dirección
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Dirección</Text>
         <TextInput
           style={[
             styles.input,
@@ -185,25 +164,15 @@ export default function EditClientScreen() {
         />
 
         <RNView style={styles.switchRow}>
-          <Text style={[styles.label, { color: currentColors.text, marginTop: 0 }]}>
-            Activo
-          </Text>
+          <Text style={[styles.label, { color: currentColors.text, marginTop: 0 }]}>Activo</Text>
           <Switch value={isActive} onValueChange={setIsActive} />
         </RNView>
 
         <TouchableOpacity
-          style={[
-            styles.saveButton,
-            { backgroundColor: currentColors.primary },
-          ]}
+          style={[styles.saveButton, { backgroundColor: currentColors.primary }]}
           onPress={handleSave}
         >
-          <FontAwesome
-            name="save"
-            size={16}
-            color="white"
-            style={{ marginRight: 8 }}
-          />
+          <FontAwesome name="save" size={16} color="white" style={{ marginRight: 8 }} />
           <Text style={styles.saveButtonText}>Guardar cambios</Text>
         </TouchableOpacity>
       </View>

@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useColorScheme as nativeUseColorScheme } from "react-native";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { getStorageItem, setStorageItem } from "../services/storage";
 
 type ColorScheme = "light" | "dark";

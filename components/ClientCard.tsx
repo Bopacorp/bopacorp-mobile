@@ -1,5 +1,4 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { Text } from "@/components/Themed";
@@ -12,11 +11,7 @@ interface ClientCardProps {
   onPress?: () => void;
 }
 
-export default function ClientCard({
-  client,
-  colorScheme,
-  onPress,
-}: ClientCardProps) {
+export default function ClientCard({ client, colorScheme, onPress }: ClientCardProps) {
   const c = Colors[colorScheme ?? "light"];
 
   const initials = client.businessName
@@ -39,12 +34,8 @@ export default function ClientCard({
         </View>
 
         <View style={styles.headerCenter}>
-          <Text style={[styles.name, { color: c.text }]}>
-            {client.businessName}
-          </Text>
-          <Text style={[styles.ruc, { color: c.mutedForeground }]}>
-            {client.ruc}
-          </Text>
+          <Text style={[styles.name, { color: c.text }]}>{client.businessName}</Text>
+          <Text style={[styles.ruc, { color: c.mutedForeground }]}>{client.ruc}</Text>
         </View>
 
         <View
@@ -52,8 +43,12 @@ export default function ClientCard({
             styles.badge,
             {
               backgroundColor: client.isActive
-                ? colorScheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7"
-                : colorScheme === "dark" ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2",
+                ? colorScheme === "dark"
+                  ? "rgba(34, 197, 94, 0.2)"
+                  : "#DCFCE7"
+                : colorScheme === "dark"
+                  ? "rgba(239, 68, 68, 0.2)"
+                  : "#FEE2E2",
             },
           ]}
         >
@@ -62,8 +57,12 @@ export default function ClientCard({
               styles.badgeText,
               {
                 color: client.isActive
-                  ? colorScheme === "dark" ? "#4ADE80" : "#166534"
-                  : colorScheme === "dark" ? "#F87171" : "#991B1B",
+                  ? colorScheme === "dark"
+                    ? "#4ADE80"
+                    : "#166534"
+                  : colorScheme === "dark"
+                    ? "#F87171"
+                    : "#991B1B",
               },
             ]}
           >
@@ -79,18 +78,12 @@ export default function ClientCard({
       <View style={styles.meta}>
         <View style={styles.metaItem}>
           <Ionicons name="person-outline" size={13} color={c.mutedForeground} />
-          <Text style={[styles.metaText, { color: c.mutedForeground }]}>
-            {client.contactName}
-          </Text>
+          <Text style={[styles.metaText, { color: c.mutedForeground }]}>{client.contactName}</Text>
         </View>
 
         {client.contactPhone ? (
           <View style={styles.metaItem}>
-            <Ionicons
-              name="calendar-outline"
-              size={13}
-              color={c.mutedForeground}
-            />
+            <Ionicons name="calendar-outline" size={13} color={c.mutedForeground} />
             <Text style={[styles.metaText, { color: c.mutedForeground }]}>
               {new Date(client.createdAt).toLocaleDateString()}
             </Text>
@@ -98,22 +91,14 @@ export default function ClientCard({
         ) : null}
 
         <View style={styles.metaItem}>
-          <Ionicons
-            name="person-circle-outline"
-            size={13}
-            color={c.mutedForeground}
-          />
-          <Text style={[styles.metaText, { color: c.mutedForeground }]}>
-            {client.advisorName}
-          </Text>
+          <Ionicons name="person-circle-outline" size={13} color={c.mutedForeground} />
+          <Text style={[styles.metaText, { color: c.mutedForeground }]}>{client.advisorName}</Text>
         </View>
       </View>
 
       {/* ── footer: ver detalle ── */}
       <View style={styles.footer}>
-        <Text style={[styles.footerLink, { color: c.primary }]}>
-          Ver detalle
-        </Text>
+        <Text style={[styles.footerLink, { color: c.primary }]}>Ver detalle</Text>
         <Ionicons name="chevron-forward" size={14} color={c.primary} />
       </View>
     </TouchableOpacity>

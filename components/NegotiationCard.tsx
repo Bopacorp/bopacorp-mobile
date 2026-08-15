@@ -1,10 +1,8 @@
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/Themed";
+import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { Negotiation } from "@/services/ClientServices";
-import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { useColorScheme } from "@/components/useColorScheme";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 interface NegotiationCardProps {
   negotiation: Negotiation;
@@ -87,20 +85,12 @@ export default function NegotiationCard({
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      style={[
-        styles.row,
-        { borderBottomColor: currentColors.border ?? "#F3F4F6" },
-      ]}
+      style={[styles.row, { borderBottomColor: currentColors.border ?? "#F3F4F6" }]}
       onPress={onPress}
     >
       {/* Empresa */}
       <View style={styles.colEmpresa}>
-        <Text
-          style={[
-            styles.empresa,
-            { color: currentColors.text },
-          ]}
-        >
+        <Text style={[styles.empresa, { color: currentColors.text }]}>
           {negotiation.clientName}
         </Text>
       </View>
@@ -116,12 +106,16 @@ export default function NegotiationCard({
 
       {/* Fecha inicio */}
       <View style={styles.colFecha}>
-        <Text style={[styles.cell, { color: currentColors.mutedForeground }]}>{negotiation.date ?? "—"}</Text>
+        <Text style={[styles.cell, { color: currentColors.mutedForeground }]}>
+          {negotiation.date ?? "—"}
+        </Text>
       </View>
 
       {/* Cierre estimado */}
       <View style={styles.colCierre}>
-        <Text style={[styles.cell, { color: currentColors.mutedForeground }]}>{negotiation.estimatedCloseDate ?? "—"}</Text>
+        <Text style={[styles.cell, { color: currentColors.mutedForeground }]}>
+          {negotiation.estimatedCloseDate ?? "—"}
+        </Text>
       </View>
     </TouchableOpacity>
   );

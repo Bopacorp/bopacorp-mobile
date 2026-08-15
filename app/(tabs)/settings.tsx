@@ -1,11 +1,10 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React from "react";
-import { Pressable, ScrollView, StyleSheet, Switch } from "react-native";
 import { useNavigation } from "expo-router";
-import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext";
+import { Pressable, ScrollView, StyleSheet, Switch } from "react-native";
 import { Text, View } from "@/components/Themed";
 import Colors from "../../constants/Colors";
+import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
@@ -58,13 +57,9 @@ export default function SettingsScreen() {
         ]}
       >
         <View style={[styles.avatarContainer, { backgroundColor: currentColors.secondary }]}>
-          <Text style={[styles.avatarText, { color: currentColors.text }]}>
-            {getInitials()}
-          </Text>
+          <Text style={[styles.avatarText, { color: currentColors.text }]}>{getInitials()}</Text>
         </View>
-        <Text style={[styles.nameText, { color: currentColors.text }]}>
-          {getFullName()}
-        </Text>
+        <Text style={[styles.nameText, { color: currentColors.text }]}>{getFullName()}</Text>
         <Text style={[styles.emailText, { color: currentColors.mutedForeground }]}>
           {user?.email || "asesor@bopacorp.com"}
         </Text>
@@ -88,7 +83,12 @@ export default function SettingsScreen() {
         ]}
       >
         <View style={styles.menuItem}>
-          <View style={[styles.iconBox, { backgroundColor: colorScheme === "dark" ? "rgba(0, 127, 206, 0.15)" : "#E3F2FD" }]}>
+          <View
+            style={[
+              styles.iconBox,
+              { backgroundColor: colorScheme === "dark" ? "rgba(0, 127, 206, 0.15)" : "#E3F2FD" },
+            ]}
+          >
             <FontAwesome
               name={colorScheme === "dark" ? "moon-o" : "sun-o"}
               size={18}
@@ -131,9 +131,7 @@ export default function SettingsScreen() {
             color={currentColors.tabIconDefault}
             style={styles.infoIcon}
           />
-          <Text style={[styles.infoText, { color: currentColors.text }]}>
-            Versión 1.1.0
-          </Text>
+          <Text style={[styles.infoText, { color: currentColors.text }]}>Versión 1.1.0</Text>
         </View>
         <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
 
@@ -144,9 +142,7 @@ export default function SettingsScreen() {
             color={currentColors.tabIconDefault}
             style={styles.infoIcon}
           />
-          <Text style={[styles.infoText, { color: currentColors.text }]}>
-            BOPACORPSA CRM Móvil
-          </Text>
+          <Text style={[styles.infoText, { color: currentColors.text }]}>BOPACORPSA CRM Móvil</Text>
         </View>
         <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
 
@@ -165,12 +161,7 @@ export default function SettingsScreen() {
 
       {}
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
-        <FontAwesome
-          name="sign-out"
-          size={18}
-          color="#F44336"
-          style={{ marginRight: 10 }}
-        />
+        <FontAwesome name="sign-out" size={18} color="#F44336" style={{ marginRight: 10 }} />
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </Pressable>
     </ScrollView>

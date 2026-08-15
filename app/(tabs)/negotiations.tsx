@@ -1,14 +1,6 @@
-import FilterButton from "@/components/FilterButton";
-import NegotiationCard from "@/components/NegotiationCard";
-import SearchBar from "@/components/SearchBar";
-import { Text, View } from "@/components/Themed";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
-import { globalStyles } from "@/constants/Styles";
-import { Negotiation, getNegotiations } from "@/services/ClientServices";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   View as RNView,
@@ -16,8 +8,16 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import FilterButton from "@/components/FilterButton";
+import NegotiationCard from "@/components/NegotiationCard";
+import SearchBar from "@/components/SearchBar";
+import { Text, View } from "@/components/Themed";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { globalStyles } from "@/constants/Styles";
+import { getNegotiations, Negotiation } from "@/services/ClientServices";
 
-const TABLE_HEADERS = [
+const _TABLE_HEADERS = [
   { label: "Empresa", flex: 2.2 },
   { label: "Estado", flex: 1.4 },
   { label: "Inicio", flex: 1.1 },
@@ -32,7 +32,14 @@ export default function NegotiationsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Todos");
   const [sortOrder, setSortOrder] = useState<
-    "inicioAsc" | "inicioDesc" | "cierreAsc" | "cierreDesc" | "empresaAsc" | "empresaDesc" | "estadoGroup" | "default"
+    | "inicioAsc"
+    | "inicioDesc"
+    | "cierreAsc"
+    | "cierreDesc"
+    | "empresaAsc"
+    | "empresaDesc"
+    | "estadoGroup"
+    | "default"
   >("default");
 
   const handleEmpresaSort = () => {
@@ -120,16 +127,12 @@ export default function NegotiationsScreen() {
 
     const cierreA =
       a.estimatedCloseDate && a.estimatedCloseDate !== "N/A"
-        ? new Date(
-            a.estimatedCloseDate.split("/").reverse().join("-"),
-          ).getTime()
+        ? new Date(a.estimatedCloseDate.split("/").reverse().join("-")).getTime()
         : 0;
 
     const cierreB =
       b.estimatedCloseDate && b.estimatedCloseDate !== "N/A"
-        ? new Date(
-            b.estimatedCloseDate.split("/").reverse().join("-"),
-          ).getTime()
+        ? new Date(b.estimatedCloseDate.split("/").reverse().join("-")).getTime()
         : 0;
 
     switch (sortOrder) {
@@ -146,10 +149,14 @@ export default function NegotiationsScreen() {
         return cierreB - cierreA;
 
       case "empresaAsc":
-        return (a.clientName || "").localeCompare(b.clientName || "", "es", { sensitivity: "base" });
+        return (a.clientName || "").localeCompare(b.clientName || "", "es", {
+          sensitivity: "base",
+        });
 
       case "empresaDesc":
-        return (b.clientName || "").localeCompare(a.clientName || "", "es", { sensitivity: "base" });
+        return (b.clientName || "").localeCompare(a.clientName || "", "es", {
+          sensitivity: "base",
+        });
 
       case "estadoGroup":
         return (a.status || "").localeCompare(b.status || "", "es", { sensitivity: "base" });
@@ -161,19 +168,9 @@ export default function NegotiationsScreen() {
 
   if (loading) {
     return (
-      <View
-        style={[
-          globalStyles.loadingContainer,
-          { backgroundColor: currentColors.background },
-        ]}
-      >
+      <View style={[globalStyles.loadingContainer, { backgroundColor: currentColors.background }]}>
         <ActivityIndicator size="large" color={currentColors.primary} />
-        <Text
-          style={[
-            globalStyles.loadingText,
-            { color: currentColors.mutedForeground },
-          ]}
-        >
+        <Text style={[globalStyles.loadingText, { color: currentColors.mutedForeground }]}>
           Cargando negociaciones...
         </Text>
       </View>
@@ -182,14 +179,8 @@ export default function NegotiationsScreen() {
 
   return (
     <ScrollView
-      style={[
-        globalStyles.container,
-        { backgroundColor: currentColors.background },
-      ]}
-      contentContainerStyle={[
-        globalStyles.scrollPadding,
-        { paddingHorizontal: 10 },
-      ]}
+      style={[globalStyles.container, { backgroundColor: currentColors.background }]}
+      contentContainerStyle={[globalStyles.scrollPadding, { paddingHorizontal: 10 }]}
       showsVerticalScrollIndicator={false}
     >
       <RNView style={globalStyles.searchRow}>
@@ -212,18 +203,10 @@ export default function NegotiationsScreen() {
       </RNView>
 
       <TouchableOpacity
-        style={[
-          globalStyles.actionButton,
-          { backgroundColor: currentColors.primary },
-        ]}
+        style={[globalStyles.actionButton, { backgroundColor: currentColors.primary }]}
         onPress={() => router.push("/create-negotiation")}
       >
-        <FontAwesome
-          name="plus"
-          size={14}
-          color="white"
-          style={globalStyles.actionIcon}
-        />
+        <FontAwesome name="plus" size={14} color="white" style={globalStyles.actionIcon} />
         <Text style={globalStyles.actionButtonText}>Nueva negociación</Text>
       </TouchableOpacity>
 
@@ -241,28 +224,13 @@ export default function NegotiationsScreen() {
           <Text style={globalStyles.title}>Negociaciones</Text>
         </RNView>
 
-        <Text
-          style={[
-            globalStyles.subtitle,
-            { color: currentColors.mutedForeground },
-          ]}
-        >
+        <Text style={[globalStyles.subtitle, { color: currentColors.mutedForeground }]}>
           Gestión de cuentas, contratos y visitas comerciales
         </Text>
 
-        <RNView
-          style={[
-            globalStyles.divider,
-            { backgroundColor: currentColors.border },
-          ]}
-        />
+        <RNView style={[globalStyles.divider, { backgroundColor: currentColors.border }]} />
 
-        <Text
-          style={[
-            globalStyles.totalCountText,
-            { color: currentColors.mutedForeground },
-          ]}
-        >
+        <Text style={[globalStyles.totalCountText, { color: currentColors.mutedForeground }]}>
           Total negociaciones: {filteredNegotiations.length}
         </Text>
 
@@ -283,19 +251,14 @@ export default function NegotiationsScreen() {
               },
             ]}
           >
-            <TouchableOpacity
-              style={{ flex: 2.4 }}
-              onPress={handleEmpresaSort}
-            >
+            <TouchableOpacity style={{ flex: 2.4 }} onPress={handleEmpresaSort}>
               <Text style={[styles.headerText, { color: currentColors.text }]}>
-                Empresa {sortOrder === "empresaAsc" ? "↑" : sortOrder === "empresaDesc" ? "↓" : "↑↓"}
+                Empresa{" "}
+                {sortOrder === "empresaAsc" ? "↑" : sortOrder === "empresaDesc" ? "↓" : "↑↓"}
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={{ flex: 1.2 }}
-              onPress={handleEstadoSort}
-            >
+            <TouchableOpacity style={{ flex: 1.2 }} onPress={handleEstadoSort}>
               <Text style={[styles.headerText, { color: currentColors.text }]}>
                 Estado {sortOrder === "estadoGroup" ? "⊞" : "↑↓"}
               </Text>
@@ -303,22 +266,14 @@ export default function NegotiationsScreen() {
 
             <TouchableOpacity
               style={{ flex: 1.1 }}
-              onPress={() =>
-                setSortOrder(
-                  sortOrder === "inicioAsc" ? "inicioDesc" : "inicioAsc",
-                )
-              }
+              onPress={() => setSortOrder(sortOrder === "inicioAsc" ? "inicioDesc" : "inicioAsc")}
             >
               <Text style={[styles.headerText, { color: currentColors.text }]}>Inicio ↑↓</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={{ flex: 1.1 }}
-              onPress={() =>
-                setSortOrder(
-                  sortOrder === "cierreAsc" ? "cierreDesc" : "cierreAsc",
-                )
-              }
+              onPress={() => setSortOrder(sortOrder === "cierreAsc" ? "cierreDesc" : "cierreAsc")}
             >
               <Text style={[styles.headerText, { color: currentColors.text }]}>Fin ↑↓</Text>
             </TouchableOpacity>
@@ -371,12 +326,7 @@ export default function NegotiationsScreen() {
               {loadingMore ? (
                 <ActivityIndicator size="small" color={currentColors.primary} />
               ) : (
-                <Text
-                  style={[
-                    styles.loadMoreText,
-                    { color: currentColors.primary },
-                  ]}
-                >
+                <Text style={[styles.loadMoreText, { color: currentColors.primary }]}>
                   Cargar más
                 </Text>
               )}
@@ -384,10 +334,7 @@ export default function NegotiationsScreen() {
           )}
 
           <RNView
-            style={[
-              styles.tableFooter,
-              { borderTopColor: currentColors.border ?? "#E5E7EB" },
-            ]}
+            style={[styles.tableFooter, { borderTopColor: currentColors.border ?? "#E5E7EB" }]}
           >
             <Text style={[styles.totalText, { color: currentColors.mutedForeground }]}>
               {filteredNegotiations.length} resultado

@@ -1,10 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { apiClient, setAccessToken, setOnLogout } from "../services/api";
-import {
-  getStorageItem,
-  removeStorageItem,
-  setStorageItem,
-} from "../services/storage";
+import { getStorageItem, removeStorageItem, setStorageItem } from "../services/storage";
 
 export type Role = "Asesor" | "Admin" | null;
 
@@ -81,8 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           refreshToken,
         });
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-          response;
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response;
         setAccessToken(newAccessToken);
 
         const userProfile: any = await apiClient.get("/api/v1/auth/me");
@@ -155,9 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ role, setRole, user, isLoading, login, logout }}
-    >
+    <AuthContext.Provider value={{ role, setRole, user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

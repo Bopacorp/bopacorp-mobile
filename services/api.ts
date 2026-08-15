@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getStorageItem, setStorageItem, removeStorageItem } from "./storage";
+import { getStorageItem, setStorageItem } from "./storage";
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -29,7 +29,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 let isRefreshing = false;
@@ -93,8 +93,9 @@ apiClient.interceptors.response.use(
             refreshToken,
           });
 
-          if (response.data && response.data.success) {
-            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
+          if (response.data?.success) {
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+              response.data.data;
 
             setAccessToken(newAccessToken);
             await setStorageItem("refreshToken", newRefreshToken);
@@ -117,7 +118,7 @@ apiClient.interceptors.response.use(
       });
     }
 
-    if (error.response && error.response.data && error.response.data.error) {
+    if (error.response?.data?.error) {
       return Promise.reject(error.response.data.error);
     }
 
@@ -126,5 +127,5 @@ apiClient.interceptors.response.use(
       message: error.message || "No se pudo conectar con el servidor.",
     };
     return Promise.reject(networkError);
-  }
+  },
 );

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Pressable, Modal, FlatList } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useState } from "react";
+import { FlatList, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import Colors from "../constants/Colors";
 
 export type SortOrder = "default" | "az" | "za";
@@ -82,9 +82,7 @@ export default function SortButton({ value, onSelect, colorScheme }: SortButtonP
               renderItem={({ item }) => {
                 const isSelected = item.value === value;
                 const activeBg =
-                  colorScheme === "dark"
-                    ? "rgba(0, 127, 206, 0.15)"
-                    : "rgba(19, 163, 236, 0.12)";
+                  colorScheme === "dark" ? "rgba(0, 127, 206, 0.15)" : "rgba(19, 163, 236, 0.12)";
 
                 return (
                   <Pressable

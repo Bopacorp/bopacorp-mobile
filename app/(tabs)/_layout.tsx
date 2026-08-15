@@ -1,17 +1,16 @@
-import { Tabs } from "expo-router";
-import React, { useRef, useEffect } from "react";
-import { Image, View, StyleSheet, Pressable, PanResponder, Animated } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-
+import { Tabs } from "expo-router";
+import { useEffect, useRef } from "react";
+import { Animated, Image, PanResponder, Pressable, StyleSheet, View } from "react-native";
+import Sidebar from "@/components/Sidebar";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import Sidebar from "@/components/Sidebar";
 import { SidebarProvider, useSidebarContext } from "../../context/SidebarContext";
 
 const DRAWER_WIDTH = 260;
 
-function HeaderLogo() {
+function _HeaderLogo() {
   return (
     <Image
       source={require("@/assets/images/logo.png")}
@@ -60,7 +59,7 @@ function TabLayoutContent() {
       onPanResponderGrant: () => {
         slideAnim.stopAnimation();
       },
-      onPanResponderMove: (evt, gestureState) => {
+      onPanResponderMove: (_evt, gestureState) => {
         if (!isOpen) {
           const newValue = Math.min(0, -DRAWER_WIDTH + gestureState.dx);
           slideAnim.setValue(newValue);
@@ -69,7 +68,7 @@ function TabLayoutContent() {
           slideAnim.setValue(newValue);
         }
       },
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: (_evt, gestureState) => {
         if (!isOpen) {
           if (gestureState.dx > DRAWER_WIDTH / 3 || gestureState.vx > 0.5) {
             setIsOpen(true);
@@ -92,7 +91,7 @@ function TabLayoutContent() {
           }
         }
       },
-    })
+    }),
   ).current;
 
   const contentOpacity = slideAnim.interpolate({
@@ -126,7 +125,7 @@ function TabLayoutContent() {
                 onPress={() => setIsOpen(true)}
                 style={({ pressed }) => [
                   { marginLeft: 16, padding: 8 },
-                  pressed && { opacity: 0.6 }
+                  pressed && { opacity: 0.6 },
                 ]}
               >
                 <FontAwesome name="bars" size={20} color={currentColors.text} />

@@ -1,9 +1,8 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
-import { Text } from "./Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { Text } from "./Themed";
 
 interface EditarButtonProps {
   onPress: () => void;

@@ -1,7 +1,7 @@
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useState } from "react";
 import ClientDetailView from "@/components/ClientDetailView";
 import { getBusinessClient } from "@/services/ClientServices";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useState } from "react";
 
 export default function ClientDetailScreen() {
   const params = useLocalSearchParams();
@@ -11,7 +11,7 @@ export default function ClientDetailScreen() {
   useFocusEffect(
     useCallback(() => {
       loadClient();
-    }, [id])
+    }, [id]),
   );
 
   async function loadClient() {

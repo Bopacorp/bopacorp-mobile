@@ -7,7 +7,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build:web": "cd ../bopacorp-shared && npm install --production=false --legacy-peer-deps && npm run build && cd ../bopacorp-mobile && npx expo export --platform web"
+    "build:web": "cd ../bopacorp-shared && npm install --production=false --legacy-peer-deps && npm run build && cd ../bopacorp-mobile && npx expo export --platform web",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
   },
   "dependencies": {
     "@bopacorp/shared": "file:../bopacorp-shared",
@@ -38,6 +41,7 @@
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.8",
     "@types/react": "~19.1.0",
     "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"

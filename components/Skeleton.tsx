@@ -1,15 +1,20 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
-import { useThemeColor } from './Themed';
+import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
+import { useThemeColor } from "./Themed";
 
-export function Skeleton({ width, height, borderRadius = 4, style }: {
+export function Skeleton({
+  width,
+  height,
+  borderRadius = 4,
+  style,
+}: {
   width: number | string;
   height: number;
   borderRadius?: number;
   style?: any;
 }) {
   const opacity = useRef(new Animated.Value(0.3)).current;
-  const skeletonBg = useThemeColor({}, 'muted');
+  const skeletonBg = useThemeColor({}, "muted");
 
   useEffect(() => {
     Animated.loop(
@@ -24,7 +29,7 @@ export function Skeleton({ width, height, borderRadius = 4, style }: {
           duration: 600,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   }, [opacity]);
 
@@ -45,8 +50,8 @@ export function Skeleton({ width, height, borderRadius = 4, style }: {
 }
 
 export function CardSkeleton() {
-  const borderCol = useThemeColor({}, 'border');
-  const cardBg = useThemeColor({}, 'card');
+  const borderCol = useThemeColor({}, "border");
+  const cardBg = useThemeColor({}, "card");
 
   return (
     <View style={[styles.card, { borderColor: borderCol, backgroundColor: cardBg }]}>
@@ -73,8 +78,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
   titleSection: {

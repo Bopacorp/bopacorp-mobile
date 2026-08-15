@@ -1,5 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,9 +10,9 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -23,14 +23,11 @@ export default function LoginScreen() {
   const currentColors = Colors[colorScheme ?? "light"];
 
   const handleLogin = async () => {
-    let finalEmail = email.trim();
-    let finalPassword = password;
+    const finalEmail = email.trim();
+    const finalPassword = password;
 
     if (!finalEmail || !finalPassword) {
-      Alert.alert(
-        "Campos incompletos",
-        "Por favor ingresa tu correo y contraseña.",
-      );
+      Alert.alert("Campos incompletos", "Por favor ingresa tu correo y contraseña.");
       return;
     }
 
@@ -47,21 +44,23 @@ export default function LoginScreen() {
       await login(finalEmail, finalPassword);
     } catch (err: any) {
       let errorMsg = "Ocurrió un error de red o el servidor no responde.";
-      
-      if (err && err.code) {
+
+      if (err?.code) {
         if (err.code === "INVALID_CREDENTIALS") {
           errorMsg = "El correo o la contraseña son incorrectos.";
         } else if (err.code === "ACCOUNT_LOCKED") {
-          errorMsg = "Tu cuenta ha sido bloqueada temporalmente por demasiados intentos fallidos. Por favor, inténtalo más tarde.";
+          errorMsg =
+            "Tu cuenta ha sido bloqueada temporalmente por demasiados intentos fallidos. Por favor, inténtalo más tarde.";
         } else if (err.code === "ACCOUNT_DISABLED") {
-          errorMsg = "Tu cuenta está desactivada. Por favor, contacta al administrador de BOPACORP.";
+          errorMsg =
+            "Tu cuenta está desactivada. Por favor, contacta al administrador de BOPACORP.";
         } else if (err.message) {
           errorMsg = err.message;
         }
-      } else if (err && err.message) {
+      } else if (err?.message) {
         errorMsg = err.message;
       }
-      
+
       Alert.alert("Error de Autenticación", errorMsg);
     } finally {
       setIsLoggingIn(false);
@@ -69,22 +68,33 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: currentColors.background }]}>
+    <ScrollView
+      contentContainerStyle={[styles.container, { backgroundColor: currentColors.background }]}
+    >
       <View style={styles.header}>
-        <FontAwesome
-          name="building"
-          size={54}
-          color={currentColors.primary}
-          style={styles.logo}
-        />
+        <FontAwesome name="building" size={54} color={currentColors.primary} style={styles.logo} />
         <Text style={[styles.title, { color: currentColors.text }]}>BOPACORPSA</Text>
         <Text style={styles.subtitle}>CRM Movil - Asesores</Text>
       </View>
 
-      <View style={[styles.formCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
-        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>Correo electrónico</Text>
+      <View
+        style={[
+          styles.formCard,
+          { backgroundColor: currentColors.card, borderColor: currentColors.border },
+        ]}
+      >
+        <Text style={[styles.label, { color: currentColors.mutedForeground }]}>
+          Correo electrónico
+        </Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, color: currentColors.text, backgroundColor: currentColors.secondary }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              color: currentColors.text,
+              backgroundColor: currentColors.secondary,
+            },
+          ]}
           placeholder="usuario@empresa.com"
           placeholderTextColor={colorScheme === "dark" ? "#5c6e8c" : "#B0B0B0"}
           value={email}
@@ -96,7 +106,14 @@ export default function LoginScreen() {
 
         <Text style={[styles.label, { color: currentColors.mutedForeground }]}>Contraseña</Text>
         <TextInput
-          style={[styles.input, { borderColor: currentColors.border, color: currentColors.text, backgroundColor: currentColors.secondary }]}
+          style={[
+            styles.input,
+            {
+              borderColor: currentColors.border,
+              color: currentColors.text,
+              backgroundColor: currentColors.secondary,
+            },
+          ]}
           placeholder="Contraseña"
           placeholderTextColor={colorScheme === "dark" ? "#5c6e8c" : "#B0B0B0"}
           value={password}
@@ -108,19 +125,16 @@ export default function LoginScreen() {
         {isLoggingIn ? (
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color={currentColors.primary} />
-            <Text style={[styles.loaderText, { color: currentColors.mutedForeground }]}>Iniciando sesión...</Text>
+            <Text style={[styles.loaderText, { color: currentColors.mutedForeground }]}>
+              Iniciando sesión...
+            </Text>
           </View>
         ) : (
           <Pressable
             style={[styles.button, { backgroundColor: currentColors.primary }]}
             onPress={handleLogin}
           >
-            <FontAwesome
-              name="sign-in"
-              size={16}
-              color="white"
-              style={styles.btnIcon}
-            />
+            <FontAwesome name="sign-in" size={16} color="white" style={styles.btnIcon} />
             <Text style={styles.buttonText}>Ingresar</Text>
           </Pressable>
         )}
