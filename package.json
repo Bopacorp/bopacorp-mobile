@@ -10,7 +10,8 @@
     "build:web": "cd ../bopacorp-shared && npm install --production=false --legacy-peer-deps && npm run build && cd ../bopacorp-mobile && npx expo export --platform web",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "test": "jest --forceExit"
   },
   "dependencies": {
     "@bopacorp/shared": "file:../bopacorp-shared",
@@ -42,7 +43,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^14.0.1",
     "@types/react": "~19.1.0",
+    "jest": "^29.7.0",
+    "jest-expo": "~54.0.0",
     "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
   },
