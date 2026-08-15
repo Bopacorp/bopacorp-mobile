@@ -1,15 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useNavigation, usePathname, useRouter } from "expo-router";
-import React from "react";
-import {
-  Animated,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "../constants/Colors";
 import { useAuth } from "../context/AuthContext";
@@ -133,18 +124,11 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
             resizeMode="contain"
           />
           <View style={styles.headerTitles}>
-                <Text style={[styles.brandText, { color: currentColors.text }]}>
-                  BOPACORP
-                </Text>
-                <Text
-                  style={[
-                    styles.subBrandText,
-                    { color: currentColors.primary },
-                  ]}
-                >
-                  Partner Tigo
-                </Text>
-              </View>
+            <Text style={[styles.brandText, { color: currentColors.text }]}>BOPACORP</Text>
+            <Text style={[styles.subBrandText, { color: currentColors.primary }]}>
+              Partner Tigo
+            </Text>
+          </View>
         </View>
 
         {}
@@ -160,9 +144,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                 (item.path !== "/" && pathname?.startsWith(item.path));
 
               const activeBg =
-                colorScheme === "dark"
-                  ? "rgba(0, 127, 206, 0.15)"
-                  : "rgba(19, 163, 236, 0.12)";
+                colorScheme === "dark" ? "rgba(0, 127, 206, 0.15)" : "rgba(19, 163, 236, 0.12)";
 
               return (
                 <Pressable
@@ -177,10 +159,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                   {}
                   {isActive && (
                     <View
-                      style={[
-                        styles.activeIndicator,
-                        { backgroundColor: currentColors.primary },
-                      ]}
+                      style={[styles.activeIndicator, { backgroundColor: currentColors.primary }]}
                     />
                   )}
 
@@ -188,11 +167,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                     <FontAwesome
                       name={item.icon}
                       size={20}
-                      color={
-                        isActive
-                          ? currentColors.primary
-                          : currentColors.tabIconDefault
-                      }
+                      color={isActive ? currentColors.primary : currentColors.tabIconDefault}
                     />
                   </View>
 
@@ -201,9 +176,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
                     style={[
                       styles.menuText,
                       {
-                        color: isActive
-                          ? currentColors.text
-                          : currentColors.mutedForeground,
+                        color: isActive ? currentColors.text : currentColors.mutedForeground,
                         fontWeight: isActive ? "700" : "500",
                       },
                     ]}
@@ -219,27 +192,14 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
         {}
         <View style={styles.footer}>
           {}
-          <View
-            style={[
-              styles.profileContainer,
-              { borderTopColor: currentColors.border },
-            ]}
-          >
-            <View
-              style={[
-                styles.avatar,
-                { backgroundColor: currentColors.secondary },
-              ]}
-            >
+          <View style={[styles.profileContainer, { borderTopColor: currentColors.border }]}>
+            <View style={[styles.avatar, { backgroundColor: currentColors.secondary }]}>
               <Text style={[styles.avatarText, { color: currentColors.text }]}>
                 {getInitials()}
               </Text>
             </View>
             <View style={styles.profileDetails}>
-              <Text
-                numberOfLines={1}
-                style={[styles.profileName, { color: currentColors.text }]}
-              >
+              <Text numberOfLines={1} style={[styles.profileName, { color: currentColors.text }]}>
                 {user?.profile
                   ? `${user.profile.firstName} ${user.profile.lastName}`
                   : user?.username || "Asesor"}
@@ -253,24 +213,12 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
           {}
           <Pressable
             onPress={() => setIsOpen(false)}
-            style={({ pressed }) => [
-              styles.footerItem,
-              pressed && { opacity: 0.7 },
-            ]}
+            style={({ pressed }) => [styles.footerItem, pressed && { opacity: 0.7 }]}
           >
             <View style={styles.iconContainer}>
-              <FontAwesome
-                name="times"
-                size={16}
-                color={currentColors.tabIconDefault}
-              />
+              <FontAwesome name="times" size={16} color={currentColors.tabIconDefault} />
             </View>
-            <Text
-              style={[
-                styles.footerText,
-                { color: currentColors.mutedForeground },
-              ]}
-            >
+            <Text style={[styles.footerText, { color: currentColors.mutedForeground }]}>
               Cerrar Menú
             </Text>
           </Pressable>
@@ -287,12 +235,7 @@ export default function Sidebar({ slideAnim }: SidebarProps) {
             <View style={styles.iconContainer}>
               <FontAwesome name="sign-out" size={18} color="#f44336" />
             </View>
-            <Text
-              style={[
-                styles.footerText,
-                { color: "#f44336", fontWeight: "600" },
-              ]}
-            >
+            <Text style={[styles.footerText, { color: "#f44336", fontWeight: "600" }]}>
               Cerrar Sesión
             </Text>
           </Pressable>
@@ -326,12 +269,13 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 64,
-    flexDirection: "row",     // 1. Aligns the image and the title view horizontally
+    flexDirection: "row", // 1. Aligns the image and the title view horizontally
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
     marginBottom: 16,
-  },headerTitles: {
+  },
+  headerTitles: {
     marginLeft: 12,
   },
   brandText: {
@@ -350,7 +294,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
   },
-  
+
   scrollContent: {
     flexGrow: 1,
   },

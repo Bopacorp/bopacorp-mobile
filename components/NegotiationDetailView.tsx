@@ -1,45 +1,38 @@
-import { Text } from "@/components/Themed";
-import { globalStyles } from "@/constants/Styles";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import * as DocumentPicker from "expo-document-picker";
+import * as Location from "expo-location";
 import { router, useFocusEffect } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import React, { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    View as RNView,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    Modal,
-    TextInput,
-    Pressable,
-    FlatList,
-    Alert,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  View as RNView,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Calendar } from "react-native-calendars";
-import * as Location from "expo-location";
-import { useAuth } from "@/context/AuthContext";
-import BackButton from "./BackButton";
-import EditarButton from "./EditarButton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { globalStyles } from "@/constants/Styles";
+import { useAuth } from "@/context/AuthContext";
+import { API_URL, getAccessToken } from "@/services/api";
 import {
+  createVisit,
+  DocumentItem,
   getNegotiation,
   getNegotiationDocuments,
-  DocumentItem,
   getNegotiationVisits,
   getVisitTypes,
-  createVisit,
   VisitItem,
-  getNegotiationMatrices,
-  createOfferMatrix,
-  getMatrixAttachments,
-  createMatrixAttachment,
-  uploadDocumentFile,
 } from "@/services/ClientServices";
-import { getAccessToken, API_URL } from "@/services/api";
+import BackButton from "./BackButton";
+import EditarButton from "./EditarButton";
 
 interface Props {
   id?: string;
@@ -112,7 +105,7 @@ const DEFAULT_CONFIG = {
   label: "Status",
 };
 
-const TABS = ["Visitas", "Documentos", "Matrices", "Comentarios"] as const;
+const TABS = ["Visitas", "Documentos", "Comentarios"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function NegotiationDetailView({
@@ -156,14 +149,6 @@ export default function NegotiationDetailView({
   const [visitObservations, setVisitObservations] = useState("");
   const [submittingVisit, setSubmittingVisit] = useState(false);
 
-  // Matrices state
-  const [matrixId, setMatrixId] = useState<string | null>(null);
-  const [offerMatrixFile, setOfferMatrixFile] = useState<{ id?: string; name: string; isUploaded: boolean } | null>(null);
-  const [emailTemplateFile, setEmailTemplateFile] = useState<{ id?: string; name: string; isUploaded: boolean } | null>(null);
-  const [pendingOfferFile, setPendingOfferFile] = useState<any | null>(null);
-  const [pendingEmailFile, setPendingEmailFile] = useState<any | null>(null);
-  const [submittingMatrices, setSubmittingMatrices] = useState(false);
-
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const currentColors = Colors[scheme ?? "light"];
@@ -199,7 +184,7 @@ export default function NegotiationDetailView({
         loadNegotiationDetails();
         loadVisitTypes();
       }
-    }, [id])
+    }, [id]),
   );
 
   async function loadVisitTypes() {
@@ -232,44 +217,18 @@ export default function NegotiationDetailView({
       setObservations(fresh.observations);
       setIsActive(fresh.isActive);
 
-      // 2. Fetch documents, visits and matrices in parallel
+      // 2. Fetch documents and visits in parallel
       const docsPromise = getNegotiationDocuments(id!);
       const visitsPromise = fresh.clientId
         ? getNegotiationVisits(fresh.clientId)
         : Promise.resolve([]);
-      const matricesPromise = getNegotiationMatrices(id!);
 
-      console.log("[DEBUG] Fetching documents, visits and matrices in parallel...");
-      const [docs, visits, matrices] = await Promise.all([docsPromise, visitsPromise, matricesPromise]);
-      
+      console.log("[DEBUG] Fetching documents and visits in parallel...");
+      const [docs, visits] = await Promise.all([docsPromise, visitsPromise]);
+
       console.log("[DEBUG] Loaded docs length =", docs.length, "visits length =", visits.length);
       setDocuments(docs);
       setVisitsList(visits);
-
-      if (matrices && matrices.length > 0) {
-        const activeMatrix = matrices[0];
-        setMatrixId(activeMatrix.id);
-        const atts = await getMatrixAttachments(activeMatrix.id);
-        
-        const offerAtt = atts.find((a: any) => a.attachmentType === "OFFER_MATRIX");
-        const emailAtt = atts.find((a: any) => a.attachmentType === "EMAIL_TEMPLATE");
-        
-        if (offerAtt) {
-          setOfferMatrixFile({ name: offerAtt.filename, isUploaded: true });
-        } else {
-          setOfferMatrixFile(null);
-        }
-        
-        if (emailAtt) {
-          setEmailTemplateFile({ name: emailAtt.filename, isUploaded: true });
-        } else {
-          setEmailTemplateFile(null);
-        }
-      } else {
-        setMatrixId(null);
-        setOfferMatrixFile(null);
-        setEmailTemplateFile(null);
-      }
     } catch (error) {
       console.warn("[DEBUG] loadNegotiationDetails failed:", error);
     } finally {
@@ -286,6 +245,12 @@ export default function NegotiationDetailView({
     }
     if (!clientId) {
       Alert.alert("Error", "No se encontró el ID del cliente de la negociación.");
+      return;
+    }
+
+    const trimmedObservations = visitObservations.trim();
+    if (trimmedObservations.length === 0) {
+      Alert.alert("Error", "Por favor ingrese las observaciones de la visita.");
       return;
     }
 
@@ -318,7 +283,7 @@ export default function NegotiationDetailView({
         advisorId: user?.id || "",
         visitTypeId: selectedVisitType.id,
         visitDate: visitDate.toISOString(),
-        observations: visitObservations || undefined,
+        observations: trimmedObservations,
         ...gpsData,
       });
 
@@ -341,111 +306,6 @@ export default function NegotiationDetailView({
     }
   }
 
-  const handlePickFile = async (type: "OFFER_MATRIX" | "EMAIL_TEMPLATE") => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: [
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "application/vnd.ms-excel",
-          "application/pdf",
-          "image/*",
-          "text/*"
-        ],
-        copyToCacheDirectory: true,
-      });
-
-      if (result.canceled) {
-        return;
-      }
-
-      const file = result.assets[0];
-      if (type === "OFFER_MATRIX") {
-        setPendingOfferFile(file);
-      } else {
-        setPendingEmailFile(file);
-      }
-    } catch (error) {
-      console.error("Error picking document:", error);
-      Alert.alert("Error", "No se pudo seleccionar el archivo.");
-    }
-  };
-
-  const handleSaveMatrices = async () => {
-    setSubmittingMatrices(true);
-    try {
-      let currentMatrixId = matrixId;
-      
-      // 1. Create matrix if it doesn't exist
-      if (!currentMatrixId) {
-        console.log("[DEBUG] No matrix exists, creating one...");
-        const matrixResult = await createOfferMatrix({
-          negotiationId: id!,
-          observations: "",
-        });
-        currentMatrixId = matrixResult.id;
-        setMatrixId(currentMatrixId);
-      }
-      
-      // 2. Upload pending Offer Matrix if present
-      if (pendingOfferFile) {
-        console.log("[DEBUG] Uploading pending OFFER_MATRIX file...");
-        const uploadResponse = await uploadDocumentFile(
-          pendingOfferFile.uri,
-          pendingOfferFile.name,
-          pendingOfferFile.mimeType || "application/octet-stream"
-        );
-        
-        await createMatrixAttachment(currentMatrixId, {
-          matrixId: currentMatrixId,
-          attachmentType: "OFFER_MATRIX",
-          filename: uploadResponse.filename,
-          fileExtension: uploadResponse.fileExtension,
-          fileSizeMb: uploadResponse.fileSizeMb,
-          storagePath: uploadResponse.storagePath,
-          mimeType: uploadResponse.mimeType,
-          encryptionMetadata: uploadResponse.encryptionMetadata,
-        });
-        
-        setOfferMatrixFile({ name: uploadResponse.filename, isUploaded: true });
-        setPendingOfferFile(null);
-      }
-
-      // 3. Upload pending Email Template if present
-      if (pendingEmailFile) {
-        console.log("[DEBUG] Uploading pending EMAIL_TEMPLATE file...");
-        const uploadResponse = await uploadDocumentFile(
-          pendingEmailFile.uri,
-          pendingEmailFile.name,
-          pendingEmailFile.mimeType || "application/octet-stream"
-        );
-        
-        await createMatrixAttachment(currentMatrixId, {
-          matrixId: currentMatrixId,
-          attachmentType: "EMAIL_TEMPLATE",
-          filename: uploadResponse.filename,
-          fileExtension: uploadResponse.fileExtension,
-          fileSizeMb: uploadResponse.fileSizeMb,
-          storagePath: uploadResponse.storagePath,
-          mimeType: uploadResponse.mimeType,
-          encryptionMetadata: uploadResponse.encryptionMetadata,
-        });
-        
-        setEmailTemplateFile({ name: uploadResponse.filename, isUploaded: true });
-        setPendingEmailFile(null);
-      }
-
-      Alert.alert("Éxito", "Matriz y adjuntos guardados correctamente.");
-      
-      // Refresh list to sync state
-      await loadNegotiationDetails();
-    } catch (error: any) {
-      console.warn("Error saving matrices:", error);
-      Alert.alert("Error", error?.message || "Ocurrió un error al guardar los archivos.");
-    } finally {
-      setSubmittingMatrices(false);
-    }
-  };
-
   const statusStr = status as string;
   const config = STAGE_CONFIG[statusStr] || DEFAULT_CONFIG;
   const s = scheme === "dark" ? config.dark : config.light;
@@ -465,7 +325,10 @@ export default function NegotiationDetailView({
 
   return (
     <ScrollView
-      style={[globalStyles.container, { paddingTop: insets.top, backgroundColor: currentColors.background }]}
+      style={[
+        globalStyles.container,
+        { paddingTop: insets.top, backgroundColor: currentColors.background },
+      ]}
       contentContainerStyle={[styles.scrollContent, { backgroundColor: currentColors.background }]}
     >
       {/* ── Header ── */}
@@ -499,9 +362,7 @@ export default function NegotiationDetailView({
         <RNView style={styles.badgesRow}>
           {status && (
             <RNView style={[styles.badge, { backgroundColor: s.bg }]}>
-              <Text style={[styles.badgeText, { color: s.text }]}>
-                {config.label}
-              </Text>
+              <Text style={[styles.badgeText, { color: s.text }]}>{config.label}</Text>
             </RNView>
           )}
           <RNView
@@ -509,8 +370,12 @@ export default function NegotiationDetailView({
               styles.badge,
               {
                 backgroundColor: isActive
-                  ? scheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7"
-                  : scheme === "dark" ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2",
+                  ? scheme === "dark"
+                    ? "rgba(34, 197, 94, 0.2)"
+                    : "#DCFCE7"
+                  : scheme === "dark"
+                    ? "rgba(239, 68, 68, 0.2)"
+                    : "#FEE2E2",
               },
             ]}
           >
@@ -519,8 +384,12 @@ export default function NegotiationDetailView({
                 styles.badgeText,
                 {
                   color: isActive
-                    ? scheme === "dark" ? "#4ADE80" : "#166534"
-                    : scheme === "dark" ? "#F87171" : "#991B1B",
+                    ? scheme === "dark"
+                      ? "#4ADE80"
+                      : "#166534"
+                    : scheme === "dark"
+                      ? "#F87171"
+                      : "#991B1B",
                 },
               ]}
             >
@@ -530,8 +399,15 @@ export default function NegotiationDetailView({
         </RNView>
       </RNView>
 
-      <RNView style={[styles.detailCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
-        <Text style={[styles.sectionLabel, { color: currentColors.mutedForeground }]}>DETALLES</Text>
+      <RNView
+        style={[
+          styles.detailCard,
+          { backgroundColor: currentColors.card, borderColor: currentColors.border },
+        ]}
+      >
+        <Text style={[styles.sectionLabel, { color: currentColors.mutedForeground }]}>
+          DETALLES
+        </Text>
 
         <RNView style={styles.grid}>
           <RNView style={styles.gridItem}>
@@ -542,7 +418,9 @@ export default function NegotiationDetailView({
               style={styles.detailIcon}
             />
             <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Asesor</Text>
-            <Text style={[styles.detailValue, { color: currentColors.text }]}>{advisorName ?? "—"}</Text>
+            <Text style={[styles.detailValue, { color: currentColors.text }]}>
+              {advisorName ?? "—"}
+            </Text>
           </RNView>
 
           <RNView style={styles.gridItem}>
@@ -552,7 +430,9 @@ export default function NegotiationDetailView({
               color={currentColors.mutedForeground}
               style={styles.detailIcon}
             />
-            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Facturación mensual</Text>
+            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>
+              Facturación mensual
+            </Text>
             <Text style={[styles.detailValue, { color: currentColors.text }]}>{amount ?? "—"}</Text>
           </RNView>
 
@@ -563,7 +443,9 @@ export default function NegotiationDetailView({
               color={currentColors.mutedForeground}
               style={styles.detailIcon}
             />
-            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Fecha inicio</Text>
+            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>
+              Fecha inicio
+            </Text>
             <Text style={[styles.detailValue, { color: currentColors.text }]}>{date ?? "—"}</Text>
           </RNView>
 
@@ -574,8 +456,12 @@ export default function NegotiationDetailView({
               color={currentColors.mutedForeground}
               style={styles.detailIcon}
             />
-            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>Cierre est.</Text>
-            <Text style={[styles.detailValue, { color: currentColors.text }]}>{estimatedCloseDate ?? "—"}</Text>
+            <Text style={[styles.detailKey, { color: currentColors.mutedForeground }]}>
+              Cierre est.
+            </Text>
+            <Text style={[styles.detailValue, { color: currentColors.text }]}>
+              {estimatedCloseDate ?? "—"}
+            </Text>
           </RNView>
         </RNView>
       </RNView>
@@ -617,19 +503,20 @@ export default function NegotiationDetailView({
                 setVisitModalVisible(true);
               }}
             >
-              <FontAwesome
-                name="plus"
-                size={14}
-                color="white"
-                style={globalStyles.actionIcon}
-              />
+              <FontAwesome name="plus" size={14} color="white" style={globalStyles.actionIcon} />
               <Text style={globalStyles.actionButtonText}>Agregar Visita</Text>
             </TouchableOpacity>
 
             {loadingVisits ? (
-              <ActivityIndicator size="small" color={currentColors.primary} style={{ marginTop: 12 }} />
+              <ActivityIndicator
+                size="small"
+                color={currentColors.primary}
+                style={{ marginTop: 12 }}
+              />
             ) : visitsList.length === 0 ? (
-              <Text style={[styles.emptyText, { color: currentColors.mutedForeground, marginTop: 12 }]}>
+              <Text
+                style={[styles.emptyText, { color: currentColors.mutedForeground, marginTop: 12 }]}
+              >
                 Sin visitas registradas.
               </Text>
             ) : (
@@ -653,8 +540,12 @@ export default function NegotiationDetailView({
                         globalStyles.statusBadge,
                         {
                           backgroundColor: visit.isVerified
-                            ? scheme === "dark" ? "rgba(34, 197, 94, 0.2)" : "#DCFCE7"
-                            : scheme === "dark" ? "rgba(245, 158, 11, 0.2)" : "#FEF3C7",
+                            ? scheme === "dark"
+                              ? "rgba(34, 197, 94, 0.2)"
+                              : "#DCFCE7"
+                            : scheme === "dark"
+                              ? "rgba(245, 158, 11, 0.2)"
+                              : "#FEF3C7",
                         },
                       ]}
                     >
@@ -663,8 +554,12 @@ export default function NegotiationDetailView({
                           fontSize: 10,
                           fontWeight: "600",
                           color: visit.isVerified
-                            ? scheme === "dark" ? "#4ADE80" : "#166534"
-                            : scheme === "dark" ? "#FBBF24" : "#92400E",
+                            ? scheme === "dark"
+                              ? "#4ADE80"
+                              : "#166534"
+                            : scheme === "dark"
+                              ? "#FBBF24"
+                              : "#92400E",
                         }}
                       >
                         {visit.isVerified ? "Verificada" : "Pendiente"}
@@ -677,11 +572,16 @@ export default function NegotiationDetailView({
                   </Text>
 
                   <Text style={[styles.visitDetail, { color: currentColors.mutedForeground }]}>
-                    Asesor: {visit.advisor?.profile ? `${visit.advisor.profile.firstName} ${visit.advisor.profile.lastName}` : visit.advisor?.username}
+                    Asesor:{" "}
+                    {visit.advisor?.profile
+                      ? `${visit.advisor.profile.firstName} ${visit.advisor.profile.lastName}`
+                      : visit.advisor?.username}
                   </Text>
 
                   {visit.observations ? (
-                    <Text style={[styles.visitObservations, { color: currentColors.mutedForeground }]}>
+                    <Text
+                      style={[styles.visitObservations, { color: currentColors.mutedForeground }]}
+                    >
                       Obs: {visit.observations}
                     </Text>
                   ) : null}
@@ -730,16 +630,15 @@ export default function NegotiationDetailView({
                       >
                         {doc.fileName}
                       </Text>
-                      <Text style={{ fontSize: 11, color: currentColors.mutedForeground, marginTop: 2 }}>
+                      <Text
+                        style={{ fontSize: 11, color: currentColors.mutedForeground, marginTop: 2 }}
+                      >
                         Fecha: {doc.date}
                       </Text>
                     </RNView>
 
                     <TouchableOpacity
-                      style={[
-                        styles.viewButton,
-                        { backgroundColor: currentColors.primary + "15" },
-                      ]}
+                      style={[styles.viewButton, { backgroundColor: `${currentColors.primary}15` }]}
                       onPress={handleViewDoc}
                     >
                       <FontAwesome name="eye" size={14} color={currentColors.primary} />
@@ -750,112 +649,11 @@ export default function NegotiationDetailView({
             )}
           </RNView>
         )}
-        
+
         {activeTab === "Comentarios" && (
           <Text style={[styles.commentsText, { color: currentColors.text }]}>
             {observations || "Sin comentarios registrados."}
           </Text>
-        )}
-
-        {activeTab === "Matrices" && (
-          <RNView style={{ gap: 16, backgroundColor: "transparent" }}>
-            <Text style={[styles.sectionLabel, { color: currentColors.mutedForeground }]}>MATRICES DE LA NEGOCIACIÓN</Text>
-            
-            {/* Offer Matrix Slot */}
-            <RNView style={[localStyles.fileCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
-              <RNView style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <FontAwesome name="file-excel-o" size={24} color="#1D7444" />
-                <RNView style={{ flex: 1 }}>
-                  <Text style={{ fontWeight: "600", color: currentColors.text }}>Matriz de Oferta</Text>
-                  <Text style={{ fontSize: 12, color: currentColors.mutedForeground }}>Hoja de cálculo de oferta comercial</Text>
-                </RNView>
-              </RNView>
-              
-              {offerMatrixFile ? (
-                <RNView style={[localStyles.uploadedStatusBox, { backgroundColor: currentColors.secondary + "40" }]}>
-                  <FontAwesome name="check-circle" size={16} color="#10B981" />
-                  <Text style={{ fontSize: 13, color: currentColors.text, marginLeft: 6 }} numberOfLines={1}>
-                    Subido: {offerMatrixFile.name}
-                  </Text>
-                </RNView>
-              ) : pendingOfferFile ? (
-                <RNView style={{ marginTop: 12 }}>
-                  <RNView style={[localStyles.uploadedStatusBox, { backgroundColor: "#FFFBEB" }]}>
-                    <FontAwesome name="file" size={14} color="#D97706" />
-                    <Text style={{ fontSize: 13, color: "#92400E", marginLeft: 6 }} numberOfLines={1}>
-                      Subido: {pendingOfferFile.name}
-                    </Text>
-                    <TouchableOpacity onPress={() => setPendingOfferFile(null)} style={{ marginLeft: "auto" }}>
-                      <FontAwesome name="times-circle" size={16} color="#EF4444" />
-                    </TouchableOpacity>
-                  </RNView>
-                </RNView>
-              ) : (
-                <TouchableOpacity
-                  style={[localStyles.uploadSlotBtn, { borderColor: currentColors.border, backgroundColor: currentColors.secondary + "20" }]}
-                  onPress={() => handlePickFile("OFFER_MATRIX")}
-                >
-                  <FontAwesome name="upload" size={14} color={currentColors.primary} />
-                  <Text style={{ color: currentColors.primary, fontWeight: "600", marginLeft: 8 }}>Subir Archivo</Text>
-                </TouchableOpacity>
-              )}
-            </RNView>
-
-            {/* Email Template Slot */}
-            <RNView style={[localStyles.fileCard, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}>
-              <RNView style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <FontAwesome name="envelope-o" size={24} color="#1D4ED8" />
-                <RNView style={{ flex: 1 }}>
-                  <Text style={{ fontWeight: "600", color: currentColors.text }}>Plantilla de Correo</Text>
-                  <Text style={{ fontSize: 12, color: currentColors.mutedForeground }}>Cuerpo de correo para el cliente</Text>
-                </RNView>
-              </RNView>
-              
-              {emailTemplateFile ? (
-                <RNView style={[localStyles.uploadedStatusBox, { backgroundColor: currentColors.secondary + "40" }]}>
-                  <FontAwesome name="check-circle" size={16} color="#10B981" />
-                  <Text style={{ fontSize: 13, color: currentColors.text, marginLeft: 6 }} numberOfLines={1}>
-                    Subido: {emailTemplateFile.name}
-                  </Text>
-                </RNView>
-              ) : pendingEmailFile ? (
-                <RNView style={{ marginTop: 12 }}>
-                  <RNView style={[localStyles.uploadedStatusBox, { backgroundColor: "#FFFBEB" }]}>
-                    <FontAwesome name="file" size={14} color="#D97706" />
-                    <Text style={{ fontSize: 13, color: "#92400E", marginLeft: 6 }} numberOfLines={1}>
-                      Subido: {pendingEmailFile.name}
-                    </Text>
-                    <TouchableOpacity onPress={() => setPendingEmailFile(null)} style={{ marginLeft: "auto" }}>
-                      <FontAwesome name="times-circle" size={16} color="#EF4444" />
-                    </TouchableOpacity>
-                  </RNView>
-                </RNView>
-              ) : (
-                <TouchableOpacity
-                  style={[localStyles.uploadSlotBtn, { borderColor: currentColors.border, backgroundColor: currentColors.secondary + "20" }]}
-                  onPress={() => handlePickFile("EMAIL_TEMPLATE")}
-                >
-                  <FontAwesome name="upload" size={14} color={currentColors.primary} />
-                  <Text style={{ color: currentColors.primary, fontWeight: "600", marginLeft: 8 }}>Subir Archivo</Text>
-                </TouchableOpacity>
-              )}
-            </RNView>
-            
-            {/* Guardar Button */}
-            {(pendingOfferFile || pendingEmailFile) && (
-              <TouchableOpacity
-                style={[localStyles.saveMatricesBtn, { backgroundColor: currentColors.primary }]}
-                onPress={handleSaveMatrices}
-                disabled={submittingMatrices}
-              >
-                {submittingMatrices ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Text style={{ color: "white", fontWeight: "bold", fontSize: 15 }}>Guardar</Text>
-                )}
-              </TouchableOpacity>
-            )}
-          </RNView>
         )}
       </RNView>
 
@@ -872,7 +670,10 @@ export default function NegotiationDetailView({
           }}
         >
           <Pressable
-            style={[localStyles.modalContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}
+            style={[
+              localStyles.modalContainer,
+              { backgroundColor: currentColors.card, borderColor: currentColors.border },
+            ]}
             onPress={(e) => e.stopPropagation()}
           >
             <RNView style={localStyles.modalHeader}>
@@ -886,14 +687,16 @@ export default function NegotiationDetailView({
 
             <ScrollView style={{ flexGrow: 0 }} showsVerticalScrollIndicator={false}>
               {/* Visit Type Dropdown Trigger */}
-              <Text style={[localStyles.label, { color: currentColors.text }]}>
-                Tipo de Visita
-              </Text>
+              <Text style={[localStyles.label, { color: currentColors.text }]}>Tipo de Visita</Text>
               <TouchableOpacity
                 style={[localStyles.selector, { borderColor: currentColors.border }]}
                 onPress={() => setVisitTypeModalVisible(true)}
               >
-                <Text style={{ color: selectedVisitType ? currentColors.text : currentColors.mutedForeground }}>
+                <Text
+                  style={{
+                    color: selectedVisitType ? currentColors.text : currentColors.mutedForeground,
+                  }}
+                >
                   {selectedVisitType ? selectedVisitType.name : "Seleccionar tipo..."}
                 </Text>
                 <FontAwesome name="chevron-down" size={12} color={currentColors.mutedForeground} />
@@ -914,7 +717,15 @@ export default function NegotiationDetailView({
               </TouchableOpacity>
 
               {showDatePicker && (
-                <RNView style={{ borderWidth: 1, borderColor: currentColors.border, borderRadius: 8, overflow: "hidden", marginVertical: 8 }}>
+                <RNView
+                  style={{
+                    borderWidth: 1,
+                    borderColor: currentColors.border,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    marginVertical: 8,
+                  }}
+                >
                   <Calendar
                     current={toLocalYYYYMMDD(visitDate)}
                     onDayPress={(day) => {
@@ -928,7 +739,7 @@ export default function NegotiationDetailView({
 
               {/* Observations Input */}
               <Text style={[localStyles.label, { color: currentColors.text }]}>
-                Observaciones
+                Observaciones <Text style={{ color: "#EF4444" }}>*</Text>
               </Text>
               <TextInput
                 style={[
@@ -952,10 +763,11 @@ export default function NegotiationDetailView({
                   localStyles.submitButton,
                   {
                     backgroundColor: currentColors.primary,
-                    opacity: (submittingVisit || !selectedVisitType) ? 0.6 : 1,
+                    opacity:
+                      submittingVisit || !selectedVisitType || !visitObservations.trim() ? 0.6 : 1,
                   },
                 ]}
-                disabled={submittingVisit || !selectedVisitType}
+                disabled={submittingVisit || !selectedVisitType || !visitObservations.trim()}
                 onPress={handleSubmitVisit}
               >
                 {submittingVisit ? (
@@ -973,32 +785,55 @@ export default function NegotiationDetailView({
                 onPress={() => setVisitTypeModalVisible(false)}
               >
                 <Pressable
-                  style={[localStyles.inlinePickerContainer, { backgroundColor: currentColors.card, borderColor: currentColors.border }]}
+                  style={[
+                    localStyles.inlinePickerContainer,
+                    { backgroundColor: currentColors.card, borderColor: currentColors.border },
+                  ]}
                   onPress={(e) => e.stopPropagation()}
                 >
                   <RNView style={localStyles.pickerHeader}>
-                    <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>Seleccionar Tipo de Visita</Text>
+                    <Text style={[localStyles.pickerTitle, { color: currentColors.text }]}>
+                      Seleccionar Tipo de Visita
+                    </Text>
                     <TouchableOpacity onPress={() => setVisitTypeModalVisible(false)}>
                       <FontAwesome name="close" size={18} color={currentColors.text} />
                     </TouchableOpacity>
                   </RNView>
                   <ScrollView style={{ maxHeight: 300 }} nestedScrollEnabled={true}>
                     {visitTypesList.length === 0 ? (
-                      <Text style={{ color: currentColors.mutedForeground, fontSize: 13, textAlign: "center", paddingVertical: 20 }}>
+                      <Text
+                        style={{
+                          color: currentColors.mutedForeground,
+                          fontSize: 13,
+                          textAlign: "center",
+                          paddingVertical: 20,
+                        }}
+                      >
                         No se encontraron tipos de visita
                       </Text>
                     ) : (
                       visitTypesList.map((t) => (
                         <TouchableOpacity
                           key={t.id}
-                          style={[localStyles.pickerItem, { borderBottomColor: currentColors.border }]}
+                          style={[
+                            localStyles.pickerItem,
+                            { borderBottomColor: currentColors.border },
+                          ]}
                           onPress={() => {
                             setSelectedVisitType(t);
                             setVisitTypeModalVisible(false);
                           }}
                         >
                           <Text style={{ color: currentColors.text, fontSize: 14 }}>{t.name}</Text>
-                          <Text style={{ color: currentColors.mutedForeground, fontSize: 11, marginTop: 2 }}>{t.description}</Text>
+                          <Text
+                            style={{
+                              color: currentColors.mutedForeground,
+                              fontSize: 11,
+                              marginTop: 2,
+                            }}
+                          >
+                            {t.description}
+                          </Text>
                         </TouchableOpacity>
                       ))
                     )}
@@ -1293,36 +1128,5 @@ const localStyles = StyleSheet.create({
   pickerItem: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-  },
-  fileCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 8,
-  },
-  uploadSlotBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 12,
-  },
-  uploadedStatusBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 12,
-  },
-  saveMatricesBtn: {
-    borderRadius: 8,
-    padding: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 12,
-    height: 48,
   },
 });

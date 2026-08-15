@@ -4,7 +4,7 @@ export function useColorScheme() {
   try {
     const { colorScheme } = useTheme();
     return colorScheme;
-  } catch (e) {
+  } catch (_e) {
     return "light";
   }
 }

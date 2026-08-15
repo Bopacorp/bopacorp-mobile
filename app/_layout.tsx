@@ -1,9 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -75,11 +71,7 @@ function RootLayoutNav() {
 
     if (!role && inTabsGroup) {
       router.replace("/");
-    } else if (
-      role &&
-      !inTabsGroup &&
-      !allowedOutsideTabs.includes(currentRoute)
-    ) {
+    } else if (role && !inTabsGroup && !allowedOutsideTabs.includes(currentRoute)) {
       router.replace("/(tabs)/clients" as any);
     }
   }, [role, segments, isLoading]);
@@ -114,10 +106,7 @@ function RootLayoutNav() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal", title: "Información" }}
-        />
+        <Stack.Screen name="modal" options={{ presentation: "modal", title: "Información" }} />
       </Stack>
     </ThemeProvider>
   );

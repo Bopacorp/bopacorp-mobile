@@ -1,15 +1,6 @@
-import BackButton from "@/components/BackButton";
-import { Text } from "@/components/Themed";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
-import { globalStyles } from "@/constants/Styles";
-import {
-  getNegotiationStates,
-  updateNegotiation,
-} from "@/services/ClientServices";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -24,9 +15,15 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BackButton from "@/components/BackButton";
+import { Text } from "@/components/Themed";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { globalStyles } from "@/constants/Styles";
+import { getNegotiationStates, updateNegotiation } from "@/services/ClientServices";
 
 export default function EditNegotiationScreen() {
-  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [_showStartPicker, _setShowStartPicker] = useState(false);
   const [showClosePicker, setShowClosePicker] = useState(false);
 
   const params = useLocalSearchParams();
@@ -46,18 +43,14 @@ export default function EditNegotiationScreen() {
     if (parts.length !== 3) return new Date();
     const [day, month, year] = parts;
     const d = new Date(Number(year), Number(month) - 1, Number(day));
-    return isNaN(d.getTime()) ? new Date() : d;
+    return Number.isNaN(d.getTime()) ? new Date() : d;
   };
 
-  const [startDate, setStartDate] = useState(() => parseDate(params.date));
-  const [closeDate, setCloseDate] = useState(() =>
-    parseDate(params.estimatedCloseDate),
-  );
+  const [startDate, _setStartDate] = useState(() => parseDate(params.date));
+  const [closeDate, setCloseDate] = useState(() => parseDate(params.estimatedCloseDate));
 
   const [isActive, setIsActive] = useState(() => params.isActive !== "false");
-  const [observations, setObservations] = useState(
-    params.observations?.toString() || "",
-  );
+  const [observations, setObservations] = useState(params.observations?.toString() || "");
   const [states, setStates] = useState<any[]>([]);
   const [stateId, setStateId] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -79,10 +72,7 @@ export default function EditNegotiationScreen() {
           (s: any) =>
             s.name.toLowerCase() === currentStatusName.toLowerCase() ||
             s.name.replace(/ó/g, "o").replace(/é/g, "e").toLowerCase() ===
-              currentStatusName
-                .replace(/ó/g, "o")
-                .replace(/é/g, "e")
-                .toLowerCase(),
+              currentStatusName.replace(/ó/g, "o").replace(/é/g, "e").toLowerCase(),
         );
         if (found) {
           setStateId(found.id);
@@ -100,7 +90,7 @@ export default function EditNegotiationScreen() {
 
   // Read-only info
   const clientName = params.clientName?.toString() || "";
-  const amount = params.amount?.toString() || "$0.00";
+  const _amount = params.amount?.toString() || "$0.00";
 
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -161,23 +151,16 @@ export default function EditNegotiationScreen() {
         globalStyles.container,
         { backgroundColor: currentColors.background, paddingTop: insets.top },
       ]}
-      contentContainerStyle={[
-        styles.scrollContent,
-        { backgroundColor: currentColors.background },
-      ]}
+      contentContainerStyle={[styles.scrollContent, { backgroundColor: currentColors.background }]}
     >
       {/* ── Top bar ── */}
       <RNView style={styles.topBar}>
         <BackButton />
       </RNView>
 
-      <Text style={[styles.title, { color: currentColors.text }]}>
-        Editar negociación
-      </Text>
+      <Text style={[styles.title, { color: currentColors.text }]}>Editar negociación</Text>
       {clientName ? (
-        <Text
-          style={[styles.subtitle, { color: currentColors.mutedForeground }]}
-        >
+        <Text style={[styles.subtitle, { color: currentColors.mutedForeground }]}>
           {clientName}
         </Text>
       ) : null}
@@ -192,9 +175,7 @@ export default function EditNegotiationScreen() {
           },
         ]}
       >
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Cliente
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Cliente</Text>
 
         <Text
           style={{
@@ -207,12 +188,8 @@ export default function EditNegotiationScreen() {
           {clientName}
         </Text>
 
-
-
         {/* Estado — selector modal */}
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Estado
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Estado</Text>
         <TouchableOpacity
           style={[
             styles.selector,
@@ -231,11 +208,7 @@ export default function EditNegotiationScreen() {
           >
             {selectedStatus || "Seleccionar estado"}
           </Text>
-          <FontAwesome
-            name="chevron-down"
-            size={12}
-            color={currentColors.mutedForeground}
-          />
+          <FontAwesome name="chevron-down" size={12} color={currentColors.mutedForeground} />
         </TouchableOpacity>
 
         <Text style={[styles.label, { color: currentColors.mutedForeground }]}>
@@ -253,10 +226,7 @@ export default function EditNegotiationScreen() {
           {startDate.toLocaleDateString("es-ES")}
         </Text>
 
-
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Fecha de cierre
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Fecha de cierre</Text>
 
         <TouchableOpacity
           style={[
@@ -287,9 +257,7 @@ export default function EditNegotiationScreen() {
         )}
 
         {/* Observaciones */}
-        <Text style={[styles.label, { color: currentColors.text }]}>
-          Observaciones
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text }]}>Observaciones</Text>
         <TextInput
           style={[
             styles.inputBare,
@@ -310,11 +278,7 @@ export default function EditNegotiationScreen() {
         />
       </RNView>
       <RNView style={styles.switchRow}>
-        <Text
-          style={[styles.label, { color: currentColors.text, marginTop: 0 }]}
-        >
-          Activa
-        </Text>
+        <Text style={[styles.label, { color: currentColors.text, marginTop: 0 }]}>Activa</Text>
 
         <Switch value={isActive} onValueChange={setIsActive} />
       </RNView>
@@ -324,12 +288,7 @@ export default function EditNegotiationScreen() {
           style={[styles.cancelBtn, { borderColor: currentColors.border }]}
           onPress={() => router.back()}
         >
-          <Text
-            style={[
-              styles.cancelText,
-              { color: currentColors.mutedForeground },
-            ]}
-          >
+          <Text style={[styles.cancelText, { color: currentColors.mutedForeground }]}>
             Cancelar
           </Text>
         </TouchableOpacity>
@@ -349,28 +308,14 @@ export default function EditNegotiationScreen() {
         animationType="fade"
         onRequestClose={() => setStatusModalVisible(false)}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setStatusModalVisible(false)}
-        >
-          <RNView
-            style={[styles.modalBox, { backgroundColor: currentColors.card }]}
-          >
-            <RNView
-              style={[
-                styles.modalHeader,
-                { borderBottomColor: currentColors.border },
-              ]}
-            >
+        <Pressable style={styles.modalOverlay} onPress={() => setStatusModalVisible(false)}>
+          <RNView style={[styles.modalBox, { backgroundColor: currentColors.card }]}>
+            <RNView style={[styles.modalHeader, { borderBottomColor: currentColors.border }]}>
               <Text style={[styles.modalTitle, { color: currentColors.text }]}>
                 Seleccionar estado
               </Text>
               <TouchableOpacity onPress={() => setStatusModalVisible(false)}>
-                <FontAwesome
-                  name="times"
-                  size={18}
-                  color={currentColors.mutedForeground}
-                />
+                <FontAwesome name="times" size={18} color={currentColors.mutedForeground} />
               </TouchableOpacity>
             </RNView>
 
@@ -386,9 +331,7 @@ export default function EditNegotiationScreen() {
                       { borderBottomColor: currentColors.border },
                       isSelected && {
                         backgroundColor:
-                          colorScheme === "dark"
-                            ? "rgba(0, 127, 206, 0.15)"
-                            : "#EFF6FF",
+                          colorScheme === "dark" ? "rgba(0, 127, 206, 0.15)" : "#EFF6FF",
                       },
                     ]}
                     onPress={() => {
@@ -410,11 +353,7 @@ export default function EditNegotiationScreen() {
                       {item.name}
                     </Text>
                     {isSelected && (
-                      <FontAwesome
-                        name="check"
-                        size={14}
-                        color={currentColors.primary}
-                      />
+                      <FontAwesome name="check" size={14} color={currentColors.primary} />
                     )}
                   </TouchableOpacity>
                 );

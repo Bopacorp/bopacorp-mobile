@@ -1,5 +1,5 @@
-import { apiClient } from "./api";
 import { Platform } from "react-native";
+import { apiClient } from "./api";
 
 interface CacheEntry<T> {
   data: T;
@@ -14,7 +14,7 @@ class MemoryCache {
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
-    
+
     const isExpired = Date.now() - entry.timestamp > CACHE_TTL_MS;
     if (isExpired) {
       this.cache.delete(key);
@@ -69,7 +69,10 @@ export interface BusinessClient {
   createdAt: string;
 }
 
-export const getNegotiations = async (limit: number = 100, page: number = 1): Promise<Negotiation[]> => {
+export const getNegotiations = async (
+  limit: number = 100,
+  page: number = 1,
+): Promise<Negotiation[]> => {
   const cacheKey = `negotiations?limit=${limit}&page=${page}`;
   const cached = servicesCache.get<Negotiation[]>(cacheKey);
   if (cached) return cached;
@@ -126,7 +129,10 @@ export const getNegotiations = async (limit: number = 100, page: number = 1): Pr
   }
 };
 
-export const getBusinessClients = async (limit: number = 100, page: number = 1): Promise<BusinessClient[]> => {
+export const getBusinessClients = async (
+  limit: number = 100,
+  page: number = 1,
+): Promise<BusinessClient[]> => {
   const cacheKey = `business-clients?limit=${limit}&page=${page}`;
   const cached = servicesCache.get<BusinessClient[]>(cacheKey);
   if (cached) return cached;
@@ -170,9 +176,7 @@ export interface DocumentItem {
   date: string;
 }
 
-export const getNegotiationDocuments = async (
-  negotiationId?: string,
-): Promise<DocumentItem[]> => {
+export const getNegotiationDocuments = async (negotiationId?: string): Promise<DocumentItem[]> => {
   const cacheKey = `documents?negotiationId=${negotiationId || ""}`;
   const cached = servicesCache.get<DocumentItem[]>(cacheKey);
   if (cached) return cached;
@@ -366,10 +370,7 @@ export const createBusinessClient = async (data: any): Promise<any> => {
   return res;
 };
 
-export const updateBusinessClient = async (
-  id: string,
-  data: any,
-): Promise<any> => {
+export const updateBusinessClient = async (id: string, data: any): Promise<any> => {
   const res = await apiClient.patch(`/api/v1/crm/business-clients/${id}`, data);
   servicesCache.invalidate("business-clients");
   servicesCache.invalidate(`business-client-${id}`);
@@ -414,11 +415,15 @@ export const getNegotiation = async (id: string): Promise<any> => {
 
     let amount = "—";
     try {
-      const clientData: any = await apiClient.get(`/api/v1/crm/business-clients/${item.client?.id}`);
+      const clientData: any = await apiClient.get(
+        `/api/v1/crm/business-clients/${item.client?.id}`,
+      );
       const billing = clientData?.currentMonthlyBilling;
       if (billing !== undefined && billing !== null) {
         const num = Number(billing);
-        amount = isNaN(num) ? "—" : `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        amount = Number.isNaN(num)
+          ? "—"
+          : `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
     } catch {
       // If client fetch fails, leave amount as "—"
@@ -453,7 +458,11 @@ export interface VisitItem {
   observations?: string;
   negotiationId?: string;
   client: { id: string; businessName: string };
-  advisor: { id: string; username: string; profile: { firstName: string; lastName: string } | null };
+  advisor: {
+    id: string;
+    username: string;
+    profile: { firstName: string; lastName: string } | null;
+  };
   visitType: { id: string; code: string; name: string };
 }
 
@@ -525,84 +534,3 @@ export const createVisit = async (data: {
   servicesCache.invalidate(`visits?clientId=${data.clientId}`);
   return res;
 };
-
-export interface MatrixItem {
-  id: string;
-  negotiationId: string;
-  creatorId: string;
-  observations?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface MatrixAttachmentItem {
-  id: string;
-  attachmentType: "OFFER_MATRIX" | "EMAIL_TEMPLATE";
-  description?: string;
-  filename: string;
-  fileExtension: string;
-  fileSizeMb: number;
-  storagePath: string;
-  mimeType: string;
-  uploadedAt: string;
-}
-
-export const getNegotiationMatrices = async (negotiationId: string): Promise<MatrixItem[]> => {
-  const cacheKey = `matrices?negotiationId=${negotiationId}`;
-  const cached = servicesCache.get<MatrixItem[]>(cacheKey);
-  if (cached) return cached;
-
-  try {
-    const response: any = await apiClient.get(`/api/v1/matrices?negotiationId=${negotiationId}&limit=10`);
-    servicesCache.set(cacheKey, response);
-    return response;
-  } catch (error) {
-    console.warn("Could not load matrices:", error);
-    return [];
-  }
-};
-
-export const createOfferMatrix = async (data: {
-  negotiationId: string;
-  observations?: string;
-}): Promise<MatrixItem> => {
-  const res: any = await apiClient.post("/api/v1/matrices", data);
-  servicesCache.invalidate(`matrices?negotiationId=${data.negotiationId}`);
-  return res;
-};
-
-export const getMatrixAttachments = async (matrixId: string): Promise<MatrixAttachmentItem[]> => {
-  const cacheKey = `matrix-attachments?matrixId=${matrixId}`;
-  const cached = servicesCache.get<MatrixAttachmentItem[]>(cacheKey);
-  if (cached) return cached;
-
-  try {
-    const response: any = await apiClient.get(`/api/v1/matrices/${matrixId}/attachments`);
-    servicesCache.set(cacheKey, response);
-    return response;
-  } catch (error) {
-    console.warn("Could not load matrix attachments:", error);
-    return [];
-  }
-};
-
-export const createMatrixAttachment = async (
-  matrixId: string,
-  data: {
-    matrixId: string;
-    attachmentType: "OFFER_MATRIX" | "EMAIL_TEMPLATE";
-    description?: string;
-    filename: string;
-    fileExtension: string;
-    fileSizeMb: number;
-    storagePath: string;
-    mimeType: string;
-    encryptionMetadata: any;
-  }
-): Promise<any> => {
-  const res = await apiClient.post(`/api/v1/matrices/${matrixId}/attachments`, data);
-  servicesCache.invalidate(`matrix-attachments?matrixId=${matrixId}`);
-  return res;
-};
-
-

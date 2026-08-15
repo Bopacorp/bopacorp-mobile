@@ -1,15 +1,14 @@
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import React from "react";
 import { Linking, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Text, View } from "@/components/Themed";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { globalStyles } from "@/constants/Styles";
 import BackButton from "./BackButton";
 import EditarButton from "./EditarButton";
-
-import { Text, View } from "@/components/Themed";
-import { globalStyles } from "@/constants/Styles";
 
 function InfoRow({
   icon,
@@ -23,12 +22,7 @@ function InfoRow({
   return (
     <View style={styles.infoRow}>
       <View style={styles.infoLeft}>
-        <FontAwesome
-          name={icon}
-          size={14}
-          color="#6B7280"
-          style={styles.icon}
-        />
+        <FontAwesome name={icon} size={14} color="#6B7280" style={styles.icon} />
         <Text style={styles.label}>{label}</Text>
       </View>
 
@@ -71,10 +65,7 @@ export default function ClientDetailView({
         globalStyles.container,
         { paddingTop: insets.top, backgroundColor: currentColors.background },
       ]}
-      contentContainerStyle={[
-        globalStyles.scrollPadding,
-        { paddingBottom: 40 },
-      ]}
+      contentContainerStyle={[globalStyles.scrollPadding, { paddingBottom: 40 }]}
       showsVerticalScrollIndicator={false}
     >
       <View
@@ -111,23 +102,17 @@ export default function ClientDetailView({
 
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {businessName?.charAt(0)?.toUpperCase()}
-          </Text>
+          <Text style={styles.avatarText}>{businessName?.charAt(0)?.toUpperCase()}</Text>
         </View>
 
         <View style={styles.headerText}>
-          <Text style={[globalStyles.title, { marginBottom: 2 }]}>
-            {businessName}
-          </Text>
+          <Text style={[globalStyles.title, { marginBottom: 2 }]}>{businessName}</Text>
 
           <Text style={styles.subtitle}>Cliente corporativo</Text>
         </View>
       </View>
 
-      <Text style={[globalStyles.sectionTitle, { marginBottom: 8 }]}>
-        INFORMACIÓN
-      </Text>
+      <Text style={[globalStyles.sectionTitle, { marginBottom: 8 }]}>INFORMACIÓN</Text>
 
       <View
         style={[
@@ -142,17 +127,13 @@ export default function ClientDetailView({
           <Text style={styles.value}>{ruc}</Text>
         </InfoRow>
 
-        <View
-          style={[styles.divider, { backgroundColor: currentColors.border }]}
-        />
+        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
 
         <InfoRow icon="building" label="Empresa">
           <Text style={styles.value}>{businessName}</Text>
         </InfoRow>
 
-        <View
-          style={[styles.divider, { backgroundColor: currentColors.border }]}
-        />
+        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
 
         <InfoRow icon="gear" label="Estado">
           <View
@@ -214,9 +195,7 @@ export default function ClientDetailView({
           <Text style={styles.value}>{contactName}</Text>
         </InfoRow>
 
-        <View
-          style={[styles.divider, { backgroundColor: currentColors.border }]}
-        />
+        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
 
         <InfoRow icon="phone" label="Teléfono">
           <TouchableOpacity
@@ -227,9 +206,7 @@ export default function ClientDetailView({
           </TouchableOpacity>
         </InfoRow>
 
-        <View
-          style={[styles.divider, { backgroundColor: currentColors.border }]}
-        />
+        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
 
         <InfoRow icon="envelope" label="Email">
           <TouchableOpacity
@@ -240,9 +217,7 @@ export default function ClientDetailView({
           </TouchableOpacity>
         </InfoRow>
 
-        <View
-          style={[styles.divider, { backgroundColor: currentColors.border }]}
-        />
+        <View style={[styles.divider, { backgroundColor: currentColors.border }]} />
 
         <InfoRow icon="map-marker" label="Dirección">
           <Text style={styles.value}>{address}</Text>

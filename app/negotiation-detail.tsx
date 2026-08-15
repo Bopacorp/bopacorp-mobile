@@ -1,17 +1,9 @@
-import NegotiationDetailView from "@/components/NegotiationDetailView";
 import { useLocalSearchParams } from "expo-router";
+import NegotiationDetailView from "@/components/NegotiationDetailView";
 
 export default function NegotiationDetailScreen() {
-  const {
-    id,
-    clientName,
-    planName,
-    amount,
-    status,
-    date,
-    advisorName,
-    estimatedCloseDate,
-  } = useLocalSearchParams();
+  const { id, clientName, planName, amount, status, date, advisorName, estimatedCloseDate } =
+    useLocalSearchParams();
 
   return (
     <NegotiationDetailView
