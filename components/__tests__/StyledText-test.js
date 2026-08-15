@@ -3,7 +3,17 @@ import renderer from "react-test-renderer";
 import { MonoText } from "../StyledText";
 
 it(`renders correctly`, () => {
-  const tree = renderer.create(<MonoText>Snapshot test!</MonoText>).toJSON();
+  let testRenderer;
+
+  renderer.act(() => {
+    testRenderer = renderer.create(<MonoText>Snapshot test!</MonoText>);
+  });
+
+  const tree = testRenderer.toJSON();
 
   expect(tree).toMatchSnapshot();
+
+  renderer.act(() => {
+    testRenderer.unmount();
+  });
 });

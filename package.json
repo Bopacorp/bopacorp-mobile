@@ -11,7 +11,9 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "test": "jest --forceExit"
+    "test": "npm run test:run",
+    "test:run": "jest --runInBand",
+    "test:coverage": "jest --coverage --runInBand"
   },
   "dependencies": {
     "@bopacorp/shared": "^0.3.2",

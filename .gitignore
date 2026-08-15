@@ -43,3 +43,6 @@ yarn-error.*
 
 # npm token
 .npmrc
+
+# Test coverage
+coverage/
