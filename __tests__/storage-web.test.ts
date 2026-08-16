@@ -61,4 +61,55 @@ describe("storage.ts - Web Platform Behavior", () => {
     expect(localMock.removeItem).toHaveBeenCalledWith("token");
     expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
   });
+
+  it("should return null when localStorage is unavailable", async () => {
+    Object.defineProperty(global, "window", {
+      value: undefined,
+      writable: true,
+      configurable: true,
+    });
+
+    await expect(storage.getStorageItem("token")).resolves.toBeNull();
+    expect(localMock.getItem).not.toHaveBeenCalled();
+  });
+
+  it("should not throw when localStorage is unavailable for writes", async () => {
+    Object.defineProperty(global, "window", {
+      value: undefined,
+      writable: true,
+      configurable: true,
+    });
+
+    await expect(storage.setStorageItem("token", "value")).resolves.toBeUndefined();
+    await expect(storage.removeStorageItem("token")).resolves.toBeUndefined();
+    expect(localMock.setItem).not.toHaveBeenCalled();
+    expect(localMock.removeItem).not.toHaveBeenCalled();
+  });
+
+  it("should return null when localStorage read fails", async () => {
+    localMock.getItem.mockImplementation(() => {
+      throw new Error("local read failed");
+    });
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(storage.getStorageItem("token")).resolves.toBeNull();
+    expect(consoleError).toHaveBeenCalledWith(
+      'Error reading key "token" from storage:',
+      expect.any(Error),
+    );
+  });
+
+  it("should swallow localStorage write and delete failures", async () => {
+    localMock.setItem.mockImplementation(() => {
+      throw new Error("local write failed");
+    });
+    localMock.removeItem.mockImplementation(() => {
+      throw new Error("local delete failed");
+    });
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(storage.setStorageItem("token", "value")).resolves.toBeUndefined();
+    await expect(storage.removeStorageItem("token")).resolves.toBeUndefined();
+    expect(consoleError).toHaveBeenCalledTimes(2);
+  });
 });

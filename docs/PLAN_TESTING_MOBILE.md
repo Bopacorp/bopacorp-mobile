@@ -5,7 +5,7 @@
 **Alcance:** aplicación móvil del asesor comercial  
 **Runner actual:** Jest + `jest-expo`  
 **Fecha base:** 2026-08-15  
-**Estado:** Fases 0 y 1 ejecutadas; Fase 2 pendiente
+**Estado:** Fases 0, 1, 2, 3 y 4 ejecutadas; permanecen tres regresiones contractuales de Fase 2
 
 ## 1. Objetivo
 
@@ -187,6 +187,7 @@ En esta ejecución el reporte quedó limitado a los cuatro archivos críticos in
 **Duración orientativa:** 1–2 días.  
 **Prioridad:** P0.  
 **Objetivo:** proteger el perímetro de seguridad antes de probar pantallas comerciales.
+**Estado:** implementada con pruebas P0; tres casos contractuales quedan rojos porque `api.ts` refresca también `login`, `refresh` y `logout`.
 
 Casos mínimos:
 
@@ -225,12 +226,14 @@ Criterio de salida:
 - Todos los caminos P0 de token, refresh, logout y rol asesor tienen test.
 - Las pruebas no llaman a una API real.
 - La cobertura del núcleo crítico se reporta por separado.
+- Los tres casos de exclusión de endpoints están identificados como regresiones pendientes y no se ocultan con skips.
 
 ### Fase 3 — Servicios, cache y contratos de datos
 
 **Duración orientativa:** 1–2 días.  
 **Prioridad:** P0/P1.  
 **Objetivo:** asegurar que las pantallas reciben datos correctos y que las mutaciones invalidan la cache adecuada.
+**Estado:** implementada; las pruebas aisladas de `ClientServices.ts`, cache, mutaciones y upload pasan. La suite general conserva las tres regresiones contractuales documentadas en Fase 2.
 
 Casos mínimos de `ClientServices.ts`:
 
@@ -258,12 +261,17 @@ Criterio de salida:
 - Las operaciones críticas de servicio tienen casos felices, inválidos, vacíos y de error.
 - La invalidación de cache tiene regresiones directas.
 - El test no confunde un `[]` por error con un `[]` válido sin que esa decisión quede documentada.
+- Las ramas web y nativa de carga de documentos tienen pruebas aisladas.
+- La cobertura del conjunto crítico se actualiza con la ejecución de esta fase.
 
 ### Fase 4 — Componentes y flujos básicos del asesor
 
 **Duración orientativa:** 2–3 días.  
 **Prioridad:** P0/P1.  
 **Objetivo:** probar interacción real con React Native Testing Library, no helpers copiados en el test.
+**Estado:** implementada; cinco suites aisladas y 25 pruebas cubren los flujos de clientes, negociaciones, visitas/GPS y documentación.
+
+La implementación usa mocks deterministas de `expo-router`, autenticación, servicios, `expo-location`, `expo-document-picker`, calendario y WebBrowser. No requiere API, GPS, filesystem, SecureStore ni dispositivo real.
 
 #### Clientes
 
@@ -304,6 +312,8 @@ Criterio de salida:
 - Cada flujo tiene camino feliz, validación, error y estado de carga.
 - Los módulos nativos están mockeados en unit/component tests.
 - Las pruebas de UI verifican texto/acciones/resultados observables, no detalles internos de implementación.
+
+La cobertura de Fase 4 mantiene como limitación explícita que los formularios de cliente y negociación no exponen un estado propio de envío; por eso no se inventa una aserción de doble submit. La validación de RUC, email, teléfono y extensiones/tamaño de archivo continúa siendo responsabilidad del contrato vigente del API; los tests cubren los errores y la cancelación que la pantalla sí procesa.
 
 ### Fase 5 — Gate de cobertura y CI
 
