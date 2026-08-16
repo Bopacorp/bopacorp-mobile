@@ -4,7 +4,7 @@
 **Fecha/hora registrada:** `2026-08-15T18:31:00-05:00`  
 **Repositorio:** `bopacorp-mobile`  
 **SHA evaluado:** `e205fbad27e8a17e2fc6f50f2ac2a93c8a49cda9`  
-**Estado:** Fases 0, 1, 2, 3 y 4 ejecutadas; cobertura informativa y tres regresiones contractuales pendientes
+**Estado:** Fases 0, 1, 2, 3, 4 y 5 ejecutadas; CI bloqueante configurado
 
 ## 1. Estado inicial
 
@@ -339,3 +339,54 @@ El conjunto total conserva más de 80% en líneas y statements, que son las mét
 - [ ] Suite completamente verde: continúan las tres regresiones contractuales de Fase 2.
 
 La siguiente fase es Fase 5, gate informativo y CI. La corrección de las exclusiones de refresh continúa siendo un trabajo separado que requiere autorización explícita para cambiar `services/api.ts`.
+
+## 12. Fase 5 — Corrección del API, gate de cobertura y CI
+
+**ID de ejecución:** `MOBILE-F5-2026-08-15-01`<br>
+**Fecha/hora registrada:** `2026-08-15T19:45:08-05:00`<br>
+**SHA base:** `036b011a9dea095dcf746422d089e3f9ffff177b`<br>
+**Entorno:** Node `v22.22.2`, npm `10.9.7`<br>
+**Estado del cambio:** modificaciones locales sin commit; no se actualizó ninguna dependencia de runtime.
+
+### 12.1 Cambios implementados
+
+- `services/api.ts`: el interceptor identifica rutas relativas, absolutas y con query string y no intenta refresh automático para `/api/v1/auth/login`, `/api/v1/auth/refresh` ni `/api/v1/auth/logout`. El refresh, retry y cola de endpoints protegidos permanecen activos.
+- `api-interceptor.test.ts`: las tres regresiones ahora verifican rechazo observable, ausencia de `axios.post`, ausencia de storage y ausencia de logout; se añadió una URL absoluta con query string.
+- `jest.config.js`: se activó `coverageThreshold` global de 80% para líneas y statements del conjunto crítico.
+- `.npmrc.example` y `.npmrc`: siguen el patrón de `bopacorp-web`, usando `{$NPM_TOKEN}` sin credenciales literales.
+- `package-lock.json`: `@bopacorp/shared@0.3.2` quedó resuelto desde GitHub Packages, sin enlace local a `../bopacorp-shared`.
+- `.github/workflows/ci.yml`: Node 22, `npm ci`, registry privado, secret `NPM_TOKEN`, lint, TypeScript, cobertura y artifact `coverage/` para `main` y `develop`.
+
+El primer `npm ci` en GitHub aún requiere ejecución remota con el secret `NPM_TOKEN` del repositorio. En el entorno local de esta ejecución `NPM_TOKEN` no está definido, por lo que no se imprimió ni se intentó sustituir el secret.
+
+### 12.2 Comandos y resultados
+
+| Comando | Resultado | Evidencia observada |
+|---|---|---|
+| `npx jest __tests__/api-interceptor.test.ts --runInBand --silent` | Pass | 1 suite; 15 tests pasan |
+| `npm run test:run` | Pass | 15 suites; 98 tests; 1 snapshot |
+| `npm run test:coverage -- --silent` | Pass | 15 suites; 98 tests; 1 snapshot; threshold cumplido |
+| `npm run lint` | Pass con warning | Sin errores; warning preexistente en `components/NegotiationCard.tsx:75` |
+| `npx tsc --noEmit` | Pass | Sin errores |
+| `git diff --check` | Pass | Sin errores de whitespace |
+
+### 12.3 Cobertura crítica observada
+
+| Archivo | Líneas | Statements | Ramas | Funciones |
+|---|---:|---:|---:|---:|
+| `services/api.ts` | 95.89% | 96.00% | 82.05% | 92.85% |
+| **Total del conjunto crítico configurado** | **87.90%** | **87.52%** | **69.87%** | **74.30%** |
+
+El gate aplica únicamente a líneas y statements, conforme a la regla definida. Ramas y funciones permanecen visibles para priorizar ampliaciones futuras; no se reporta cobertura global de la aplicación.
+
+### 12.4 Criterio de salida de Fase 5
+
+- [x] Los tres endpoints de autenticación ya no disparan refresh automático.
+- [x] La suite completa pasa sin regresiones contractuales conocidas.
+- [x] El umbral crítico de líneas/statements está activo y pasa.
+- [x] CI usa el secret `NPM_TOKEN` sin versionar credenciales.
+- [x] CI genera y conserva el artifact de cobertura.
+- [x] Build web permanece separado por su dependencia de `../bopacorp-shared`.
+- [ ] Primera ejecución remota de GitHub Actions: pendiente de abrir/actualizar un PR o push con el secret disponible.
+
+La siguiente fase es Fase 6, smoke test manual en dispositivo. Antes de usar CI debe revocarse o rotarse cualquier credencial npm local anterior que haya quedado expuesta.

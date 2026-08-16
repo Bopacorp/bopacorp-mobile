@@ -5,7 +5,7 @@
 **Alcance:** aplicación móvil del asesor comercial  
 **Runner actual:** Jest + `jest-expo`  
 **Fecha base:** 2026-08-15  
-**Estado:** Fases 0, 1, 2, 3 y 4 ejecutadas; permanecen tres regresiones contractuales de Fase 2
+**Estado:** Fases 0, 1, 2, 3, 4 y 5 ejecutadas; CI bloqueante configurado
 
 ## 1. Objetivo
 
@@ -319,15 +319,19 @@ La cobertura de Fase 4 mantiene como limitación explícita que los formularios 
 
 **Duración orientativa:** 0.5–1 día.  
 **Objetivo:** convertir la suite en un control reproducible de calidad.
+**Estado:** implementada; se corrigió el refresh indebido de endpoints de autenticación, se activó el umbral crítico y se configuró CI con artifact de cobertura.
 
 Actividades:
 
-- Ejecutar toda la suite con `npm run test:run`.
-- Ejecutar `npm run test:coverage` con la lista crítica congelada.
-- Activar primero un gate informativo y luego un umbral de al menos 80% sobre líneas/statements del conjunto crítico.
+- Corregir primero las tres regresiones contractuales de `/auth/login`, `/auth/refresh` y `/auth/logout`.
+- Ejecutar `npm run test:run` y `npm run test:coverage` con la lista crítica congelada.
+- Activar un umbral bloqueante de al menos 80% sobre líneas/statements del conjunto crítico.
 - Revisar manualmente las ramas de decisiones críticas: rol, 401, refresh, errores, permisos GPS y archivos.
 - Ejecutar lint y TypeScript en la misma revisión.
-- Actualizar `.github/workflows/ci.yml` para ejecutar cobertura y subir `coverage/` como artifact.
+- Actualizar `.github/workflows/ci.yml` con Node 22, `npm ci`, registry privado y `NPM_TOKEN` del repositorio.
+- Subir `coverage/` como artifact y conservar los reportes HTML, LCOV y JSON.
+- Mantener `.npmrc.example` con el patrón de variable de entorno usado por `bopacorp-web`.
+- Alinear `package-lock.json` con la resolución de registry de `@bopacorp/shared`.
 - Mantener `npm run build:web` como validación de build separada; no usarla para sustituir tests de runtime nativo.
 - Guardar SHA, fecha, Node, npm, comandos, duración, resumen y artifacts.
 
@@ -349,6 +353,7 @@ Criterio de salida:
 - Un pull request puede ejecutar la suite sin intervención manual.
 - El artifact permite revisar qué archivos entraron en el cálculo.
 - El porcentaje no se reporta como global ni como evidencia de API/dispositivo.
+- CI bloquea cambios cuando fallan tests, cobertura, lint o TypeScript.
 
 ### Fase 6 — Smoke test manual de dispositivo
 

@@ -49,6 +49,26 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+const AUTH_ENDPOINTS_WITHOUT_REFRESH = new Set([
+  "/api/v1/auth/login",
+  "/api/v1/auth/refresh",
+  "/api/v1/auth/logout",
+]);
+
+const getRequestPath = (url?: string) => {
+  if (!url) return "";
+
+  const withoutQuery = url.split("?")[0];
+  const protocolSeparator = withoutQuery.indexOf("://");
+
+  if (protocolSeparator === -1) {
+    return withoutQuery;
+  }
+
+  const pathStart = withoutQuery.indexOf("/", protocolSeparator + 3);
+  return pathStart === -1 ? "/" : withoutQuery.slice(pathStart);
+};
+
 apiClient.interceptors.response.use(
   (response) => {
     if (response.data && response.data.success !== undefined) {
@@ -66,8 +86,14 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+    const requestPath = getRequestPath(originalRequest?.url);
+    const canRefresh =
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !AUTH_ENDPOINTS_WITHOUT_REFRESH.has(requestPath);
 
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+    if (canRefresh) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });

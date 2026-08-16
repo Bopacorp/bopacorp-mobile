@@ -246,6 +246,8 @@ describe("API Axios Interceptors", () => {
       "does not refresh %s automatically",
       async (url) => {
         getStorageItem.mockResolvedValue("refresh-token-old");
+        const onLogout = jest.fn();
+        setOnLogout(onLogout);
         const refreshRequest = jest.spyOn(axios, "post").mockResolvedValue({
           data: {
             success: true,
@@ -256,11 +258,30 @@ describe("API Axios Interceptors", () => {
           },
         } as any);
 
-        await onRejected(createUnauthorizedError(url));
+        await expect(onRejected(createUnauthorizedError(url))).rejects.toEqual({
+          code: "NETWORK_ERROR",
+          message: "Unauthorized",
+        });
 
         expect(refreshRequest).not.toHaveBeenCalled();
         expect(getStorageItem).not.toHaveBeenCalled();
+        expect(setStorageItem).not.toHaveBeenCalled();
+        expect(onLogout).not.toHaveBeenCalled();
       },
     );
+
+    it("does not refresh an absolute auth URL with a query string", async () => {
+      const refreshRequest = jest.spyOn(axios, "post");
+
+      await expect(
+        onRejected(createUnauthorizedError(`${API_URL}/api/v1/auth/login?next=/home`)),
+      ).rejects.toEqual({
+        code: "NETWORK_ERROR",
+        message: "Unauthorized",
+      });
+
+      expect(refreshRequest).not.toHaveBeenCalled();
+      expect(getStorageItem).not.toHaveBeenCalled();
+    });
   });
 });
